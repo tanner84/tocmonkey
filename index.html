@@ -265,17 +265,21 @@ html,body{height:100%;background:var(--bg);color:var(--hi);font-family:var(--mon
 
   /* Header — collapse to fit small screens */
   #hdr{height:auto;min-height:48px}
-  #hdr-top{height:36px;flex-wrap:nowrap;overflow:hidden}
-  .brand{padding:0 10px;gap:6px;border-right:1px solid var(--border);flex-shrink:0}
-  .bname{font-size:10px;letter-spacing:2px}
+  #hdr-top{height:32px;flex-wrap:nowrap;overflow:hidden}
+  .brand{padding:0 8px;gap:5px;border-right:1px solid var(--border);flex-shrink:0;min-width:0}
+  .bname{font-size:10px;letter-spacing:1px}
   .bsep,.bsub{display:none}
   .wtf-btn{display:none}
-  /* Hide metals ticker on mobile — too cramped */
-  #tkwrap{display:none}
-  .logo-wrap{padding:0 6px;gap:6px}
+  /* Metals ticker: shrink but keep visible */
+  #tkwrap{flex:1;overflow:hidden;padding:0 6px;min-width:0}
+  #tkinner{font-size:10px}
+  .ti{margin-right:16px;font-size:10px;gap:3px}
+  .ts{font-size:9px}.tp{font-size:10px}.tc{font-size:9px}.tu{font-size:9px}
+  .logo-wrap{padding:0 5px;gap:5px}
+  .logo-img{height:20px}
   .ck2{display:none}
   .ck1{font-size:10px;letter-spacing:1px}
-  .hright{padding:0 8px;gap:8px}
+  .hright{padding:0 6px;gap:6px}
   /* Sports ticker stays but smaller */
   #sportwrap{height:20px;padding:0 6px}
   #sportinner{font-size:10px}
@@ -1983,8 +1987,9 @@ function renderArticles(){
  if(!picks.length){el.innerHTML='<div style="padding:12px;color:var(--fade);font-size:9px;text-align:center">No articles yet.</div>';return;}
  el.innerHTML=picks.map((a,i)=>{
   const isUserArt = !a._isDefault && !String(a.id).startsWith('9');
+  const safeUrl = (a.url||'').replace(/"/g,'&quot;');
   return `
-  <div class="art" onclick="openArtModal(${JSON.stringify(i)},${JSON.stringify(a.url||'')},${JSON.stringify(a.title||'')})">
+  <div class="art" data-url="${safeUrl}" onclick="openArtModal(this)">
    ${isUserArt?`<button class="artdel" onclick="event.stopPropagation();delArticle(${a.id})">✕</button>`:''}
    <div class="arttitle">${a.title}</div>
    <div class="artmeta">
@@ -2100,14 +2105,11 @@ function openEqModal(encoded){
  `);
 }
 
-function openArtModal(idxOrId, url, title){
+function openArtModal(el){
+ const url = el.dataset.url;
  if(url && url.startsWith('http')){
   window.open(url,'_blank','noopener,noreferrer');
-  return;
  }
- // fallback: find by id in ARTICLES
- const a=ARTICLES.find(x=>x.id===idxOrId);
- if(a && a.url) window.open(a.url,'_blank','noopener,noreferrer');
 }
 // ═══════════════════════════════════════════════════════════════════
 // LIVE TICKER
