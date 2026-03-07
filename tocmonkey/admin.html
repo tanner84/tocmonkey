@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>TOC MONKEY | Admin</title>
+<style>
+:root {
+  --bg:     #2a2d2a; --panel:  #2f332f; --deep:   #242724;
+  --hover:  #333733; --sel:    #3a403a; --border: #3d503d;
+  --g1:     #4ade80; --g2:     #22c55e; --g3:     #16a34a;
+  --tHi:    #edf2ed; --tMid:   #a8c4a8; --tMute:  #7a9e7a; --tFade: #516651;
+  --red:    #f87171; --amber:  #fbbf24;
+  --mono:   'Courier New', monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { min-height: 100%; background: var(--bg); color: var(--tHi); font-family: var(--mono); }
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--panel); }
+::-webkit-scrollbar-thumb { background: var(--border); }
+
+/* ── LOGIN SCREEN ── */
+#login-screen {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 100vh;
+}
+.login-box {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 6px; padding: 32px; width: 320px; text-align: center;
+}
+.login-title { color: var(--g1); font-size: 14px; letter-spacing: 4px; font-weight: bold; margin-bottom: 4px; }
+.login-sub   { color: var(--tFade); font-size: 9px; letter-spacing: 2px; margin-bottom: 24px; }
+.login-input {
+  width: 100%; background: var(--deep); border: 1px solid var(--border);
+  color: var(--g1); font-family: var(--mono); font-size: 12px;
+  padding: 10px 12px; border-radius: 4px; outline: none; margin-bottom: 12px;
+  text-align: center; letter-spacing: 3px;
+}
+.login-input::placeholder { color: var(--tFade); letter-spacing: 1px; font-size: 10px; }
+.login-btn {
+  width: 100%; padding: 10px; background: var(--g3); border: none;
+  color: #fff; font-family: var(--mono); font-size: 10px; letter-spacing: 2px;
+  border-radius: 4px; cursor: pointer; transition: background 0.2s;
+}
+.login-btn:hover { background: var(--g2); }
+.login-err { color: var(--red); font-size: 9px; margin-top: 8px; display: none; }
+
+/* ── ADMIN UI ── */
+#admin-ui { display: none; }
+#admin-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 20px; background: var(--deep); border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 10;
+}
+.admin-brand { display: flex; align-items: center; gap: 10px; }
+.admin-brand-name { color: var(--g1); font-size: 12px; letter-spacing: 3px; font-weight: bold; }
+.admin-brand-sep  { color: var(--border); }
+.admin-brand-sub  { color: var(--tFade); font-size: 8px; letter-spacing: 2px; }
+.logout-btn {
+  background: none; border: 1px solid var(--border); color: var(--tFade);
+  font-family: var(--mono); font-size: 8px; padding: 4px 10px;
+  border-radius: 3px; cursor: pointer; letter-spacing: 1px;
+}
+.logout-btn:hover { color: var(--red); border-color: var(--red); }
+
+#admin-body { max-width: 900px; margin: 0 auto; padding: 24px 20px; }
+
+/* ── SECTIONS ── */
+.section { margin-bottom: 32px; }
+.section-title {
+  color: var(--g1); font-size: 10px; letter-spacing: 3px; font-weight: bold;
+  padding-bottom: 8px; border-bottom: 1px solid var(--border); margin-bottom: 16px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.section-count { color: var(--tFade); font-size: 8px; font-weight: normal; }
+
+/* ── ADD ARTICLE FORM ── */
+.form-card {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 6px; padding: 16px; margin-bottom: 16px;
+}
+.form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+.form-group { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+.form-label { color: var(--tFade); font-size: 8px; letter-spacing: 1px; }
+.form-input {
+  background: var(--deep); border: 1px solid var(--border); color: var(--tHi);
+  font-family: var(--mono); font-size: 10px; padding: 7px 10px;
+  border-radius: 3px; outline: none; width: 100%;
+  transition: border-color 0.2s;
+}
+.form-input:focus { border-color: var(--g3); }
+.form-input::placeholder { color: var(--tFade); }
+.form-actions { display: flex; gap: 8px; margin-top: 4px; }
+.btn-primary {
+  padding: 8px 18px; background: var(--g3); border: none; color: #fff;
+  font-family: var(--mono); font-size: 9px; letter-spacing: 1px;
+  border-radius: 3px; cursor: pointer; transition: background 0.2s;
+}
+.btn-primary:hover { background: var(--g2); }
+.btn-secondary {
+  padding: 8px 14px; background: none; border: 1px solid var(--border);
+  color: var(--tMute); font-family: var(--mono); font-size: 9px;
+  border-radius: 3px; cursor: pointer;
+}
+.btn-secondary:hover { border-color: var(--tMute); color: var(--tHi); }
+.btn-danger {
+  padding: 3px 8px; background: none; border: 1px solid transparent;
+  color: var(--tFade); font-family: var(--mono); font-size: 9px;
+  border-radius: 3px; cursor: pointer; transition: all 0.15s;
+}
+.btn-danger:hover { color: var(--red); border-color: var(--red); }
+
+/* ── ARTICLE LIST ── */
+.article-item {
+  background: var(--panel); border: 1px solid var(--border);
+  border-left: 3px solid var(--g3); border-radius: 4px;
+  padding: 12px 14px; margin-bottom: 8px;
+  display: flex; align-items: flex-start; gap: 12px;
+}
+.article-item-body { flex: 1; min-width: 0; }
+.article-item-title { color: var(--tHi); font-size: 11px; font-weight: bold; margin-bottom: 4px; }
+.article-item-meta  { color: var(--tMute); font-size: 9px; margin-bottom: 3px; }
+.article-item-blurb { color: var(--tFade); font-size: 9px; line-height: 1.4; }
+.article-item-tags  { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px; }
+.tag-pill { font-size: 7px; padding: 2px 6px; background: var(--deep); border: 1px solid var(--border); color: var(--tFade); border-radius: 2px; }
+.drag-handle { color: var(--tFade); cursor: grab; font-size: 14px; padding-top: 2px; flex-shrink: 0; }
+.article-actions { display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; }
+
+/* ── RSS FEED LIST ── */
+.rss-item {
+  background: var(--panel); border: 1px solid var(--border);
+  border-left: 3px solid var(--amber); border-radius: 4px;
+  padding: 10px 12px; margin-bottom: 6px;
+  display: flex; align-items: center; gap: 10px;
+}
+.rss-source { color: var(--amber); font-size: 8px; font-weight: bold; flex-shrink: 0; width: 120px; }
+.rss-title  { color: var(--tHi); font-size: 10px; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rss-age    { color: var(--tFade); font-size: 8px; flex-shrink: 0; }
+.rss-promote {
+  padding: 3px 8px; background: none; border: 1px solid var(--g3);
+  color: var(--g2); font-family: var(--mono); font-size: 8px;
+  border-radius: 2px; cursor: pointer; flex-shrink: 0; white-space: nowrap;
+}
+.rss-promote:hover { background: var(--g3); color: #fff; }
+
+/* ── STATUS TOAST ── */
+#toast {
+  position: fixed; bottom: 20px; right: 20px; padding: 10px 18px;
+  background: var(--g3); color: #fff; font-size: 10px; border-radius: 4px;
+  font-family: var(--mono); letter-spacing: 1px;
+  opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 100;
+}
+#toast.show { opacity: 1; }
+
+/* ── SOURCE STATUS ── */
+.source-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.source-card {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 4px;
+  padding: 10px 12px;
+}
+.source-name   { color: var(--tHi); font-size: 10px; margin-bottom: 3px; }
+.source-handle { color: var(--tFade); font-size: 8px; margin-bottom: 4px; }
+.source-status { font-size: 8px; display: flex; align-items: center; gap: 4px; }
+.status-dot    { width: 5px; height: 5px; border-radius: 50%; }
+
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-title">TOC MONKEY</div>
+    <div class="login-sub">ADMIN ACCESS</div>
+    <input type="password" class="login-input" id="pw-input" placeholder="Enter password" onkeydown="if(event.key==='Enter')doLogin()"/>
+    <button class="login-btn" onclick="doLogin()">AUTHENTICATE →</button>
+    <div class="login-err" id="login-err">⚠ Invalid password</div>
+  </div>
+</div>
+
+<!-- ADMIN UI -->
+<div id="admin-ui">
+  <div id="admin-header">
+    <div class="admin-brand">
+      <span class="admin-brand-name">TOC MONKEY</span>
+      <span class="admin-brand-sep">|</span>
+      <span class="admin-brand-sub">ADMIN PANEL</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <a href="/" style="color:var(--tFade);font-size:8px;text-decoration:none;letter-spacing:1px">← BACK TO DASHBOARD</a>
+      <button class="logout-btn" onclick="logout()">LOGOUT</button>
+    </div>
+  </div>
+
+  <div id="admin-body">
+
+    <!-- ADD ARTICLE -->
+    <div class="section">
+      <div class="section-title">ADD ARTICLE TO CHIEF'S PICKS</div>
+      <div class="form-card">
+        <div class="form-group">
+          <label class="form-label">TITLE *</label>
+          <input class="form-input" id="f-title" placeholder="Article title"/>
+        </div>
+        <div class="form-grid-2">
+          <div class="form-group" style="margin:0">
+            <label class="form-label">AUTHOR</label>
+            <input class="form-input" id="f-author" placeholder="Author name"/>
+          </div>
+          <div class="form-group" style="margin:0">
+            <label class="form-label">PUBLICATION</label>
+            <input class="form-input" id="f-pub" placeholder="War on the Rocks, ISW…"/>
+          </div>
+        </div>
+        <div style="height:10px"></div>
+        <div class="form-grid-2">
+          <div class="form-group" style="margin:0">
+            <label class="form-label">URL *</label>
+            <input class="form-input" id="f-url" placeholder="https://…"/>
+          </div>
+          <div class="form-group" style="margin:0">
+            <label class="form-label">DATE</label>
+            <input class="form-input" id="f-date" placeholder="Mar 6, 2025"/>
+          </div>
+        </div>
+        <div style="height:10px"></div>
+        <div class="form-group">
+          <label class="form-label">BLURB — WHY YOU'RE RECOMMENDING IT</label>
+          <input class="form-input" id="f-blurb" placeholder="Short summary or take…"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">TAGS (comma separated)</label>
+          <input class="form-input" id="f-tags" placeholder="Drones, NATO, Ukraine, COIN…"/>
+        </div>
+        <div class="form-actions">
+          <button class="btn-primary" onclick="addArticle()">+ ADD TO LIST</button>
+          <button class="btn-secondary" onclick="clearForm()">CLEAR</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CURRENT ARTICLES -->
+    <div class="section">
+      <div class="section-title">
+        CHIEF'S PICKS — CURRENT LIST
+        <span class="section-count" id="art-count"></span>
+      </div>
+      <div id="article-list"></div>
+    </div>
+
+    <!-- API HEALTH -->
+    <div class="section">
+      <div class="section-title">LIVE DATA — API STATUS</div>
+      <div id="api-health-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-bottom:10px"></div>
+      <div style="color:var(--tFade);font-size:8px;margin-top:4px">● = live data pulling &nbsp;|&nbsp; ○ = fallback/static &nbsp;|&nbsp; ✕ = error / key missing</div>
+    </div>
+
+    <!-- RSS FEEDS -->
+    <div class="section">
+      <div class="section-title">
+        RSS FEEDS — LATEST ITEMS
+        <span class="section-count" id="rss-count"></span>
+      </div>
+      <div class="source-grid" style="margin-bottom:16px" id="source-grid"></div>
+      <div id="rss-list">
+        <div style="color:var(--tFade);font-size:9px;padding:12px 0">Loading feeds…</div>
+      </div>
+    </div>
+
+    <!-- TASK ORG EDITOR -->
+    <div class="section">
+      <div class="section-title">TASK ORG EDITOR — UNIT NOTES</div>
+      <div style="color:var(--tMid);font-size:9px;margin-bottom:12px;line-height:1.6">
+        Use this to add <b style="color:var(--g1)">sticky notes</b> that appear at the top of any org tab. Useful for quick updates like unit rotations, confirmed DPRK deployments, etc. Notes persist via Netlify Blobs.
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+        <select id="note-cocom" style="background:var(--deep);border:1px solid var(--border);color:var(--tHi);font-family:var(--mono);font-size:9px;padding:5px 8px;border-radius:2px;outline:none">
+          <option>EUCOM</option><option>CENTCOM</option><option>INDOPACOM</option>
+          <option>AFRICOM</option><option>SOUTHCOM</option><option>NORTHCOM</option>
+        </select>
+        <select id="note-tab" style="background:var(--deep);border:1px solid var(--border);color:var(--tHi);font-family:var(--mono);font-size:9px;padding:5px 8px;border-radius:2px;outline:none">
+          <option value="us">US / NATO Tab</option>
+          <option value="adversary">Adversary Tab</option>
+          <option value="all">All Tabs</option>
+        </select>
+      </div>
+      <textarea id="note-text" placeholder="e.g. V Corps FWD: 1st Cav (rotational) replaced 4th ID as of 15 Mar 25" style="width:100%;background:var(--deep);border:1px solid var(--border);color:var(--tHi);font-family:var(--mono);font-size:9px;padding:8px;border-radius:2px;height:68px;resize:vertical;outline:none;margin-bottom:8px"></textarea>
+      <div style="display:flex;gap:8px">
+        <button onclick="saveOrgNote()" style="flex:1;padding:6px;background:var(--g3);border:none;color:#fff;font-family:var(--mono);font-size:9px;border-radius:2px;cursor:pointer">+ ADD NOTE</button>
+        <button onclick="loadOrgNotes()" style="padding:6px 12px;background:var(--sel);border:1px solid var(--border);color:var(--tMid);font-family:var(--mono);font-size:9px;border-radius:2px;cursor:pointer">↺ REFRESH</button>
+      </div>
+      <div id="org-notes-list" style="margin-top:12px"></div>
+    </div>
+
+    <!-- ACLED ZONE STATUS -->
+    <div class="section">
+      <div class="section-title">ACLED — CONFLICT ZONE STATUS <span class="section-count" id="acled-count"></span></div>
+      <div id="acled-zones" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ── AUTH ───────────────────────────────────────────────────────────────
+let adminPassword = '';
+
+function doLogin() {
+  const pw = document.getElementById('pw-input').value.trim();
+  if (!pw) return;
+  adminPassword = pw;
+  // Test auth with the API
+  fetch('/.netlify/functions/articles', {
+    headers: { 'x-admin-password': pw }
+  }).then(async res => {
+    if (res.ok) {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('admin-ui').style.display = 'block';
+      loadAll();
+    } else {
+      document.getElementById('login-err').style.display = 'block';
+      adminPassword = '';
+    }
+  }).catch(() => {
+    // If running locally without backend, still let in for dev
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('admin-ui').style.display = 'block';
+    ARTICLES = JSON.parse(JSON.stringify(DEFAULT_ARTICLES));
+    renderArticles();
+  });
+}
+
+function logout() {
+  adminPassword = '';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('admin-ui').style.display = 'none';
+  document.getElementById('pw-input').value = '';
+}
+
+document.getElementById('pw-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+
+// ── DATA ───────────────────────────────────────────────────────────────
+const DEFAULT_ARTICLES = [
+  { id:1, title:"The Coming Drone War", author:"Phillips O'Brien", publication:"Phillips's Newsletter", date:"Mar 4, 2025", blurb:"How loitering munitions are changing force-on-force engagements.", url:"https://substack.com", tags:["Drones","Doctrine"] },
+  { id:2, title:"Why Russia's Manpower Problem Is Worse Than the Numbers Show", author:"Rob Lee", publication:"FPRI", date:"Feb 28, 2025", blurb:"Loss rates and the institutional knowledge gap after three years of attritional warfare.", url:"https://substack.com", tags:["Russia","Order of Battle"] },
+];
+
+const RSS_SOURCES = [
+  { name:"War on the Rocks",           handle:"WARONTHEROCKS"   },
+  { name:"ISW",                        handle:"UNDERSTANDINGWAR"},
+  { name:"Modern War Institute",       handle:"MWI WESTPOINT"   },
+  { name:"Irregular Warfare Initiative",handle:"IRREGULARWARFARE"},
+  { name:"The Green Notebook",         handle:"GREENNOTEBOOK"   },
+];
+
+let ARTICLES = [];
+let RSS_ITEMS = [];
+
+async function loadAll() {
+  await Promise.all([loadArticles(), loadRSS(), checkAPIHealth(), loadOrgNotes(), loadACLEDAdmin()]);
+}
+
+// ── API HEALTH ─────────────────────────────────────────────────────────────
+const API_CHECKS = [
+  { name:"RSS Feeds",        fn: ()=>fetch('/.netlify/functions/rss'),          envVars:[], docs:"Built-in — no key needed" },
+  { name:"OSINT Feed",       fn: ()=>fetch('/.netlify/functions/osint'),         envVars:[], docs:"Bluesky (free) + Nitter RSS" },
+  { name:"Commodity Ticker", fn: ()=>fetch('/.netlify/functions/ticker'),        envVars:["METALS_API_KEY","ALPHAVANTAGE_KEY","EIA_API_KEY"], docs:"metals-api.com + alphavantage.co + eia.gov" },
+  { name:"ACLED Conflicts",  fn: ()=>fetch('/.netlify/functions/acled'),         envVars:["ACLED_EMAIL","ACLED_KEY"], docs:"acleddata.com/access-online/" },
+];
+
+async function checkAPIHealth() {
+  const grid = document.getElementById('api-health-grid');
+  grid.innerHTML = API_CHECKS.map(c => `
+    <div style="background:var(--deep);border:1px solid var(--border);border-radius:3px;padding:8px 10px">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+        <span id="api-dot-${c.name.replace(/\s/g,'_')}" style="font-size:10px;color:var(--tFade)">○</span>
+        <span style="font-size:9px;font-weight:bold;color:var(--tHi)">${c.name}</span>
+      </div>
+      <div style="font-size:8px;color:var(--tFade)">${c.docs}</div>
+      ${c.envVars.length ? `<div style="font-size:7px;color:var(--tMute);margin-top:3px">ENV: ${c.envVars.join(', ')}</div>` : ''}
+    </div>
+  `).join('');
+
+  for (const c of API_CHECKS) {
+    const dot = document.getElementById('api-dot-' + c.name.replace(/\s/g,'_'));
+    try {
+      const r = await c.fn();
+      const data = await r.json();
+      const configured = data?.configured !== false;
+      if (r.ok && configured) {
+        dot.textContent = '●'; dot.style.color = '#4ade80';
+      } else {
+        dot.textContent = '○'; dot.style.color = '#fbbf24';
+        dot.title = data?.message || 'Not configured';
+      }
+    } catch(e) {
+      dot.textContent = '✕'; dot.style.color = '#f87171';
+      dot.title = e.message;
+    }
+  }
+}
+
+// ── ORG NOTES ─────────────────────────────────────────────────────────────
+let ORG_NOTES = [];
+
+async function loadOrgNotes() {
+  try {
+    const r = await fetch('/.netlify/functions/articles?type=orgnotes', {
+      headers: { 'x-admin-password': adminPassword }
+    });
+    if (r.ok) { const d = await r.json(); if (Array.isArray(d)) ORG_NOTES = d; }
+  } catch(e) {}
+  renderOrgNotes();
+}
+
+function renderOrgNotes() {
+  const el = document.getElementById('org-notes-list');
+  if (!ORG_NOTES.length) {
+    el.innerHTML = '<div style="color:var(--tFade);font-size:9px;padding:8px 0">No notes yet.</div>';
+    return;
+  }
+  el.innerHTML = ORG_NOTES.map(n => `
+    <div style="background:var(--deep);border:1px solid var(--border);border-left:3px solid var(--amber);padding:8px 10px;border-radius:2px;margin-bottom:5px;display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+      <div>
+        <div style="font-size:8px;color:var(--amber);letter-spacing:1px;margin-bottom:3px">${n.cocom} · ${n.tab?.toUpperCase()}</div>
+        <div style="font-size:9px;color:var(--tHi)">${n.text}</div>
+        <div style="font-size:7px;color:var(--tFade);margin-top:2px">${n.date}</div>
+      </div>
+      <button onclick="deleteOrgNote(${n.id})" style="background:none;border:none;color:var(--tFade);cursor:pointer;font-size:12px;flex-shrink:0">✕</button>
+    </div>
+  `).join('');
+}
+
+async function saveOrgNote() {
+  const text = document.getElementById('note-text').value.trim();
+  if (!text) { showToast('Note text required', 'error'); return; }
+  const note = {
+    cocom: document.getElementById('note-cocom').value,
+    tab:   document.getElementById('note-tab').value,
+    text,
+    date:  new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'}),
+    id:    Date.now(),
+  };
+  ORG_NOTES.unshift(note);
+  // Try to persist — reuse articles endpoint with type flag
+  try {
+    await fetch('/.netlify/functions/articles', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'x-admin-password': adminPassword },
+      body: JSON.stringify({ orgnote: note }),
+    });
+  } catch(e) {}
+  document.getElementById('note-text').value = '';
+  renderOrgNotes();
+  showToast('Note added — will appear in dashboard org panel');
+}
+
+async function deleteOrgNote(id) {
+  ORG_NOTES = ORG_NOTES.filter(n => n.id !== id);
+  try {
+    await fetch('/.netlify/functions/articles', {
+      method: 'DELETE',
+      headers: { 'Content-Type':'application/json', 'x-admin-password': adminPassword },
+      body: JSON.stringify({ orgnoteId: id }),
+    });
+  } catch(e) {}
+  renderOrgNotes();
+}
+
+// ── ACLED ADMIN STATUS ─────────────────────────────────────────────────────
+async function loadACLEDAdmin() {
+  const el = document.getElementById('acled-zones');
+  const ct = document.getElementById('acled-count');
+  try {
+    const r = await fetch('/.netlify/functions/acled');
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+    if (!data.configured) {
+      el.innerHTML = `<div style="color:var(--amber);font-size:9px;padding:8px;grid-column:1/-1">${data.message}</div>`;
+      return;
+    }
+    ct.textContent = data.zones.length + ' zones';
+    el.innerHTML = data.zones.map(z => {
+      const col = z.intensity === 'HIGH' ? '#f87171' : z.intensity === 'MED' ? '#fbbf24' : '#34d399';
+      return `
+        <div style="background:var(--deep);border:1px solid var(--border);border-left:3px solid ${col};padding:7px 9px;border-radius:2px">
+          <div style="font-size:9px;font-weight:bold;color:var(--tHi);margin-bottom:3px">${z.cocom} Zone #${z.id}</div>
+          <div style="font-size:8px;color:${col};font-weight:bold;margin-bottom:2px">${z.intensity}</div>
+          <div style="font-size:8px;color:var(--tMid)">${z.events30d} events · ${z.fatalities30d} fatalities (30d)</div>
+          ${z.eventTypes?.length ? `<div style="font-size:7px;color:var(--tFade);margin-top:2px">${z.eventTypes.join(' · ')}</div>` : ''}
+        </div>`;
+    }).join('');
+  } catch(e) {
+    el.innerHTML = `<div style="color:var(--red);font-size:9px;padding:8px;grid-column:1/-1">ACLED error: ${e.message}</div>`;
+  }
+}
+
+async function loadArticles() {
+  try {
+    const res = await fetch('/.netlify/functions/articles');
+    ARTICLES = res.ok ? await res.json() : [...DEFAULT_ARTICLES];
+  } catch { ARTICLES = [...DEFAULT_ARTICLES]; }
+  renderArticles();
+}
+
+async function loadRSS() {
+  try {
+    const res = await fetch('/.netlify/functions/rss');
+    RSS_ITEMS = res.ok ? await res.json() : [];
+  } catch { RSS_ITEMS = []; }
+  renderRSS();
+}
+
+// ── ARTICLES ───────────────────────────────────────────────────────────
+function renderArticles() {
+  const el = document.getElementById('article-list');
+  document.getElementById('art-count').textContent = ARTICLES.length + ' articles';
+  if (!ARTICLES.length) {
+    el.innerHTML = '<div style="color:var(--tFade);font-size:9px;padding:8px 0">No articles yet.</div>';
+    return;
+  }
+  el.innerHTML = ARTICLES.map((a, i) => `
+    <div class="article-item">
+      <div class="drag-handle">⠿</div>
+      <div class="article-item-body">
+        <div class="article-item-title">${a.title}</div>
+        <div class="article-item-meta">${a.author} · ${a.publication} · ${a.date}</div>
+        ${a.blurb ? `<div class="article-item-blurb">${a.blurb}</div>` : ''}
+        <div class="article-item-tags">${(a.tags||[]).map(t=>`<span class="tag-pill">${t}</span>`).join('')}</div>
+      </div>
+      <div class="article-actions">
+        <a href="${a.url}" target="_blank" style="color:var(--tFade);font-size:8px;text-decoration:none">↗ VIEW</a>
+        <button class="btn-danger" onclick="deleteArticle(${a.id})">✕ REMOVE</button>
+        ${i > 0 ? `<button class="btn-danger" onclick="moveArticle(${a.id}, -1)" style="font-size:10px">↑</button>` : ''}
+        ${i < ARTICLES.length-1 ? `<button class="btn-danger" onclick="moveArticle(${a.id}, 1)" style="font-size:10px">↓</button>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+async function addArticle() {
+  const title = document.getElementById('f-title').value.trim();
+  const url   = document.getElementById('f-url').value.trim();
+  if (!title || !url) { showToast('⚠ Title and URL required', true); return; }
+  const article = {
+    title,
+    author:      document.getElementById('f-author').value.trim() || 'Unknown',
+    publication: document.getElementById('f-pub').value.trim()    || 'External',
+    date:        document.getElementById('f-date').value.trim()   || new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),
+    blurb:       document.getElementById('f-blurb').value.trim(),
+    url,
+    tags: document.getElementById('f-tags').value.split(',').map(t=>t.trim()).filter(Boolean),
+  };
+  try {
+    const res = await fetch('/.netlify/functions/articles', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-password': adminPassword },
+      body: JSON.stringify({ article }),
+    });
+    if (res.ok) {
+      ARTICLES = await res.json();
+      renderArticles();
+      clearForm();
+      showToast('✓ Article added');
+    } else { showToast('⚠ Save failed', true); }
+  } catch { ARTICLES.unshift({...article, id: Date.now()}); renderArticles(); clearForm(); showToast('✓ Saved locally'); }
+}
+
+async function deleteArticle(id) {
+  if (!confirm('Remove this article?')) return;
+  try {
+    const res = await fetch('/.netlify/functions/articles', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json', 'x-admin-password': adminPassword },
+      body: JSON.stringify({ id }),
+    });
+    if (res.ok) { ARTICLES = await res.json(); renderArticles(); showToast('✓ Removed'); }
+    else { showToast('⚠ Delete failed', true); }
+  } catch { ARTICLES = ARTICLES.filter(a => a.id !== id); renderArticles(); showToast('✓ Removed locally'); }
+}
+
+async function moveArticle(id, dir) {
+  const idx = ARTICLES.findIndex(a => a.id === id);
+  if (idx < 0) return;
+  const newIdx = idx + dir;
+  if (newIdx < 0 || newIdx >= ARTICLES.length) return;
+  [ARTICLES[idx], ARTICLES[newIdx]] = [ARTICLES[newIdx], ARTICLES[idx]];
+  try {
+    await fetch('/.netlify/functions/articles', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-password': adminPassword },
+      body: JSON.stringify({ articles: ARTICLES }),
+    });
+  } catch {}
+  renderArticles();
+}
+
+// Promote RSS item → article form
+function promoteToForm(item) {
+  document.getElementById('f-title').value  = item.title;
+  document.getElementById('f-url').value    = item.url;
+  document.getElementById('f-pub').value    = item.source;
+  document.getElementById('f-blurb').value  = item.desc || '';
+  document.getElementById('f-date').value   = '';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  showToast('✓ Loaded into form — add your blurb and save');
+}
+
+function clearForm() {
+  ['f-title','f-author','f-pub','f-url','f-date','f-blurb','f-tags'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+}
+
+// ── RSS ────────────────────────────────────────────────────────────────
+function renderRSS() {
+  document.getElementById('rss-count').textContent = RSS_ITEMS.length + ' items';
+
+  // Source status cards
+  const sourceGrid = document.getElementById('source-grid');
+  sourceGrid.innerHTML = RSS_SOURCES.map(s => {
+    const items = RSS_ITEMS.filter(r => r.sourceHandle === s.handle);
+    const ok = items.length > 0;
+    return `
+      <div class="source-card">
+        <div class="source-name">${s.name}</div>
+        <div class="source-handle">${s.handle}</div>
+        <div class="source-status">
+          <div class="status-dot" style="background:${ok ? 'var(--g2)' : 'var(--red)'}"></div>
+          <span style="color:${ok ? 'var(--tMid)' : 'var(--red)'}">
+            ${ok ? items.length + ' items' : 'No items / error'}
+          </span>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // RSS items list
+  const el = document.getElementById('rss-list');
+  if (!RSS_ITEMS.length) {
+    el.innerHTML = '<div style="color:var(--tFade);font-size:9px;padding:8px 0">No RSS items loaded. Check function logs.</div>';
+    return;
+  }
+  el.innerHTML = RSS_ITEMS.map(item => `
+    <div class="rss-item">
+      <span class="rss-source">${item.source}</span>
+      <a href="${item.url}" target="_blank" class="rss-title" title="${item.title}" style="text-decoration:none">${item.title}</a>
+      <span class="rss-age">${item.age}</span>
+      <button class="rss-promote" onclick='promoteToForm(${JSON.stringify(item).replace(/'/g,"&#39;")})'>
+        + ADD TO PICKS
+      </button>
+    </div>
+  `).join('');
+}
+
+// ── TOAST ──────────────────────────────────────────────────────────────
+function showToast(msg, isErr = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = isErr ? 'var(--red)' : 'var(--g3)';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>
