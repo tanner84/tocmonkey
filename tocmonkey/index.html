@@ -2142,6 +2142,14 @@ async function loadOSINT(){
 // ═══════════════════════════════════════════════════════════════════
 // BOOT
 // ═══════════════════════════════════════════════════════════════════
+// Populate all panels on first load (mirrors switchCocom)
+buildTabs();
+updateMap();
+updateFeed();
+buildOrgTabs();
+renderOrg();
+startEqRotator();
+resetSrcBar();
 renderArticles();
 loadArticles();
 loadRSS(); loadTelegram();
