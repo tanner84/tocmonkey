@@ -1,0 +1,8 @@
+{
+  "name": "tocmonkey",
+  "version": "1.0.0",
+  "description": "TOC MONKEY | What's Chief Tracking?",
+  "dependencies": {
+    "@netlify/blobs": "^8.1.0"
+  }
+}
