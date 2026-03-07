@@ -1623,18 +1623,37 @@ function formatSitrep(text){
  let sourcesHtml = '';
  if(srcMatch){
   const lines = srcMatch[1].trim().split('\n').filter(l=>l.trim());
-  const linkHtml = lines.map(line=>{
-   // Format: • Title | URL  or just • URL
-   const clean = line.replace(/^[•\-]\s*/,'').trim();
-   const pipeIdx = clean.lastIndexOf(' | ');
-   if(pipeIdx>-1){
-    const title = clean.slice(0,pipeIdx).trim();
-    const url = clean.slice(pipeIdx+3).trim();
-    if(url.startsWith('http')) return `<a href="${url}" target="_blank" rel="noopener" class="srp-src-link">${title}</a>`;
-   }
-   // Just a URL
-   if(clean.startsWith('http')) return `<a href="${clean}" target="_blank" rel="noopener" class="srp-src-link">${clean.slice(0,60)}${clean.length>60?'…':''}</a>`;
-   return `<span class="srp-src-link">${clean}</span>`;
+  const urlRegex = /(https?:\/\/[^\s]+)|(www\.[^\s]+)/ig;
+  const linkHtml = lines.map(line => {
+    const clean = line.replace(/^[•\-]\s*/, '').trim();
+    const pipeIdx = clean.lastIndexOf(' | ');
+    let title = null, url = null;
+    if (pipeIdx > -1) {
+      title = clean.slice(0, pipeIdx).trim();
+      url = clean.slice(pipeIdx + 3).trim();
+    }
+    // Helper to ensure URL has protocol
+    function normalizeUrl(u) {
+      if (!u.match(/^https?:\/\//i)) {
+        if (u.match(/^www\./i)) return 'https://' + u;
+        return 'https://' + u; // fallback, treat as https
+      }
+      return u;
+    }
+    // If we have a title and a url, linkify url
+    if (title && url) {
+      return `<a href="${normalizeUrl(url)}" target="_blank" rel="noopener" class="srp-src-link">${title}</a>`;
+    }
+    // Otherwise, linkify all URLs in the line
+    let replaced = clean.replace(urlRegex, match => {
+      const href = normalizeUrl(match);
+      return `<a href="${href}" target="_blank" rel="noopener" class="srp-src-link">${match.length>60?match.slice(0,60)+'…':match}</a>`;
+    });
+    // If nothing was linkified, just show as text
+    if (replaced === clean) {
+      return `<span class="srp-src-link">${clean}</span>`;
+    }
+    return replaced;
   }).join('');
   if(linkHtml) sourcesHtml = `<div class="srp-sources"><span class="srp-section">SOURCES</span>${linkHtml}</div>`;
  }
