@@ -1,23 +1,42 @@
+import { getStore } from "@netlify/blobs";
+
+const CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes
+const MAX_RETRIES  = 3;
+
 export default async (req) => {
   const ANTHROPIC_KEY = Netlify.env.get('ANTHROPIC_API_KEY');
 
   if (!ANTHROPIC_KEY) {
-    return new Response(JSON.stringify({
-      text: 'SITREP UNAVAILABLE\n\nAPI key not configured. Contact admin.'
-    }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    return json({ text: 'SITREP UNAVAILABLE\n\nAPI key not configured. Contact admin.' });
   }
 
   let body;
   try { body = await req.json(); }
   catch(e) { return new Response('Bad JSON', { status: 400 }); }
 
-  const { cocomId = 'UNKNOWN', cocomFull = 'Unknown Command', zones = [], feedItems = [] } = body;
+  const { cocomId = 'UNKNOWN', cocomFull = 'Unknown Command', zones = [], feedItems = [], forceRefresh = false } = body;
+  const cacheKey = `sitrep-${cocomId}`;
 
+  // ── Check Netlify Blobs cache (skip if forceRefresh) ─────────────────────
+  try {
+    const store = getStore('sitrep-cache');
+    const cached = await store.get(cacheKey, { type: 'json' });
+    if (!forceRefresh && cached && cached.text && cached.ts && (Date.now() - cached.ts) < CACHE_TTL_MS) {
+      // Return cached sitrep with age indicator
+      const ageMin = Math.floor((Date.now() - cached.ts) / 60000);
+      const text = cached.text + `\n\n// cached · ${ageMin}m ago`;
+      return json({ text, cached: true });
+    }
+  } catch(e) {
+    // Blobs unavailable — continue to generate fresh
+  }
+
+  // ── Build prompt ─────────────────────────────────────────────────────────
   const zonesText = zones.slice(0,10).map(z =>
     `${z.name} (${z.type}): ${z.intensity} intensity`
   ).join('\n');
 
-  const rssItems  = feedItems.filter(p => p.isRSS && p.url);
+  const rssItems   = feedItems.filter(p => p.isRSS && p.url);
   const osintItems = feedItems.filter(p => !p.isRSS);
 
   const rssText = rssItems.slice(0,5).map(p =>
@@ -51,15 +70,12 @@ SOURCES
 
 Only include sources if you actually used RSS articles. Copy URLs exactly. Start with SITUATION.`;
 
-  // Retry up to 3 times with backoff on 529 overloaded
-  const MAX_RETRIES = 3;
+  // ── Call Anthropic API with retry on 529 ─────────────────────────────────
   let lastErr = '';
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     try {
-      if (attempt > 1) {
-        await new Promise(r => setTimeout(r, (attempt - 1) * 1200));
-      }
+      if (attempt > 1) await sleep((attempt - 1) * 1500);
 
       const resp = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
@@ -76,14 +92,12 @@ Only include sources if you actually used RSS articles. Copy URLs exactly. Start
       });
 
       if (resp.status === 529 || resp.status === 503) {
-        lastErr = resp.status === 529 ? 'API overloaded' : 'API unavailable';
+        lastErr = `API overloaded (${resp.status}) — attempt ${attempt}/${MAX_RETRIES}`;
         continue;
       }
 
       if (resp.status === 401 || resp.status === 403) {
-        return new Response(JSON.stringify({
-          text: `SITREP UNAVAILABLE\n\nAPI key invalid or expired. Update ANTHROPIC_API_KEY in Netlify environment variables.`
-        }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+        return json({ text: `SITREP UNAVAILABLE\n\nAPI key invalid or expired.\nUpdate ANTHROPIC_API_KEY in Netlify environment variables.` });
       }
 
       if (!resp.ok) {
@@ -94,9 +108,15 @@ Only include sources if you actually used RSS articles. Copy URLs exactly. Start
       const data = await resp.json();
       const text = data?.content?.[0]?.text || 'No response generated.';
 
-      return new Response(JSON.stringify({ text }), {
-        status: 200, headers: { 'Content-Type': 'application/json' }
-      });
+      // ── Cache successful result in Netlify Blobs ─────────────────────────
+      try {
+        const store = getStore('sitrep-cache');
+        await store.setJSON(cacheKey, { text, ts: Date.now(), cocomId });
+      } catch(e) {
+        // Cache write failed — non-fatal, still return the result
+      }
+
+      return json({ text });
 
     } catch(e) {
       lastErr = e.message;
@@ -104,8 +124,32 @@ Only include sources if you actually used RSS articles. Copy URLs exactly. Start
     }
   }
 
-  // All retries exhausted — clean readable message
-  return new Response(JSON.stringify({
-    text: `SITREP — ${cocomId}\n\n// API servers temporarily overloaded.\n// Click tab again to retry.\n\n— ${lastErr}`
-  }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+  // ── All retries exhausted — try to return stale cache if available ────────
+  try {
+    const store = getStore('sitrep-cache');
+    const stale = await store.get(cacheKey, { type: 'json' });
+    if (stale?.text) {
+      const ageMin = Math.floor((Date.now() - stale.ts) / 60000);
+      return json({
+        text: stale.text + `\n\n// stale cache · ${ageMin}m old · API overloaded, retry soon`,
+        cached: true, stale: true
+      });
+    }
+  } catch(e) {}
+
+  // ── Nothing available — clean error message ───────────────────────────────
+  return json({
+    text: `SITREP — ${cocomId}\n\n// API servers temporarily overloaded.\n// Click the tab again in a moment to retry.\n\n— ${lastErr}`
+  });
 };
+
+function json(obj) {
+  return new Response(JSON.stringify(obj), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json' }
+  });
+}
+
+function sleep(ms) {
+  return new Promise(r => setTimeout(r, ms));
+}
