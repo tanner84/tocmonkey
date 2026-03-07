@@ -2,9 +2,9 @@ export default async (req) => {
   const ANTHROPIC_KEY = Netlify.env.get('ANTHROPIC_API_KEY');
 
   if (!ANTHROPIC_KEY) {
-    return new Response(JSON.stringify({ error: 'ANTHROPIC_API_KEY not configured' }), {
-      status: 500, headers: { 'Content-Type': 'application/json' }
-    });
+    return new Response(JSON.stringify({
+      text: 'SITREP UNAVAILABLE\n\nAPI key not configured. Contact admin.'
+    }), { status: 200, headers: { 'Content-Type': 'application/json' } });
   }
 
   let body;
@@ -17,8 +17,7 @@ export default async (req) => {
     `${z.name} (${z.type}): ${z.intensity} intensity`
   ).join('\n');
 
-  // Separate RSS (has URLs) from OSINT (usually no URLs)
-  const rssItems = feedItems.filter(p => p.isRSS && p.url);
+  const rssItems  = feedItems.filter(p => p.isRSS && p.url);
   const osintItems = feedItems.filter(p => !p.isRSS);
 
   const rssText = rssItems.slice(0,5).map(p =>
@@ -52,37 +51,61 @@ SOURCES
 
 Only include sources if you actually used RSS articles. Copy URLs exactly. Start with SITUATION.`;
 
-  try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': ANTHROPIC_KEY,
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 650,
-        messages: [{ role: 'user', content: prompt }]
-      })
-    });
+  // Retry up to 3 times with backoff on 529 overloaded
+  const MAX_RETRIES = 3;
+  let lastErr = '';
 
-    if (!resp.ok) {
-      const err = await resp.text();
-      return new Response(JSON.stringify({ error: `API error ${resp.status}: ${err.slice(0,200)}` }), {
-        status: 500, headers: { 'Content-Type': 'application/json' }
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      if (attempt > 1) {
+        await new Promise(r => setTimeout(r, (attempt - 1) * 1200));
+      }
+
+      const resp = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': ANTHROPIC_KEY,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 650,
+          messages: [{ role: 'user', content: prompt }]
+        })
       });
+
+      if (resp.status === 529 || resp.status === 503) {
+        lastErr = resp.status === 529 ? 'API overloaded' : 'API unavailable';
+        continue;
+      }
+
+      if (resp.status === 401 || resp.status === 403) {
+        return new Response(JSON.stringify({
+          text: `SITREP UNAVAILABLE\n\nAPI key invalid or expired. Update ANTHROPIC_API_KEY in Netlify environment variables.`
+        }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      }
+
+      if (!resp.ok) {
+        lastErr = `HTTP ${resp.status}`;
+        continue;
+      }
+
+      const data = await resp.json();
+      const text = data?.content?.[0]?.text || 'No response generated.';
+
+      return new Response(JSON.stringify({ text }), {
+        status: 200, headers: { 'Content-Type': 'application/json' }
+      });
+
+    } catch(e) {
+      lastErr = e.message;
+      continue;
     }
-
-    const data = await resp.json();
-    const text = data?.content?.[0]?.text || 'No response';
-
-    return new Response(JSON.stringify({ text }), {
-      status: 200, headers: { 'Content-Type': 'application/json' }
-    });
-  } catch(e) {
-    return new Response(JSON.stringify({ error: e.message }), {
-      status: 500, headers: { 'Content-Type': 'application/json' }
-    });
   }
+
+  // All retries exhausted — clean readable message
+  return new Response(JSON.stringify({
+    text: `SITREP — ${cocomId}\n\n// API servers temporarily overloaded.\n// Click tab again to retry.\n\n— ${lastErr}`
+  }), { status: 200, headers: { 'Content-Type': 'application/json' } });
 };
