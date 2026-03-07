@@ -3,6 +3,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const FEEDS = [
+  { name:"Small Wars Journal", handle:"SMALLWARS", cocom:"ALL", color:"amber", url:"https://smallwarsjournal.com/rss.xml" },
 
   // ── GLOBAL / MULTI-COCOM ────────────────────────────────────────────────
   { name:"Reuters World",           handle:"REUTERS",          cocom:"ALL",       color:"green",  url:"https://feeds.reuters.com/Reuters/worldNews" },
