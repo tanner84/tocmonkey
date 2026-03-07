@@ -402,8 +402,8 @@ html,body{height:100%;background:var(--bg);color:var(--hi);font-family:var(--mon
 
 <!-- SOURCE BAR -->
 <div id="srcbar">
-  <a class="sa" href="https://maps.google.com" target="_blank" rel="noopener">GMAPS</a>
-  <a class="sa" href="https://liveuamap.com" target="_blank" rel="noopener">LIVEUAMAP</a>
+  <a class="sa dim" id="sgmap" href="https://maps.google.com" target="_blank" rel="noopener">GMAPS</a>
+  <a class="sa dim" id="slua" href="https://liveuamap.com" target="_blank" rel="noopener">LIVEUAMAP</a>
   <a class="sa" href="https://understandingwar.org/backgrounder/isw-ukraine-conflict-updates" target="_blank" rel="noopener">ISW</a>
   <a class="sa" href="https://acleddata.com" target="_blank" rel="noopener">ACLED</a>
   <a class="sa" href="https://www.crisisgroup.org/crisiswatch" target="_blank" rel="noopener">CRISISWATCH</a>
@@ -1664,14 +1664,13 @@ function selectZone(z){
  selZone=z;
  map.flyTo([z.lat,z.lng],Math.max(AC.zoom+2,6),{duration:1.0});
  const gm=document.getElementById('sgmap'),lu=document.getElementById('slua');
- gm.href=`https://www.google.com/maps/@${z.lat},${z.lng},7z`;
- lu.href=`https://liveuamap.com/#${z.lat},${z.lng}`;
- gm.classList.remove('dim');lu.classList.remove('dim');
+ if(gm){gm.href=`https://www.google.com/maps/@${z.lat},${z.lng},7z`;gm.classList.remove('dim');}
+ if(lu){lu.href=`https://liveuamap.com/#${z.lat},${z.lng}`;lu.classList.remove('dim');}
 }
 function resetSrcBar(){
  const gm=document.getElementById('sgmap'),lu=document.getElementById('slua');
- gm.removeAttribute('href');lu.removeAttribute('href');
- gm.classList.add('dim');lu.classList.add('dim');
+ if(gm){gm.removeAttribute('href');gm.classList.add('dim');}
+ if(lu){lu.removeAttribute('href');lu.classList.add('dim');}
 }
 
 // ═══════════════════════════════════════════════════════════════════
