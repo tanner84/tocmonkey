@@ -39,11 +39,11 @@ html,body{height:100%;background:var(--bg);color:var(--hi);font-family:var(--mon
 .wtf-btn:hover{border-color:var(--g1);color:var(--g1);background:rgba(74,222,128,0.07)}
 #tkwrap{flex:1;overflow:hidden;height:100%;display:flex;align-items:center;padding:0 16px}
 #tkinner{display:inline-block;animation:ticker 55s linear infinite;white-space:nowrap}
-.ti{display:inline-flex;align-items:center;margin-right:28px;font-size:12px;letter-spacing:0.5px;gap:4px}
-.ts{color:var(--mute);font-size:11px;letter-spacing:1px}
+.ti{display:inline-flex;align-items:center;margin-right:28px;font-size:14px;letter-spacing:0.5px;gap:4px}
+.ts{color:var(--mute);font-size:13px;letter-spacing:1px}
 .tp{font-weight:bold;color:var(--hi)}
-.tc{font-size:11px;margin-left:2px}
-.tu{color:var(--fade);margin-left:3px;font-size:10px}
+.tc{font-size:13px;margin-left:2px}
+.tu{color:var(--fade);margin-left:3px;font-size:12px}
 .up{color:var(--g1)}.dn{color:var(--red)}
 .hright{display:flex;align-items:center;gap:10px;padding:0 12px;border-left:1px solid var(--border);height:100%;flex-shrink:0}
 .ck1{color:var(--hi);font-size:12px;letter-spacing:2px;font-weight:bold}
@@ -1830,13 +1830,14 @@ function renderFeed(){
   </div>`;
  }).join('');
  const wrap=track.parentElement;
- const rh=Math.floor(wrap.clientHeight/(FSHOW+1));
- track.querySelectorAll('.twcard').forEach(r=>{r.style.height=rh+'px';r.style.overflow='hidden';});
+ const rh=wrap&&wrap.clientHeight>10?Math.floor(wrap.clientHeight/(FSHOW+1)):120;
+ if(rh>0) track.querySelectorAll('.twcard').forEach(r=>{r.style.height=rh+'px';r.style.overflow='hidden';});
 }
 
 function slideFeed(){
  const track=document.getElementById('ftrack'),wrap=track.parentElement;
- const rh=Math.floor(wrap.clientHeight/(FSHOW+1));
+ const rh=wrap&&wrap.clientHeight>10?Math.floor(wrap.clientHeight/(FSHOW+1)):0;
+ if(!rh)return;
  track.style.transition='transform .4s cubic-bezier(.4,0,.2,1)';
  track.style.transform=`translateY(-${rh}px)`;
  setTimeout(()=>{feedOffset=(feedOffset+1)%Math.max(feedItems.length,1);track.style.transition='none';track.style.transform='translateY(0)';renderFeed();},420);
@@ -1906,13 +1907,15 @@ function renderEq(){
   </div>`;
  }).join('');
  const wrap=document.getElementById('eqtrack').parentElement;
- const rh=Math.floor(wrap.clientHeight/(ESHOW+1));
+ const rh=wrap&&wrap.clientHeight>10?Math.floor(wrap.clientHeight/(ESHOW+1)):0;
+ if(!rh)return;
  document.getElementById('eqtrack').querySelectorAll('.eqrow').forEach(r=>{r.style.height=rh+'px';r.style.overflow='hidden';});
 }
 
 function slideEq(){
  const track=document.getElementById('eqtrack'),wrap=track.parentElement;
- const rh=Math.floor(wrap.clientHeight/(ESHOW+1));
+ const rh=wrap&&wrap.clientHeight>10?Math.floor(wrap.clientHeight/(ESHOW+1)):0;
+ if(!rh)return;
  track.style.transition='transform .4s cubic-bezier(.4,0,.2,1)';
  track.style.transform=`translateY(-${rh}px)`;
  setTimeout(()=>{eqOffset=(eqOffset+1)%Math.max((AC.equipment||[]).length,1);track.style.transition='none';track.style.transform='translateY(0)';renderEq();},420);
@@ -2141,20 +2144,28 @@ async function loadOSINT(){
 // ═══════════════════════════════════════════════════════════════════
 // BOOT
 // ═══════════════════════════════════════════════════════════════════
-// Populate all panels on first load (mirrors switchCocom)
-buildTabs();
-updateMap();
-updateFeed();
-buildOrgTabs();
-renderOrg();
-startEqRotator();
-resetSrcBar();
-renderArticles();
-loadArticles();
-loadRSS(); loadTelegram();
-loadTicker();
-loadACLED();
-loadOSINT().then(()=>{ setTimeout(()=>generateSitrep(AC), 800); });
+function boot(){
+ buildTabs();
+ updateMap();
+ buildOrgTabs();
+ renderOrg();
+ startEqRotator();
+ resetSrcBar();
+ renderArticles();
+ loadArticles();
+ loadRSS(); loadTelegram();
+ loadTicker();
+ loadACLED();
+ loadOSINT().then(()=>{ setTimeout(()=>generateSitrep(AC), 800); });
+ // Defer feed render until layout is painted so clientHeight > 0
+ requestAnimationFrame(()=>requestAnimationFrame(()=>updateFeed()));
+}
+// Defer entire boot until DOM is fully painted
+if(document.readyState==='loading'){
+ document.addEventListener('DOMContentLoaded', ()=>requestAnimationFrame(boot));
+} else {
+ requestAnimationFrame(boot);
+}
 
 // Refresh intervals — ticker every 15min, OSINT every 5min, ACLED every 6h
 setInterval(loadTicker, 15 * 60 * 1000);
