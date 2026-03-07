@@ -77,8 +77,8 @@ html,body{height:100%;background:var(--bg);color:var(--hi);font-family:var(--mon
 
 /* ── MAP ── */
 #map{flex:1;min-height:0;width:100%}
-#srcbar{display:flex;gap:3px;padding:4px 6px;background:var(--deep);border-top:1px solid var(--border);flex-shrink:0;flex-wrap:wrap}
-.sa{flex:1;min-width:48px;padding:3px 4px;text-align:center;background:var(--sel);border:1px solid var(--g3);color:var(--g1);font-size:8px;font-family:var(--mono);text-decoration:none;border-radius:2px;white-space:nowrap}
+#srcbar{display:flex;gap:2px;padding:2px 6px;background:var(--deep);border-top:1px solid var(--border);flex-shrink:0;overflow-x:auto;overflow-y:hidden;white-space:nowrap;scrollbar-width:none}
+.sa{display:inline-block;flex-shrink:0;padding:2px 6px;text-align:center;background:var(--sel);border:1px solid var(--g3);color:var(--g1);font-size:8px;font-family:var(--mono);text-decoration:none;border-radius:2px;white-space:nowrap}
 .sa:hover{background:var(--hover)}
 .sa.dim{color:var(--fade);border-color:var(--border)}
 
@@ -162,7 +162,7 @@ html,body{height:100%;background:var(--bg);color:var(--hi);font-family:var(--mon
 .fcancel{width:100%;padding:4px;background:none;border:1px solid var(--border);color:var(--mute);font-family:var(--mono);font-size:9px;border-radius:2px;cursor:pointer;margin-top:3px}
 
 /* ── FOOTER ── */
-#ftr{padding:3px 14px;border-top:1px solid var(--blt);display:flex;justify-content:space-between;background:var(--deep);flex-shrink:0;font-size:8px;color:var(--fade)}
+#ftr{padding:1px 10px;border-top:1px solid var(--blt);display:flex;justify-content:space-between;background:var(--deep);flex-shrink:0;font-size:7px;color:var(--fade);line-height:1.2}
 
 /* ── MODAL ── */
 #overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
@@ -380,7 +380,7 @@ html,body{height:100%;background:var(--bg);color:var(--hi);font-family:var(--mon
       </div>
       <!-- BOTTOM RIGHT: TOC MONKEY -->
       <div class="pnl qr qb" id="tocpnl">
-        <div class="ph"><span class="pht">TOC MONKEY</span><span class="phs">Chief's Picks</span></div>
+        <div class="ph"><span class="pht">TOC MONKEY</span><span class="phs" id="tocphs">Chief's Picks</span></div>
         <div id="toclist"></div>
         <div id="tocaddwrap">
           <button id="tocaddbtn" onclick="toggleForm()">+ RECOMMEND AN ARTICLE</button>
@@ -1457,8 +1457,8 @@ const GLOBAL_PICKS = [
 
 // Merge COCOM picks with global picks and user-saved articles
 function getChiefsPicks(cocomId){
- const picks = (CHIEFS_PICKS[cocomId] || CHIEFS_PICKS.EUCOM);
- const userArts = ARTICLES.filter(a => !a._isDefault);
+ const picks = CHIEFS_PICKS[cocomId] || CHIEFS_PICKS.EUCOM || [];
+ const userArts = (ARTICLES||[]).filter(a => a._cocom===cocomId||!a._cocom);
  return [...userArts, ...picks, ...GLOBAL_PICKS];
 }
 
@@ -1470,8 +1470,7 @@ function getChiefsPicks(cocomId){
  return [...userArts, ...picks];
 }
 
-const FALLBACK_ARTICLES_INIT = CHIEFS_PICKS.EUCOM;
-let ARTICLES=[...FALLBACK_ARTICLES_INIT];
+let ARTICLES=[];
 let activeOrgTab=0;
 let eqOffset=0, eqTimer=null;
 let formOpen=false;
@@ -1946,8 +1945,8 @@ function renderArticles(){
  const cocomId = AC ? AC.id : 'EUCOM';
  const picks = getChiefsPicks(cocomId);
  // Update subtitle
- const sub = document.querySelector('#tocpnl .phs');
- if(sub) sub.textContent = cocomId + ' · Chief’s Picks';
+  const sub = document.getElementById('tocphs');
+ if(sub) sub.textContent = cocomId + ' · Chiefs Picks';
  if(!picks.length){el.innerHTML='<div style="padding:12px;color:var(--fade);font-size:9px;text-align:center">No articles yet.</div>';return;}
  el.innerHTML=picks.map((a,i)=>{
   const isUserArt = !a._isDefault && !String(a.id).startsWith('9');
