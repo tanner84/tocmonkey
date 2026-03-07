@@ -28,6 +28,13 @@ html,body{height:100%;background:var(--bg);color:var(--hi);font-family:var(--mon
 .logo-wrap{display:flex;flex-direction:row;align-items:center;gap:8px;padding:0 10px}
 .logo-img{height:28px;width:auto;object-fit:contain;display:block;filter:drop-shadow(0 0 6px rgba(74,222,128,0.6));flex-shrink:0}
 .logo-clock{display:flex;flex-direction:column;align-items:flex-start;gap:1px}
+/* Enlarge logo in WTF modal */
+.logo-img-modal {
+  height: 84px !important;
+  width: auto;
+  margin-top: 12px;
+  transition: height 0.3s;
+}
 @media(max-width:900px){.logo-img{height:22px}.bsub{display:none}}
 @media(max-width:600px){.logo-img{height:20px}.brand .bsep,.brand .bsub{display:none}}
 @media(max-width:480px){.logo-img{height:18px}}
@@ -2297,6 +2304,9 @@ setTimeout(initMob, 100);
       <div class="wtfsec">FEEDBACK &amp; SOURCES</div>
       <p class="wtfdesc" style="padding:0 0 12px">Got a source worth adding, an analyst I&#8217;m missing, or an article recommendation? Use the <strong style="color:var(--g1)">RECOMMEND AN ARTICLE</strong> button in Chief&#8217;s Picks or the <a href="/submit" target="_blank" style="color:var(--g1)">submission page</a>. Always open to improving the feed.</p>
       <div class="wtffooter">AI-GENERATED SITREP &nbsp;&middot;&nbsp; OPEN SOURCE DATA ONLY &nbsp;&middot;&nbsp; NOT OFFICIAL INTELLIGENCE &nbsp;&middot;&nbsp; FOR EDUCATIONAL USE</div>
+          <div class="wtflogo-modal-wrap" style="display:flex;justify-content:center;margin-top:24px;">
+            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMYAAADICAYAAACzkZ4tAAEAAElEQVR42sz9d5xl2Vnej37XWjucfOpUruqq7uqcpnvyjCZolFBAGSSESDZg4OdrouHinw3XJJtgMBgbLFuAyQKBEEIopxnlyXk65+qqrlx16uSd1rp/7H1OnUrdPRLc+6vPpz8z3XXi3mut932f93meVzz0tncZkh8jJFobQAAGhAYjkr+T/Df+IwAhNS/3R5jkJTf/puu9BHCD1xZdv1/3PLP+d53HyK7voOPvIOTa34Xhn+JHCNH1XhJjdNfr667P+TJ/ul4TTPKn66JibvL56/4xuVYmeV22uKbtx5kbvp4h3OItxIbvbDa8v7nB9ZTXeU0wxmxx/8R2iyz5nuvXhzFm09Wz1j+h+7//NAvlG/sxN/l7cYPHipv/Hkbe3AL7pr6H/Gd4TfMyNtV210hcZ1P8U92z5NDYsEHM..." alt="TOC MONKEY" class="logo-img logo-img-modal"/>
+          </div>
     </div>
   </div>
 </div>
