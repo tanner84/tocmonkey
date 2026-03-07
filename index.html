@@ -1987,10 +1987,11 @@ function renderArticles(){
  if(!picks.length){el.innerHTML='<div style="padding:12px;color:var(--fade);font-size:9px;text-align:center">No articles yet.</div>';return;}
  el.innerHTML=picks.map((a,i)=>{
   const isUserArt = !a._isDefault && !String(a.id).startsWith('9');
-  const safeUrl = (a.url||'').replace(/"/g,'&quot;');
+  const safeUrl = (a.url||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+  const hasUrl = safeUrl && safeUrl.startsWith('http');
   return `
-  <div class="art" data-url="${safeUrl}" onclick="openArtModal(this)">
-   ${isUserArt?`<button class="artdel" onclick="event.stopPropagation();delArticle(${a.id})">✕</button>`:''}
+  <a class="art" href="${hasUrl?safeUrl:'#'}" target="_blank" rel="noopener noreferrer" style="display:block;text-decoration:none;color:inherit">
+   ${isUserArt?`<button class="artdel" onclick="event.preventDefault();event.stopPropagation();delArticle(${a.id})">&#x2715;</button>`:''}
    <div class="arttitle">${a.title}</div>
    <div class="artmeta">
     <span class="artauthor">${a.author||''}</span>
@@ -1999,7 +2000,7 @@ function renderArticles(){
    </div>
    ${a.blurb?`<div class="artblurb">${a.blurb}</div>`:''}
    <div class="arttags">${(a.tags||[]).map(t=>`<span class="arttag">${t}</span>`).join('')}</div>
-  </div>
+  </a>
  `}).join('');
 }
 
