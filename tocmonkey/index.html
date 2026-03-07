@@ -2007,28 +2007,45 @@ async function loadArticles(){
 function renderArticles(){
  const el=document.getElementById('toclist');
  const cocomId = AC ? AC.id : 'EUCOM';
- const picks = getChiefsPicks(cocomId);
+ const picks = getChiefsPicks(cocomId) || [];
+ const rss = (window.RSS_ITEMS||[]).filter(r => r.cocom === cocomId || r.cocom === 'ALL');
+ // Deduplicate by title (prefer RSS if duplicate)
+ const seen = new Set();
+ const allArticles = [...rss, ...picks].filter(a => {
+   const t = (a.title||'').slice(0,60).toLowerCase();
+   if(seen.has(t)) return false;
+   seen.add(t);
+   return true;
+ });
+ // Sort: RSS by pubDate/age, picks by order
+ allArticles.sort((a,b)=>{
+   if(a.pubDate && b.pubDate) return new Date(b.pubDate)-new Date(a.pubDate);
+   if(a.pubDate) return -1;
+   if(b.pubDate) return 1;
+   return 0;
+ });
  // Update subtitle
-  const sub = document.getElementById('tocphs');
- if(sub) sub.textContent = cocomId + ' · Chiefs Picks';
- if(!picks.length){el.innerHTML='<div style="padding:12px;color:var(--fade);font-size:9px;text-align:center">No articles yet.</div>';return;}
- el.innerHTML=picks.map((a,i)=>{
-  const isUserArt = !a._isDefault && !String(a.id).startsWith('9');
-  const safeUrl = (a.url||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;');
-  const hasUrl = safeUrl && safeUrl.startsWith('http');
-  return `
-  <a class="art" href="${hasUrl?safeUrl:'#'}" target="_blank" rel="noopener noreferrer" style="display:block;text-decoration:none;color:inherit">
-   ${isUserArt?`<button class="artdel" onclick="event.preventDefault();event.stopPropagation();delArticle(${a.id})">&#x2715;</button>`:''}
-   <div class="arttitle">${a.title}</div>
-   <div class="artmeta">
-    <span class="artauthor">${a.author||''}</span>
-    <span class="artpub">${a.publication||''}</span>
-    ${a.date?`<span class="artdate">${a.date}</span>`:''}
-   </div>
-   ${a.blurb?`<div class="artblurb">${a.blurb}</div>`:''}
-   <div class="arttags">${(a.tags||[]).map(t=>`<span class="arttag">${t}</span>`).join('')}</div>
-  </a>
- `}).join('');
+ const sub = document.getElementById('tocphs');
+ if(sub) sub.textContent = cocomId + ' · Chiefs Picks + Live';
+ if(!allArticles.length){el.innerHTML='<div style="padding:12px;color:var(--fade);font-size:9px;text-align:center">No articles yet.</div>';return;}
+ el.innerHTML=allArticles.map((a,i)=>{
+   const isUserArt = !a._isDefault && !String(a.id).startsWith('9') && !a.isRSS;
+   const safeUrl = (a.url||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+   const hasUrl = safeUrl && safeUrl.startsWith('http');
+   return `
+   <a class="art" href="${hasUrl?safeUrl:'#'}" target="_blank" rel="noopener noreferrer" style="display:block;text-decoration:none;color:inherit">
+    ${isUserArt?`<button class="artdel" onclick="event.preventDefault();event.stopPropagation();delArticle(${a.id})">&#x2715;</button>`:''}
+    <div class="arttitle">${a.title}</div>
+    <div class="artmeta">
+     <span class="artauthor">${a.author||a.source||''}</span>
+     <span class="artpub">${a.publication||a.source||''}</span>
+     ${a.date?`<span class="artdate">${a.date}</span>`:''}
+     ${a.age?`<span class="artdate">${a.age}</span>`:''}
+    </div>
+    ${a.blurb||a.desc?`<div class="artblurb">${a.blurb||a.desc}</div>`:''}
+    <div class="arttags">${(a.tags||[]).map(t=>`<span class="arttag">${t}</span>`).join('')}</div>
+   </a>
+  `}).join('');
 }
 
 async function delArticle(id){
