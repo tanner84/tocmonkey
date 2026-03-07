@@ -2028,12 +2028,14 @@ function renderArticles(){
  const sub = document.getElementById('tocphs');
  if(sub) sub.textContent = cocomId + ' · Chiefs Picks + Live';
  if(!allArticles.length){el.innerHTML='<div style="padding:12px;color:var(--fade);font-size:9px;text-align:center">No articles yet.</div>';return;}
- el.innerHTML=allArticles.map((a,i)=>{
+ el.innerHTML=allArticles.filter(a=>{
+   const safeUrl = (a.url||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+   return safeUrl && safeUrl.startsWith('http');
+ }).map((a,i)=>{
    const isUserArt = !a._isDefault && !String(a.id).startsWith('9') && !a.isRSS;
    const safeUrl = (a.url||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;');
-   const hasUrl = safeUrl && safeUrl.startsWith('http');
    return `
-   <a class="art" href="${hasUrl?safeUrl:'#'}" target="_blank" rel="noopener noreferrer" style="display:block;text-decoration:none;color:inherit">
+   <a class="art" href="${safeUrl}" target="_blank" rel="noopener noreferrer" style="display:block;text-decoration:none;color:inherit">
     ${isUserArt?`<button class="artdel" onclick="event.preventDefault();event.stopPropagation();delArticle(${a.id})">&#x2715;</button>`:''}
     <div class="arttitle">${a.title}</div>
     <div class="artmeta">
