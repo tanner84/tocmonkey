@@ -35,8 +35,9 @@ html,body{height:100%;background:var(--bg);color:var(--hi);font-family:var(--mon
 .bname{font-size:13px;letter-spacing:4px;color:var(--g1);font-weight:bold}
 .bsep{color:var(--border);font-size:12px}
 .bsub{font-size:9px;color:var(--fade);letter-spacing:2px}
-.wtf-btn{background:none;border:1px solid var(--border);color:var(--mute);font-size:8px;letter-spacing:2px;padding:3px 7px;cursor:pointer;border-radius:2px;font-family:inherit;transition:all .2s;margin-left:4px}
-.wtf-btn:hover{border-color:var(--g1);color:var(--g1);background:rgba(74,222,128,0.07)}
+.wtf-btn{background:rgba(74,222,128,0.08);border:1px solid var(--g1);color:var(--g1);font-size:8px;letter-spacing:2px;padding:3px 7px;cursor:pointer;border-radius:2px;font-family:inherit;transition:all .2s;margin-left:4px;animation:wtf-glow 1.8s ease-in-out infinite}
+.wtf-btn:hover{background:rgba(74,222,128,0.15);box-shadow:0 0 12px rgba(74,222,128,0.5)}
+@keyframes wtf-glow{0%,100%{box-shadow:0 0 4px rgba(74,222,128,0.4),0 0 8px rgba(74,222,128,0.2)}50%{box-shadow:0 0 10px rgba(239,68,68,0.7),0 0 20px rgba(239,68,68,0.4),0 0 4px rgba(74,222,128,0.2)}}
 #tkwrap{flex:1;overflow:hidden;height:100%;display:flex;align-items:center;padding:0 16px}
 #tkinner{display:inline-block;animation:ticker 55s linear infinite;white-space:nowrap}
 .ti{display:inline-flex;align-items:center;margin-right:28px;font-size:14px;letter-spacing:0.5px;gap:4px}
