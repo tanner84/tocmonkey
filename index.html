@@ -2280,33 +2280,6 @@ setTimeout(initMob, 100);
 
 </script>
 
-<!-- WTF IS THIS? MODAL -->
-<div id="wtfoverlay" onclick="if(event.target===this)closeWTF()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9000;align-items:center;justify-content:center">
-  <div id="wtfbox">
-    <div id="wtfhead">
-      <span id="wtftitle">// WTF IS THIS?</span>
-      <button onclick="closeWTF()" style="background:none;border:none;color:var(--fade);cursor:pointer;font-size:11px;letter-spacing:1px">✕ CLOSE</button>
-    </div>
-    <div id="wtfbody">
-      <p class="wtfp">This is a personal ops dashboard — most of the data is pulled from open-source intel feeds. I built it so I could stop tabbing between a dozen sites just to get a basic picture of what&#8217;s going on.</p>
-      <p class="wtfp">One place. Fast assessment. No noise.</p>
-      <div class="wtfsec">WHAT YOU&#8217;RE LOOKING AT</div>
-      <div class="wtfgrid">
-        <div class="wtfitem"><span class="wtflabel">MAP</span><span class="wtfdesc">Active conflict zones by COCOM. Markers are color-coded by intensity. Click any zone for details.</span></div>
-        <div class="wtfitem"><span class="wtflabel">OSINT / RSS</span><span class="wtfdesc">Live feed aggregating open-source analysts, verified accounts, and journal RSS feeds filtered to the active AOR.</span></div>
-        <div class="wtfitem"><span class="wtflabel">EQUIPMENT INDEX</span><span class="wtfdesc">Notable platforms operating in the AOR — rotates through documented systems with origin and role tags.</span></div>
-        <div class="wtfitem"><span class="wtflabel">TASK ORG</span><span class="wtfdesc">Unclassified order of battle. US/NATO, partner nations, and adversary force structure for the selected command.</span></div>
-        <div class="wtfitem"><span class="wtflabel">SITREP</span><span class="wtfdesc">AI-generated situation report built from the live feed. Fires on tab switch. Not official intel — for orientation only.</span></div>
-        <div class="wtfitem"><span class="wtflabel">CHIEF&#8217;S PICKS</span><span class="wtfdesc">Curated reading list by COCOM. Analysts, journals, and perspectives I trust — rotates when you switch commands.</span></div>
-      </div>
-      <div class="wtfsec">DATA SOURCES</div>
-      <p class="wtfdesc" style="padding:0 0 8px">Bluesky OSINT accounts &middot; War on the Rocks &middot; Irregular Warfare Initiative &middot; FPRI &middot; RAND &middot; ISW &middot; ACLED &middot; CrisisWatch &middot; EIA &middot; metals-api &middot; MarineTraffic &middot; Alpha Vantage. All open-source.</p>
-      <div class="wtfsec">FEEDBACK &amp; SOURCES</div>
-      <p class="wtfdesc" style="padding:0 0 12px">Got a source worth adding, an analyst I&#8217;m missing, or an article recommendation? Use the <strong style="color:var(--g1)">RECOMMEND AN ARTICLE</strong> button in Chief&#8217;s Picks or the <a href="/submit" target="_blank" style="color:var(--g1)">submission page</a>. Always open to improving the feed.</p>
-      <div class="wtffooter">AI-GENERATED SITREP &nbsp;&middot;&nbsp; OPEN SOURCE DATA ONLY &nbsp;&middot;&nbsp; NOT OFFICIAL INTELLIGENCE &nbsp;&middot;&nbsp; FOR EDUCATIONAL USE</div>
-    </div>
-  </div>
-</div>
 
 
 <!-- WTF MODAL -->
