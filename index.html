@@ -117,6 +117,16 @@ html,body{height:100%;background:var(--bg);color:var(--hi);font-family:var(--mon
 @media (min-width: 1025px) {
   .twbody, .tw-modal-body { font-size: 17px; line-height: 2.0; }
 }
+/* Responsive tweet font size/line height */
+@media (max-width: 600px) {
+  .twbody, .tw-modal-body { font-size: 13px; line-height: 1.7; }
+}
+@media (min-width: 601px) and (max-width: 1024px) {
+  .twbody, .tw-modal-body { font-size: 15px; line-height: 1.8; }
+}
+@media (min-width: 1025px) {
+  .twbody, .tw-modal-body { font-size: 17px; line-height: 2.0; }
+}
 .twfooter{display:flex;gap:14px;font-size:10px;color:var(--fade);font-family:var(--sans)}
 .twstat{display:flex;align-items:center;gap:3px}
 .twstat svg{opacity:.6}
