@@ -1,8 +1,14 @@
+
 // ─────────────────────────────────────────────────────────────────────────────
 // OSINT Feed — live posts from tracked accounts
 // Sources: Bluesky AT Protocol API + Nitter RSS fallback
 // Cached 5 minutes. Accounts tagged by primary AOR for frontend filtering.
 // ─────────────────────────────────────────────────────────────────────────────
+
+// Import classification utilities (CommonJS)
+const { classifyByCOCOM } = require('../../src/utils/cocomClassifier');
+const { extractTopicTags } = require('../../src/utils/topicTagger');
+const { calculateConfidence } = require('../../src/utils/confidenceScorer');
 
 let cache = null, cacheTime = 0;
 const TTL = 5 * 60 * 1000;
@@ -169,12 +175,25 @@ exports.handler = async function() {
   }
 
   const seen = new Set();
+
   const deduped = posts.filter(p => {
     const key = p.text.slice(0, 60).toLowerCase();
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
   });
+
+  // Enhance posts with classification fields
+  for (const post of deduped) {
+    post.cocoms = classifyByCOCOM(post.text); // array of COCOM codes
+    post.topicTags = extractTopicTags(post.text); // array of topic tags
+    post.confidence = calculateConfidence({
+      source: post.dname,
+      platform: post.source,
+      recency: post.pubDate
+    });
+    // Keep post.aor for backward compatibility
+  }
 
   deduped.sort((a, b) => {
     const da = a.pubDate ? new Date(a.pubDate).getTime() : 0;
