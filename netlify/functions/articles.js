@@ -6,45 +6,12 @@
 const { getStore } = require("@netlify/blobs");
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "tocmonkey2025";
-const BLOB_KEY = "articles";
-
+const COCOMS = ['EUCOM', 'CENTCOM', 'INDOPACOM', 'AFRICOM', 'SOUTHCOM', 'NORTHCOM'];
+function getBlobKey(cocom) { return `articles-${cocom}`; }
 function checkAuth(event) {
   const auth = event.headers["x-admin-password"] || "";
-  return auth === (process.env.ADMIN_PASSWORD || "tocmonkey2025");
+  return auth === ADMIN_PASSWORD;
 }
-
-const DEFAULT_ARTICLES = [
-  {
-    id: 1,
-    title: "The Coming Drone War: How Autonomous Systems Are Reshaping the Battlefield",
-    author: "Phillips O'Brien",
-    publication: "Phillips's Newsletter",
-    date: "Mar 4, 2025",
-    blurb: "A deep look at how loitering munitions and AI-guided platforms are changing force-on-force engagements — and why Western doctrine hasn't caught up.",
-    url: "https://substack.com",
-    tags: ["Drones", "Doctrine"],
-  },
-  {
-    id: 2,
-    title: "Why Russia's Manpower Problem Is Worse Than the Numbers Show",
-    author: "Rob Lee",
-    publication: "FPRI",
-    date: "Feb 28, 2025",
-    blurb: "Loss rates, replacement battalion quality, and the institutional knowledge gap created by three years of attritional warfare.",
-    url: "https://substack.com",
-    tags: ["Russia", "Order of Battle"],
-  },
-  {
-    id: 3,
-    title: "Red Sea Chokepoint: Economic Warfare by Proxy",
-    author: "Craig Singleton",
-    publication: "FDD",
-    date: "Feb 20, 2025",
-    blurb: "Houthi interdiction operations have diverted ~20% of global container traffic. Economic coercion through a non-state actor at scale.",
-    url: "https://substack.com",
-    tags: ["Naval", "Houthis", "Economics"],
-  },
-];
 
 exports.handler = async function (event, context) {
   const store = getStore("tocmonkey");
@@ -68,17 +35,19 @@ exports.handler = async function (event, context) {
         return { statusCode:200, headers:{"Content-Type":"application/json"}, body: raw||"[]" };
       } catch(e) { return { statusCode:200, body:"[]" }; }
     }
-    // Articles
+    // Articles by COCOM
+    const cocom = (event.queryStringParameters && event.queryStringParameters.cocom) || 'EUCOM';
+    if (!COCOMS.includes(cocom)) return { statusCode: 400, body: 'Invalid COCOM' };
     try {
-      const raw = await store.get(BLOB_KEY);
-      const articles = raw ? JSON.parse(raw) : DEFAULT_ARTICLES;
+      const raw = await store.get(getBlobKey(cocom));
+      const articles = raw ? JSON.parse(raw) : [];
       return {
         statusCode: 200,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(articles),
       };
     } catch (e) {
-      return { statusCode: 200, headers: { "Content-Type": "application/json" }, body: JSON.stringify(DEFAULT_ARTICLES) };
+      return { statusCode: 200, headers: { "Content-Type": "application/json" }, body: JSON.stringify([]) };
     }
   }
 
@@ -113,22 +82,16 @@ exports.handler = async function (event, context) {
         await store.set("orgnotes", JSON.stringify(notes.slice(0,50)));
         return { statusCode:200, headers:{"Content-Type":"application/json"}, body:JSON.stringify(notes) };
       }
-      let articles;
-      if (body.articles) {
-        articles = body.articles;
-      } else if (body.article) {
-        const raw = await store.get(BLOB_KEY).catch(() => null);
-        articles = raw ? JSON.parse(raw) : [...DEFAULT_ARTICLES];
-        const newArticle = { ...body.article, id: Date.now() };
-        articles.unshift(newArticle);
-      } else {
-        return { statusCode: 400, body: JSON.stringify({ error: "Bad request" }) };
-      }
-      await store.set(BLOB_KEY, JSON.stringify(articles));
+      // Add article to COCOM blob
+      const raw = await store.get(getBlobKey(cocom)).catch(() => null);
+      let articles = raw ? JSON.parse(raw) : [];
+      const newArticle = { ...body, id: Date.now().toString(), cocom };
+      articles.unshift(newArticle);
+      await store.set(getBlobKey(cocom), JSON.stringify(articles));
       return {
         statusCode: 200,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(articles),
+        body: JSON.stringify(newArticle),
       };
     } catch (e) {
       return { statusCode: 500, body: JSON.stringify({ error: e.message }) };
@@ -147,15 +110,37 @@ exports.handler = async function (event, context) {
         await store.set("orgnotes", JSON.stringify(notes));
         return { statusCode:200, headers:{"Content-Type":"application/json"}, body:JSON.stringify(notes) };
       }
-      const raw = await store.get(BLOB_KEY).catch(() => null);
-      let articles = raw ? JSON.parse(raw) : [...DEFAULT_ARTICLES];
+      // Delete article from COCOM blob
+      const raw = await store.get(getBlobKey(cocom)).catch(() => null);
+      let articles = raw ? JSON.parse(raw) : [];
       articles = articles.filter(a => a.id !== body.id);
-      await store.set(BLOB_KEY, JSON.stringify(articles));
+      await store.set(getBlobKey(cocom), JSON.stringify(articles));
       return {
         statusCode: 200,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(articles),
+        body: JSON.stringify({ ok: true }),
       };
+      // ── PUT (edit) ─────────────────────────────────────────────────────────
+      if (method === "PUT") {
+        try {
+          const cocom = (event.queryStringParameters && event.queryStringParameters.cocom) || 'EUCOM';
+          if (!COCOMS.includes(cocom)) return { statusCode: 400, body: 'Invalid COCOM' };
+          const store = getStore("tocmonkey");
+          const body = JSON.parse(event.body || "{}");
+          let articles = [];
+          const raw = await store.get(getBlobKey(cocom)).catch(() => null);
+          articles = raw ? JSON.parse(raw) : [];
+          articles = articles.map(a => a.id === body.id ? { ...a, ...body } : a);
+          await store.set(getBlobKey(cocom), JSON.stringify(articles));
+          return {
+            statusCode: 200,
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+          };
+        } catch (e) {
+          return { statusCode: 500, body: JSON.stringify({ error: e.message }) };
+        }
+      }
     } catch (e) {
       return { statusCode: 500, body: JSON.stringify({ error: e.message }) };
     }

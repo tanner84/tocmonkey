@@ -372,7 +372,89 @@ html,body{height:100%;background:var(--bg);color:var(--hi);font-family:var(--mon
         <div class="ck2" id="clockdate"></div>
       </div>
     </div>
-    <a href="/admin" class="alink" style="font-size:9px;letter-spacing:2px">ADMIN</a>
+    <a href="#" class="alink" style="font-size:9px;letter-spacing:2px" onclick="openAdminModal();return false;">ADMIN</a>
+  <!-- ADMIN MODAL -->
+  <div id="admin-modal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center;">
+    <div style="background:#222;padding:24px 32px;border-radius:8px;max-width:420px;width:96vw;max-height:90vh;overflow:auto;position:relative;">
+      <button onclick="closeAdminModal()" style="position:absolute;top:8px;right:12px;font-size:18px;background:none;border:none;color:#fff;cursor:pointer">×</button>
+      <h3 style="margin-bottom:10px">Manage Articles by COCOM</h3>
+      <label>COCOM:
+        <select id="admin-cocom">
+          <option>EUCOM</option><option>CENTCOM</option><option>INDOPACOM</option>
+          <option>AFRICOM</option><option>SOUTHCOM</option><option>NORTHCOM</option>
+        </select>
+      </label>
+      <input id="admin-pass" type="password" placeholder="Admin Password" style="margin-left:8px;width:120px"/>
+      <button onclick="fetchAdminArticles()">Load</button>
+      <div id="admin-article-list" style="margin:12px 0;"></div>
+      <h4>Add/Edit Article</h4>
+      <form id="admin-article-form" onsubmit="return saveArticle()">
+        <input id="art-id" type="hidden"/>
+        <input id="art-title" placeholder="Title" required style="width:100%;margin-bottom:4px"/>
+        <input id="art-url" placeholder="URL" required style="width:100%;margin-bottom:4px"/>
+        <input id="art-source" placeholder="Source" required style="width:100%;margin-bottom:4px"/>
+        <input id="art-desc" placeholder="Description" required style="width:100%;margin-bottom:4px"/>
+        <button type="submit">Save</button>
+      </form>
+    </div>
+  </div>
+  <script>
+  function openAdminModal(){document.getElementById('admin-modal').style.display='flex';}
+  function closeAdminModal(){document.getElementById('admin-modal').style.display='none';}
+  let adminArticles = [];
+  function fetchAdminArticles() {
+    const cocom = document.getElementById('admin-cocom').value;
+    fetch(`/netlify/functions/articles?cocom=${cocom}`)
+      .then(r => r.json())
+      .then(arts => {
+        adminArticles = arts;
+        document.getElementById('admin-article-list').innerHTML = arts.map(a =>
+          `<div style='margin-bottom:6px'>
+            <b>${a.title}</b> (${a.source}) <a href="${a.url}" target="_blank">[link]</a>
+            <button onclick="editArticle('${a.id}')">Edit</button>
+            <button onclick="deleteArticle('${a.id}')">Delete</button>
+          </div>`
+        ).join('');
+      });
+  }
+  function saveArticle() {
+    const cocom = document.getElementById('admin-cocom').value;
+    const pass = document.getElementById('admin-pass').value;
+    const id = document.getElementById('art-id').value;
+    const article = {
+      id,
+      title: document.getElementById('art-title').value,
+      url: document.getElementById('art-url').value,
+      source: document.getElementById('art-source').value,
+      description: document.getElementById('art-desc').value,
+      cocom
+    };
+    fetch(`/netlify/functions/articles?cocom=${cocom}`, {
+      method: id ? 'PUT' : 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-password': pass },
+      body: JSON.stringify(article)
+    }).then(fetchAdminArticles);
+    document.getElementById('admin-article-form').reset();
+    return false;
+  }
+  function editArticle(id) {
+    const a = adminArticles.find(x => x.id === id);
+    document.getElementById('art-id').value = a.id;
+    document.getElementById('art-title').value = a.title;
+    document.getElementById('art-url').value = a.url;
+    document.getElementById('art-source').value = a.source;
+    document.getElementById('art-desc').value = a.description;
+  }
+  function deleteArticle(id) {
+    const cocom = document.getElementById('admin-cocom').value;
+    const pass = document.getElementById('admin-pass').value;
+    fetch(`/netlify/functions/articles?cocom=${cocom}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json', 'x-admin-password': pass },
+      body: JSON.stringify({ id })
+    }).then(fetchAdminArticles);
+  }
+  </script>
   </div><!-- /hright -->
   </div><!-- /hdr-top -->
   <!-- Move market ticker outside header, above sports ticker -->
