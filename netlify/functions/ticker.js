@@ -70,6 +70,12 @@ const FALLBACK = [
   { symbol:"URANIUM",     price:97.25,  change:+2.10,  unit:"$/lb"    },
   { symbol:"COPPER",      price:4.52,   change:-0.08,  unit:"$/lb"    },
   { symbol:"DEFENSE ETF", price:198.34, change:+3.11,  unit:"ITA"     },
+  // Major stock indices fallbacks
+  { symbol:"NASDAQ",      price:16000,  change:+100,   unit:""        },
+  { symbol:"S&P 500",     price:5000,   change:+20,    unit:""        },
+  { symbol:"DOW JONES",   price:38000,  change:+150,   unit:""        },
+  { symbol:"FTSE 100",    price:7700,   change:+30,    unit:""        },
+  { symbol:"NIKKEI 225",  price:39000,  change:+200,   unit:""        },
 ];
 
 exports.handler = async function() {
@@ -86,19 +92,19 @@ exports.handler = async function() {
       if (!d) return;
       const idx = result.findIndex(r => r.symbol === "WTI");
       if (idx >= 0) result[idx] = { ...result[idx], price: d.price, change: d.change, live: true };
-    }).catch(()=>{}),
+    }).catch(() => {}),
 
     fetchEIA(EIA_SERIES.BRENT).then(d => {
       if (!d) return;
       const idx = result.findIndex(r => r.symbol === "BRENT");
       if (idx >= 0) result[idx] = { ...result[idx], price: d.price, change: d.change, live: true };
-    }).catch(()=>{}),
+    }).catch(() => {}),
 
     fetchEIA(EIA_SERIES.NAT_GAS).then(d => {
       if (!d) return;
       const idx = result.findIndex(r => r.symbol === "NAT GAS");
       if (idx >= 0) result[idx] = { ...result[idx], price: d.price, change: d.change, live: true };
-    }).catch(()=>{}),
+    }).catch(() => {}),
 
     // ── METALS + FX ──
     fetchMetals(["XAU","XCU","RUB","UAH"]).then(rates => {
@@ -123,14 +129,45 @@ exports.handler = async function() {
         const idx = result.findIndex(r => r.symbol === "USD/UAH");
         if (idx >= 0) result[idx] = { ...result[idx], price: parseFloat(rates.UAH.toFixed(2)), live: true };
       }
-    }).catch(()=>{}),
+    }).catch(() => {}),
 
     // ── DEFENSE ETF (ITA) ──
     fetchAlphaVantage("ITA").then(d => {
       if (!d) return;
       const idx = result.findIndex(r => r.symbol === "DEFENSE ETF");
       if (idx >= 0) result[idx] = { ...result[idx], price: d.price, change: d.change, live: true };
-    }).catch(()=>{}),
+    }).catch(() => {}),
+
+    // ── MAJOR STOCK INDICES ──
+    fetchAlphaVantage("^IXIC").then(d => { // NASDAQ Composite
+      if (!d) return;
+      const idx = result.findIndex(r => r.symbol === "NASDAQ");
+      if (idx >= 0) result[idx] = { ...result[idx], price: d.price, change: d.change, live: true };
+    }).catch(() => {}),
+
+    fetchAlphaVantage("^GSPC").then(d => { // S&P 500
+      if (!d) return;
+      const idx = result.findIndex(r => r.symbol === "S&P 500");
+      if (idx >= 0) result[idx] = { ...result[idx], price: d.price, change: d.change, live: true };
+    }).catch(() => {}),
+
+    fetchAlphaVantage("^DJI").then(d => { // Dow Jones
+      if (!d) return;
+      const idx = result.findIndex(r => r.symbol === "DOW JONES");
+      if (idx >= 0) result[idx] = { ...result[idx], price: d.price, change: d.change, live: true };
+    }).catch(() => {}),
+
+    fetchAlphaVantage("^FTSE").then(d => { // FTSE 100
+      if (!d) return;
+      const idx = result.findIndex(r => r.symbol === "FTSE 100");
+      if (idx >= 0) result[idx] = { ...result[idx], price: d.price, change: d.change, live: true };
+    }).catch(() => {}),
+
+    fetchAlphaVantage("^N225").then(d => { // Nikkei 225
+      if (!d) return;
+      const idx = result.findIndex(r => r.symbol === "NIKKEI 225");
+      if (idx >= 0) result[idx] = { ...result[idx], price: d.price, change: d.change, live: true };
+    }).catch(() => {}),
 
   ]);
 
