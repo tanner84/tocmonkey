@@ -59,7 +59,7 @@ const COCOM_DEFINITIONS = {
     regions: ['africa', 'sub-saharan africa', 'sahel', 'horn of africa', 'west africa', 'east africa', 'central africa', 'southern africa', 'maghreb', 'north africa'],
     countries: ['nigeria', 'somalia', 'ethiopia', 'kenya', 'sudan', 'south sudan', 'mali', 'niger', 'burkina faso', 'chad', 'mauritania', 'senegal', 'drc', 'congo', 'uganda', 'tanzania', 'mozambique', 'zimbabwe', 'south africa', 'angola', 'ghana', 'ivory coast', 'cameroon', 'libya', 'tunisia', 'algeria', 'morocco', 'egypt', 'eritrea'],
     keywords: ['boko haram', 'al-shabaab', 'aqim', 'wagner', 'jnim', 'isis-sahel', 'coup', 'junta', 'french withdrawal', 'ecowas', 'african union', 'amisom', 'peacekeeping', 'ebola', 'famine', 'drought', 'piracy', 'gulf of guinea', 'lake chad', 'tigray', 'darfur', 'russia africa', 'chinese influence'],
-    cities: ['lagos', 'mogadishu', 'addis ababa', 'nairobi', 'khartoum', 'bamako', 'niamey', 'cair
+    cities: ['lagos', 'mogadishu', 'addis ababa', 'nairobi', 'khartoum', 'bamako', 'niamey', 'cairo', 'tripoli', 'algiers', 'rabat', 'dakar', 'johannesburg', 'cape town', 'kinshasa', 'abidjan', 'accra', 'kampala', 'lusaka', 'maputo', 'gaborone', 'windhoek', 'antananarivo', 'bujumbura', 'kigali', 'monrovia', 'freetown', 'conakry', 'bissau', 'lilongwe', 'harare', 'mbabane', 'maseru', 'nouakchott', 'porto-novo', 'yaounde', 'brazzaville', 'libreville', 'malabo', 'sao tome', 'moroni', 'victoria', 'djibouti', 'asmara'],
 // ...truncated for brevity...
 
 function classifyByCOCOM(text) {
