@@ -364,6 +364,7 @@ html,body{height:100%;background:var(--bg);color:var(--hi);font-family:var(--mon
       <button class="wtf-btn" onclick="openWTF()" title="WTF is this?">WTF IS THIS?</button>
     </div>
     <div id="tkwrap"><div id="tkinner"></div></div>
+    <!-- Stock Market Ticker (scrolling, above sports) -->
     <div id="markettickerwrap"><div id="markettickerinner">LOADING MARKET DATA...</div></div>
   <div class="hright">
     <div class="logo-wrap">
@@ -397,21 +398,29 @@ html,body{height:100%;background:var(--bg);color:var(--hi);font-family:var(--mon
 // ═══════════════════════════════════════════════════════════════════
 // MARKET TICKER
 // ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════
+// STOCK MARKET TICKER (scrolling, above sports)
+// ═══════════════════════════════════════════════════════════════════
 async function loadMarketTicker() {
   try {
     const r = await fetch('/.netlify/functions/ticker');
     if (!r.ok) return;
     const data = await r.json();
-    // Only show market indices
+    // Only show stock indices
     const indices = data.filter(t =>
       ["NASDAQ", "S&P 500", "DOW JONES", "FTSE 100", "NIKKEI 225"].includes(t.symbol)
     );
+    if (!indices.length) {
+      document.getElementById('markettickerinner').textContent = 'NO MARKET DATA AVAILABLE';
+      return;
+    }
     const d = [...indices, ...indices]; // repeat for smooth scroll
     document.getElementById('markettickerinner').innerHTML = d.map(t => {
       const up = t.change >= 0;
       return `<span class="ti"><span class="ts">${t.symbol}</span><span class="tp ${up ? 'up' : 'dn'}">${Number(t.price).toFixed(2)}</span><span class="tc ${up ? 'up' : 'dn'}">${up ? '▲' : '▼'}${Math.abs(t.change || 0).toFixed(2)}</span></span>`;
     }).join('<span style="color:#4a4a2a;margin-right:32px">|</span>');
   } catch (e) {
+    document.getElementById('markettickerinner').textContent = 'MARKET TICKER ERROR';
     console.warn('Market ticker unavailable:', e.message);
   }
 }
