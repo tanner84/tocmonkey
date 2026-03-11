@@ -2054,11 +2054,9 @@ async function renderArticles(){
     }
   }
   el.innerHTML = filtered.map((a,i)=>{
-    const isUserArt = !a._isDefault && !String(a.id).startsWith('9') && !a.isRSS;
     const safeUrl = (a.url||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;');
     return `
      <a class="art" href="${safeUrl}" target="_blank" rel="noopener noreferrer" style="display:block;text-decoration:none;color:inherit">
-      ${isUserArt?`<button class="artdel" onclick="event.preventDefault();event.stopPropagation();delArticle(${a.id})">&#x2715;</button>`:''}
       <div class="arttitle">${a.title}</div>
       <div class="artmeta">
        <span class="artauthor">${a.author||a.source||''}</span>
@@ -2079,22 +2077,6 @@ async function delArticle(id){
  renderArticles();
 }
 
-function toggleForm(){
- formOpen=!formOpen;
- document.getElementById('tocform').style.display=formOpen?'block':'none';
- document.getElementById('tocaddbtn').textContent=formOpen?'✕ CANCEL':'+ RECOMMEND AN ARTICLE';
-}
-
-async function saveArticle(){
- const t=document.getElementById('ft').value.trim(),u=document.getElementById('fu').value.trim();
- if(!t||!u){alert('Title and URL required.');return;}
- const art={title:t,author:document.getElementById('fa').value.trim()||'Unknown',publication:document.getElementById('fp').value.trim()||'External',date:document.getElementById('fd').value.trim()||new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),blurb:document.getElementById('fb').value.trim(),url:u,tags:document.getElementById('ftg').value.split(',').map(x=>x.trim()).filter(Boolean)};
- try{const r=await fetch('/.netlify/functions/articles',{method:'POST',headers:{'Content-Type':'application/json','x-admin-password':sessionStorage.getItem('admpw')||''},body:JSON.stringify({article:art})});ARTICLES=r.ok?await r.json():[{...art,id:Date.now()},...ARTICLES];}
- catch{ARTICLES=[{...art,id:Date.now()},...ARTICLES];}
- renderArticles();
- ['ft','fa','fp','fu','fd','fb','ftg'].forEach(id=>document.getElementById(id).value='');
- toggleForm();
-}
 
 // ═══════════════════════════════════════════════════════════════════
 // RSS
