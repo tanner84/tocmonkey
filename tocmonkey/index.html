@@ -2010,7 +2010,7 @@ function updateFeed(){
  renderFeed();feedTimer=setInterval(slideFeed,4000);
 }
 
-const FSHOW=4;
+const FSHOW=3;
 function renderFeed(){
  const track=document.getElementById('ftrack');
  if(!feedItems.length){track.innerHTML='<div style="padding:14px 10px;color:var(--fade);font-size:10px">No feed items for this AOR.</div>';return;}
