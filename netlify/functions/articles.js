@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// Articles API — GET (public), POST/DELETE (admin only)
+// Articles API — GET (public), POST/DELETE/PUT (admin only), POST suggest (public)
 // Uses Netlify Blobs for persistent storage (free, zero config)
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -51,11 +51,6 @@ exports.handler = async function (event, context) {
     }
   }
 
-  // ── All write ops require auth ────────────────────────────────────────
-  if (!checkAuth(event)) {
-    return { statusCode: 401, body: JSON.stringify({ error: "Unauthorized" }) };
-  }
-
   // ── POST public suggest (no auth — goes to pending queue) ───────────
   if (method === "POST" && event.queryStringParameters?.type === "suggest") {
     try {
@@ -70,10 +65,16 @@ exports.handler = async function (event, context) {
     }
   }
 
+  // ── All other write ops require auth ────────────────────────────────
+  if (!checkAuth(event)) {
+    return { statusCode: 401, body: JSON.stringify({ error: "Unauthorized" }) };
+  }
+
   // ── POST ─────────────────────────────────────────────────────────────
   if (method === "POST") {
     try {
       const body = JSON.parse(event.body || "{}");
+      const cocom = (event.queryStringParameters && event.queryStringParameters.cocom) || 'EUCOM';
       // Org note
       if (body.orgnote) {
         const raw = await store.get("orgnotes").catch(()=>null);
@@ -83,6 +84,7 @@ exports.handler = async function (event, context) {
         return { statusCode:200, headers:{"Content-Type":"application/json"}, body:JSON.stringify(notes) };
       }
       // Add article to COCOM blob
+      if (!COCOMS.includes(cocom)) return { statusCode: 400, body: 'Invalid COCOM' };
       const raw = await store.get(getBlobKey(cocom)).catch(() => null);
       let articles = raw ? JSON.parse(raw) : [];
       const newArticle = { ...body, id: Date.now().toString(), cocom };
@@ -98,10 +100,31 @@ exports.handler = async function (event, context) {
     }
   }
 
+  // ── PUT (edit) ─────────────────────────────────────────────────────
+  if (method === "PUT") {
+    try {
+      const cocom = (event.queryStringParameters && event.queryStringParameters.cocom) || 'EUCOM';
+      if (!COCOMS.includes(cocom)) return { statusCode: 400, body: 'Invalid COCOM' };
+      const body = JSON.parse(event.body || "{}");
+      const raw = await store.get(getBlobKey(cocom)).catch(() => null);
+      let articles = raw ? JSON.parse(raw) : [];
+      articles = articles.map(a => a.id === body.id ? { ...a, ...body } : a);
+      await store.set(getBlobKey(cocom), JSON.stringify(articles));
+      return {
+        statusCode: 200,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      };
+    } catch (e) {
+      return { statusCode: 500, body: JSON.stringify({ error: e.message }) };
+    }
+  }
+
   // ── DELETE ───────────────────────────────────────────────────────────
   if (method === "DELETE") {
     try {
       const body = JSON.parse(event.body || "{}");
+      const cocom = (event.queryStringParameters && event.queryStringParameters.cocom) || 'EUCOM';
       // Org note delete
       if (body.orgnoteId) {
         const raw = await store.get("orgnotes").catch(()=>null);
@@ -111,6 +134,7 @@ exports.handler = async function (event, context) {
         return { statusCode:200, headers:{"Content-Type":"application/json"}, body:JSON.stringify(notes) };
       }
       // Delete article from COCOM blob
+      if (!COCOMS.includes(cocom)) return { statusCode: 400, body: 'Invalid COCOM' };
       const raw = await store.get(getBlobKey(cocom)).catch(() => null);
       let articles = raw ? JSON.parse(raw) : [];
       articles = articles.filter(a => a.id !== body.id);
@@ -120,27 +144,6 @@ exports.handler = async function (event, context) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ok: true }),
       };
-      // ── PUT (edit) ─────────────────────────────────────────────────────────
-      if (method === "PUT") {
-        try {
-          const cocom = (event.queryStringParameters && event.queryStringParameters.cocom) || 'EUCOM';
-          if (!COCOMS.includes(cocom)) return { statusCode: 400, body: 'Invalid COCOM' };
-          const store = getStore("tocmonkey");
-          const body = JSON.parse(event.body || "{}");
-          let articles = [];
-          const raw = await store.get(getBlobKey(cocom)).catch(() => null);
-          articles = raw ? JSON.parse(raw) : [];
-          articles = articles.map(a => a.id === body.id ? { ...a, ...body } : a);
-          await store.set(getBlobKey(cocom), JSON.stringify(articles));
-          return {
-            statusCode: 200,
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(body),
-          };
-        } catch (e) {
-          return { statusCode: 500, body: JSON.stringify({ error: e.message }) };
-        }
-      }
     } catch (e) {
       return { statusCode: 500, body: JSON.stringify({ error: e.message }) };
     }
