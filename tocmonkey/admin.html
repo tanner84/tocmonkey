@@ -535,7 +535,7 @@ function renderArticles() {
         <div class="article-item-tags">${(a.tags||[]).map(t=>`<span class="tag-pill">${t}</span>`).join('')}</div>
       </div>
       <div class="article-actions">
-        <a href="${a.url}" target="_blank" style="color:var(--tFade);font-size:8px;text-decoration:none">↗ VIEW</a>
+        <a href="${a.url && /^https?:\/\//.test(a.url) ? a.url : '#'}" target="_blank" style="color:var(--tFade);font-size:8px;text-decoration:none">↗ VIEW</a>
         <button class="btn-danger" onclick="deleteArticle(${a.id})">✕ REMOVE</button>
         ${i > 0 ? `<button class="btn-danger" onclick="moveArticle(${a.id}, -1)" style="font-size:10px">↑</button>` : ''}
         ${i < ARTICLES.length-1 ? `<button class="btn-danger" onclick="moveArticle(${a.id}, 1)" style="font-size:10px">↓</button>` : ''}
