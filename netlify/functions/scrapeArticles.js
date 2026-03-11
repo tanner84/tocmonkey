@@ -61,9 +61,10 @@ const SOURCES = [
   { name: 'GAO', url: 'https://www.gao.gov/rss/news.xml' },
 ];
 
+// Netlify Scheduled Function: run daily at 06:00 UTC
+exports.schedule = "0 6 * * *";
+
 exports.handler = async function() {
-  // Netlify Scheduled Function: run daily at 06:00 UTC
-  exports.schedule = "0 6 * * *";
   const parser = new Parser();
   const store = getStore('tocmonkey');
   let allArticles = [];
