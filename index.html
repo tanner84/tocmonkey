@@ -2055,8 +2055,8 @@ async function renderArticles(){
   }
   el.innerHTML = filtered.map((a,i)=>{
     const isUserArt = !a._isDefault && !String(a.id).startsWith('9') && !a.isRSS;
-     const safeUrl = (a.url||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;');
-     return `
+    const safeUrl = (a.url||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+    return `
      <a class="art" href="${safeUrl}" target="_blank" rel="noopener noreferrer" style="display:block;text-decoration:none;color:inherit">
       ${isUserArt?`<button class="artdel" onclick="event.preventDefault();event.stopPropagation();delArticle(${a.id})">&#x2715;</button>`:''}
       <div class="arttitle">${a.title}</div>
@@ -2070,8 +2070,7 @@ async function renderArticles(){
       <div class="arttags">${(a.tags||[]).map(t=>`<span class="arttag">${t}</span>`).join('')}</div>
      </a>
     `;
-   }).join('');
- })();
+  }).join('');
 }
 
 async function delArticle(id){
