@@ -36,8 +36,12 @@ html,body{height:100%;background:var(--bg);color:var(--hi);font-family:var(--mon
   transition: height 0.3s;
 }
 @media(max-width:900px){.logo-img{height:22px}.bsub{display:none}}
+@media(max-width:900px){.ctab,.pht,.phs,.sa{font-size:1em;}}
 @media(max-width:600px){.logo-img{height:20px}.brand .bsep,.brand .bsub{display:none}}
+@media(max-width:600px){.ctab,.pht,.phs,.sa{font-size:0.95em;}}
 @media(max-width:480px){.logo-img{height:18px}}
+@media(max-width:480px){.ctab,.pht,.phs,.sa{font-size:0.9em;}}
+@media(min-width:1200px){.ctab,.pht,.phs,.sa{font-size:1.25em;}}
 .pdot{width:8px;height:8px;border-radius:50%;background:var(--g1);box-shadow:0 0 8px var(--g2);animation:pulse 2s ease infinite}
 .bname{font-size:13px;letter-spacing:4px;color:var(--g1);font-weight:bold}
 .bsep{color:var(--border);font-size:12px}
@@ -61,7 +65,7 @@ html,body{height:100%;background:var(--bg);color:var(--hi);font-family:var(--mon
 
 /* ── COCOM TABS ── */
 #tabbar{display:flex;background:var(--deep);border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto;height:32px}
-.ctab{padding:0 18px;font-size:10px;letter-spacing:2px;font-weight:bold;color:var(--fade);cursor:pointer;border:none;background:transparent;border-bottom:2px solid transparent;white-space:nowrap;font-family:var(--mono);transition:all .15s;flex-shrink:0;display:flex;align-items:center;gap:5px}
+.ctab{padding:0 18px;font-size:1.1em;letter-spacing:2px;font-weight:bold;color:var(--fade);cursor:pointer;border:none;background:transparent;border-bottom:2px solid transparent;white-space:nowrap;font-family:var(--mono);transition:all .15s;flex-shrink:0;display:flex;align-items:center;gap:5px}
 .ctab:hover{color:var(--mid);background:var(--hover)}
 .ctab.on{color:var(--g1);border-bottom-color:var(--g1);background:var(--panel)}
 .tbadge{font-size:7px;padding:1px 5px;border-radius:2px;background:#3a2020;color:var(--red)}
@@ -78,15 +82,15 @@ html,body{height:100%;background:var(--bg);color:var(--hi);font-family:var(--mon
 .pnl.qr{border-right:none}
 .pnl.qb{border-bottom:none}
 .ph{display:flex;align-items:center;justify-content:space-between;padding:4px 10px;border-bottom:1px solid var(--border);background:var(--deep);flex-shrink:0;height:26px}
-.pht{font-size:9px;color:var(--g1);letter-spacing:2px;font-weight:bold}
-.phs{font-size:8px;color:var(--mute);margin-left:6px}
+.pht{font-size:1.1em;color:var(--g1);letter-spacing:2px;font-weight:bold}
+.phs{font-size:1em;color:var(--mute);margin-left:6px}
 .phb{background:none;border:1px solid var(--border);color:var(--fade);border-radius:2px;padding:1px 7px;cursor:pointer;font-size:8px;font-family:var(--mono)}
 .phb.on{background:var(--sel);border-color:var(--g3);color:var(--g1)}
 
 /* ── MAP ── */
 #map{flex:1;min-height:0;width:100%}
 #srcbar{display:flex;gap:2px;padding:2px 6px;background:var(--deep);border-top:1px solid var(--border);flex-shrink:0;overflow-x:auto;overflow-y:hidden;white-space:nowrap;scrollbar-width:none}
-.sa{display:inline-block;flex-shrink:0;padding:2px 6px;text-align:center;background:var(--sel);border:1px solid var(--g3);color:var(--g1);font-size:8px;font-family:var(--mono);text-decoration:none;border-radius:2px;white-space:nowrap}
+.sa{display:inline-block;flex-shrink:0;padding:2px 6px;text-align:center;background:var(--sel);border:1px solid var(--g3);color:var(--g1);font-size:1em;font-family:var(--mono);text-decoration:none;border-radius:2px;white-space:nowrap}
 .sa:hover{background:var(--hover)}
 .sa.dim{color:var(--fade);border-color:var(--border)}
 
