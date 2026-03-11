@@ -61,6 +61,18 @@ const SOURCES = [
   { name: 'GAO', url: 'https://www.gao.gov/rss/news.xml' },
 ];
 
+// List of known paywalled domains to skip
+const PAYWALLED_DOMAINS = [
+  'wsj.com', 'nytimes.com', 'ft.com', 'economist.com', 'bloomberg.com',
+  'thetimes.co.uk', 'washingtonpost.com', 'latimes.com', 'theatlantic.com',
+  'newyorker.com', 'foreignpolicy.com', 'nationalreview.com', 'telegraph.co.uk',
+  'lemonde.fr', 'handelsblatt.com', 'nikkei.com', 'haaretz.com', 'stratfor.com'
+];
+
+function isPaywalled(url) {
+  return PAYWALLED_DOMAINS.some(domain => url && url.includes(domain));
+}
+
 exports.handler = async function() {
   // Netlify Scheduled Function: run daily at 06:00 UTC
   exports.schedule = "0 6 * * *";
@@ -77,6 +89,8 @@ exports.handler = async function() {
           source: src.name,
           description: item.contentSnippet || item.summary || '',
         };
+        // Skip paywalled articles
+        if (isPaywalled(article.url)) continue;
         // Classify by COCOM
         const cocoms = classifyByCOCOM(article.title + ' ' + article.description);
         for (const cocom of cocoms) {
