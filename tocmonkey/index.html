@@ -2397,6 +2397,8 @@ async function loadSports(){
     if(!r.ok) return;
     const d=await r.json();
     const games=d.games||[];
+    // DEBUG: Log games array to check for PGA and F1
+    console.log('SPORTS API games:', games);
     const el=document.getElementById('sporttrack');
     if(!el) return;
     if(!games.length){
