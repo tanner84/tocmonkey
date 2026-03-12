@@ -66,7 +66,9 @@ exports.handler = async function(event) {
     return { statusCode: 200, headers, body: JSON.stringify({ games: cache.data, cached: true }) };
   }
 
-  const results = [];
+  // Always fetch PGA and F1 first and include their results
+  const [pga, f1] = await Promise.all([fetchPGA(), fetchF1()]);
+  const results = [...pga, ...f1];
 
   await Promise.allSettled(LEAGUES.map(async ({ key, sport, league, label }) => {
     try {
