@@ -30,76 +30,7 @@ html,body{height:100%;background:var(--bg);color:var(--hi);font-family:var(--mon
 .logo-clock{display:flex;flex-direction:column;align-items:flex-start;gap:1px}
 /* Enlarge logo in WTF modal */
 .logo-img-modal {
-  height: 84px !important;
-  width: auto;
-  margin-top: 12px;
-  transition: height 0.3s;
-}
-@media(max-width:900px){.logo-img{height:22px}.bsub{display:none}}
-@media(max-width:900px){.ctab,.pht,.phs,.sa{font-size:1em;}}
-@media(max-width:600px){.logo-img{height:20px}.brand .bsep,.brand .bsub{display:none}}
-@media(max-width:600px){.ctab,.pht,.phs,.sa{font-size:0.95em;}}
-@media(max-width:480px){.logo-img{height:18px}}
-@media(max-width:480px){.ctab,.pht,.phs,.sa{font-size:0.9em;}}
-@media(min-width:1200px){.ctab,.pht,.phs,.sa{font-size:1.25em;}}
-.pdot{width:8px;height:8px;border-radius:50%;background:var(--g1);box-shadow:0 0 8px var(--g2);animation:pulse 2s ease infinite}
-.bname{font-size:13px;letter-spacing:4px;color:var(--g1);font-weight:bold}
-.bsep{color:var(--border);font-size:12px}
-.bsub{font-size:9px;color:var(--fade);letter-spacing:2px}
-.wtf-btn{background:rgba(74,222,128,0.08);border:1px solid var(--g1);color:var(--g1);font-size:8px;letter-spacing:2px;padding:3px 7px;cursor:pointer;border-radius:2px;font-family:inherit;transition:all .2s;margin-left:4px;animation:wtf-glow 1.8s ease-in-out infinite}
-.wtf-btn:hover{background:rgba(74,222,128,0.15);box-shadow:0 0 12px rgba(74,222,128,0.5)}
-@keyframes wtf-glow{0%,100%{box-shadow:0 0 4px rgba(74,222,128,0.4),0 0 8px rgba(74,222,128,0.2)}50%{box-shadow:0 0 10px rgba(239,68,68,0.7),0 0 20px rgba(239,68,68,0.4),0 0 4px rgba(74,222,128,0.2)}}
-#tkwrap{flex:1;overflow:hidden;height:100%;display:flex;align-items:center;padding:0 16px}
-#tkinner{display:inline-block;animation:ticker 55s linear infinite;white-space:nowrap}
-.ti{display:inline-flex;align-items:center;margin-right:28px;font-size:14px;letter-spacing:0.5px;gap:4px}
-.ts{color:var(--mute);font-size:13px;letter-spacing:1px}
-.tp{font-weight:bold;color:var(--hi)}
-.tc{font-size:13px;margin-left:2px}
-.tu{color:var(--fade);margin-left:3px;font-size:12px}
-.up{color:var(--g1)}.dn{color:var(--red)}
-.hright{display:flex;align-items:center;gap:10px;padding:0 12px;border-left:1px solid var(--border);height:100%;flex-shrink:0}
-.ck1{color:var(--hi);font-size:12px;letter-spacing:2px;font-weight:bold}
-.ck2{color:var(--mute);font-size:8px;letter-spacing:1px}
-.alink{color:var(--fade);font-size:8px;text-decoration:none;letter-spacing:1px;border:1px solid var(--border);padding:3px 8px;border-radius:2px}
-.alink:hover{color:var(--g1);border-color:var(--g3)}
-
-/* ── COCOM TABS ── */
-#tabbar{display:flex;background:var(--deep);border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto;height:32px}
-.ctab{padding:0 18px;font-size:1.1em;letter-spacing:2px;font-weight:bold;color:var(--fade);cursor:pointer;border:none;background:transparent;border-bottom:2px solid transparent;white-space:nowrap;font-family:var(--mono);transition:all .15s;flex-shrink:0;display:flex;align-items:center;gap:5px}
-.ctab:hover{color:var(--mid);background:var(--hover)}
-.ctab.on{color:var(--g1);border-bottom-color:var(--g1);background:var(--panel)}
-.tbadge{font-size:7px;padding:1px 5px;border-radius:2px;background:#3a2020;color:var(--red)}
-
-/* ── MAIN GRID ── */
-#main{height:calc(100vh - 128px);overflow:clip;display:flex}
-/* ── MAIN LAYOUT ── */
-#cpane{flex:1;overflow:hidden;display:flex;border-right:1px solid var(--border)}
-#mappnl{width:44%;flex-shrink:0;display:flex;flex-direction:column;overflow:clip;border-right:1px solid var(--border);position:relative}
-#quadgrid{flex:1;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;overflow:hidden}
-
-/* ── PANEL ── */
-.pnl{display:flex;flex-direction:column;overflow:hidden;border-right:1px solid var(--border);border-bottom:1px solid var(--border)}
-.pnl.qr{border-right:none}
-.pnl.qb{border-bottom:none}
-.ph{display:flex;align-items:center;justify-content:space-between;padding:4px 10px;border-bottom:1px solid var(--border);background:var(--deep);flex-shrink:0;height:26px}
-.pht{font-size:1.1em;color:var(--g1);letter-spacing:2px;font-weight:bold}
-.phs{font-size:1em;color:var(--mute);margin-left:6px}
-.phb{background:none;border:1px solid var(--border);color:var(--fade);border-radius:2px;padding:1px 7px;cursor:pointer;font-size:8px;font-family:var(--mono)}
-.phb.on{background:var(--sel);border-color:var(--g3);color:var(--g1)}
-
-/* ── MAP ── */
-#map{flex:1;min-height:0;width:100%}
-#srcbar{display:flex;gap:2px;padding:2px 6px;background:var(--deep);border-top:1px solid var(--border);flex-shrink:0;overflow-x:auto;overflow-y:hidden;white-space:nowrap;scrollbar-width:none}
-.sa{display:inline-block;flex-shrink:0;padding:2px 6px;text-align:center;background:var(--sel);border:1px solid var(--g3);color:var(--g1);font-size:1em;font-family:var(--mono);text-decoration:none;border-radius:2px;white-space:nowrap}
-.sa:hover{background:var(--hover)}
-.sa.dim{color:var(--fade);border-color:var(--border)}
-
-/* ── TWEET FEED ── */
-/* Make feed area scrollable and increase font size for readability */
-.feedwrap { flex: 1; overflow-y: auto !important; overflow-x: hidden; position: relative; max-height: 100vh; }
-.fgtop,.fgbot{position:absolute;left:0;right:0;height:16px;z-index:2;pointer-events:none}
-.fgtop{top:0;background:linear-gradient(to bottom,var(--panel),transparent)}
-.fgbot{bottom:0;background:linear-gradient(to top,var(--panel),transparent)}
+  // ...existing code...
 .ftrack{transition:transform .4s cubic-bezier(.4,0,.2,1)}
 
 /* Tweet card */
