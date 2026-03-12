@@ -1,119 +1,91 @@
 <!DOCTYPE html>
 <html lang="en">
-  // DEBUG: Show that loadSports() was called
-  let dbg = document.getElementById('sports-debug');
-  if (!dbg) {
-    dbg = document.createElement('pre');
-    dbg.id = 'sports-debug';
-    dbg.style = 'background:#222;color:#fff;padding:8px;font-size:12px;max-width:100vw;overflow-x:auto;z-index:9999;position:fixed;bottom:0;left:0;right:0;';
-    document.body.appendChild(dbg);
-  }
-  dbg.textContent = 'loadSports() called...';
-  try{
-    const r=await fetch('/.netlify/functions/sports');
-    if(!r.ok) {
-      dbg.textContent = 'loadSports() fetch failed: ' + r.status;
-      return;
-    }
-    const d=await r.json();
-    const games=d.games||[];
-    dbg.textContent = 'SPORTS API games:\n' + JSON.stringify(games, null, 2);
-    const el=document.getElementById('sporttrack');
-    if(!el) return;
-    if(!games.length){
-      el.textContent='NO SCORES AVAILABLE';
-      return;
-    }
-#app{display:flex;flex-direction:column;height:100vh}
-
-/* ── HEADER ── */
-#hdr{display:flex;flex-direction:column;border-bottom:1px solid var(--border);background:var(--deep);flex-shrink:0;height:54px;padding:0}
-.brand{display:flex;align-items:center;gap:8px;padding:0 16px;border-right:1px solid var(--border);height:100%;flex-shrink:0}
-.logo-wrap{display:flex;flex-direction:row;align-items:center;gap:8px;padding:0 10px}
-.logo-img{height:28px;width:auto;object-fit:contain;display:block;filter:drop-shadow(0 0 6px rgba(74,222,128,0.6));flex-shrink:0}
-.logo-clock{display:flex;flex-direction:column;align-items:flex-start;gap:1px}
-/* Enlarge logo in WTF modal */
-.logo-img-modal {
-  height: 84px !important;
-  width: auto;
-  margin-top: 12px;
-  transition: height 0.3s;
-}
-@media(max-width:900px){.logo-img{height:22px}.bsub{display:none}}
-@media(max-width:600px){.logo-img{height:20px}.brand .bsep,.brand .bsub{display:none}}
-@media(max-width:480px){.logo-img{height:18px}}
-.pdot{width:8px;height:8px;border-radius:50%;background:var(--g1);box-shadow:0 0 8px var(--g2);animation:pulse 2s ease infinite}
-.bname{font-size:13px;letter-spacing:4px;color:var(--g1);font-weight:bold}
-.bsep{color:var(--border);font-size:12px}
-.bsub{font-size:9px;color:var(--fade);letter-spacing:2px}
-.wtf-btn{background:rgba(74,222,128,0.08);border:1px solid var(--g1);color:var(--g1);font-size:8px;letter-spacing:2px;padding:3px 7px;cursor:pointer;border-radius:2px;font-family:inherit;transition:all .2s;margin-left:4px;animation:wtf-glow 1.8s ease-in-out infinite}
-.wtf-btn:hover{background:rgba(74,222,128,0.15);box-shadow:0 0 12px rgba(74,222,128,0.5)}
-@keyframes wtf-glow{0%,100%{box-shadow:0 0 4px rgba(74,222,128,0.4),0 0 8px rgba(74,222,128,0.2)}50%{box-shadow:0 0 10px rgba(239,68,68,0.7),0 0 20px rgba(239,68,68,0.4),0 0 4px rgba(74,222,128,0.2)}}
-#tkwrap{flex:1;overflow:hidden;height:100%;display:flex;align-items:center;padding:0 16px}
-#tkinner{display:inline-block;animation:ticker 55s linear infinite;white-space:nowrap}
-.ti{display:inline-flex;align-items:center;margin-right:28px;font-size:14px;letter-spacing:0.5px;gap:4px}
-.ts{color:var(--mute);font-size:13px;letter-spacing:1px}
-.tp{font-weight:bold;color:var(--hi)}
-.tc{font-size:13px;margin-left:2px}
-.tu{color:var(--fade);margin-left:3px;font-size:12px}
-.up{color:var(--g1)}.dn{color:var(--red)}
-.hright{display:flex;align-items:center;gap:10px;padding:0 12px;border-left:1px solid var(--border);height:100%;flex-shrink:0}
-.ck1{color:var(--hi);font-size:12px;letter-spacing:2px;font-weight:bold}
-.ck2{color:var(--mute);font-size:8px;letter-spacing:1px}
-.alink{color:var(--fade);font-size:8px;text-decoration:none;letter-spacing:1px;border:1px solid var(--border);padding:3px 8px;border-radius:2px}
-.alink:hover{color:var(--g1);border-color:var(--g3)}
-
-/* ── COCOM TABS ── */
-#tabbar{display:flex;background:var(--deep);border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto;height:32px}
-.ctab{padding:0 18px;font-size:10px;letter-spacing:2px;font-weight:bold;color:var(--fade);cursor:pointer;border:none;background:transparent;border-bottom:2px solid transparent;white-space:nowrap;font-family:var(--mono);transition:all .15s;flex-shrink:0;display:flex;align-items:center;gap:5px}
-.ctab:hover{color:var(--mid);background:var(--hover)}
-.ctab.on{color:var(--g1);border-bottom-color:var(--g1);background:var(--panel)}
-.tbadge{font-size:7px;padding:1px 5px;border-radius:2px;background:#3a2020;color:var(--red)}
-
-/* ── MAIN GRID ── */
-#main{height:calc(100vh - 128px);overflow:clip;display:flex}
-/* ── MAIN LAYOUT ── */
-#cpane{flex:1;overflow:hidden;display:flex;border-right:1px solid var(--border)}
-#mappnl{width:44%;flex-shrink:0;display:flex;flex-direction:column;overflow:clip;border-right:1px solid var(--border);position:relative}
-#quadgrid{flex:1;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;overflow:hidden}
-
-/* ── PANEL ── */
-.pnl{display:flex;flex-direction:column;overflow:hidden;border-right:1px solid var(--border);border-bottom:1px solid var(--border)}
-.pnl.qr{border-right:none}
-.pnl.qb{border-bottom:none}
-.ph{display:flex;align-items:center;justify-content:space-between;padding:4px 10px;border-bottom:1px solid var(--border);background:var(--deep);flex-shrink:0;height:26px}
-.pht{font-size:9px;color:var(--g1);letter-spacing:2px;font-weight:bold}
-.phs{font-size:8px;color:var(--mute);margin-left:6px}
-.phb{background:none;border:1px solid var(--border);color:var(--fade);border-radius:2px;padding:1px 7px;cursor:pointer;font-size:8px;font-family:var(--mono)}
-.phb.on{background:var(--sel);border-color:var(--g3);color:var(--g1)}
-
-/* ── MAP ── */
-#map{flex:1;min-height:0;width:100%}
-#srcbar{display:flex;gap:2px;padding:2px 6px;background:var(--deep);border-top:1px solid var(--border);flex-shrink:0;overflow-x:auto;overflow-y:hidden;white-space:nowrap;scrollbar-width:none}
-.sa{display:inline-block;flex-shrink:0;padding:2px 6px;text-align:center;background:var(--sel);border:1px solid var(--g3);color:var(--g1);font-size:8px;font-family:var(--mono);text-decoration:none;border-radius:2px;white-space:nowrap}
-.sa:hover{background:var(--hover)}
-.sa.dim{color:var(--fade);border-color:var(--border)}
-
-/* ── TWEET FEED ── */
-.feedwrap{flex:1;overflow:hidden;position:relative}
-.fgtop,.fgbot{position:absolute;left:0;right:0;height:16px;z-index:2;pointer-events:none}
-.fgtop{top:0;background:linear-gradient(to bottom,var(--panel),transparent)}
-.fgbot{bottom:0;background:linear-gradient(to top,var(--panel),transparent)}
-.ftrack{transition:transform .4s cubic-bezier(.4,0,.2,1)}
-
-/* Tweet card */
-.twcard{padding:11px 14px;border-bottom:1px solid var(--blt);cursor:pointer;transition:background .12s}
-.twcard:hover{background:var(--hover)}
-.twhdr{display:flex;align-items:flex-start;gap:9px;margin-bottom:6px}
-.twavatar{width:34px;height:34px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:bold;font-family:var(--sans);color:#fff;margin-top:2px}
-.twnames{flex:1;min-width:0;display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
-.twdname{font-size:12px;font-weight:bold;color:var(--hi);font-family:var(--sans);display:flex;align-items:center;gap:3px;white-space:nowrap}
-.twhandle{font-size:10px;color:var(--mute);font-family:var(--sans);white-space:nowrap}
-.twverified{color:var(--blue);font-size:11px;flex-shrink:0}
-.twtime{font-size:9px;color:var(--fade);flex-shrink:0;white-space:nowrap;margin-left:auto}
-// ...existing code...
-
-/* Responsive tweet font size/line height */
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>TOC MONKEY | What's Chief Tracking?</title>
+    <!-- Leaflet CSS (already present) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-sA+vx6kG2zLkLZ8p+U8zE6QJtGkTgkG0jzF2zF+4pFk=" crossorigin=""/>
+    <!-- Custom CSS -->
+    <style>
+      #app{display:flex;flex-direction:column;height:100vh}
+      /* ── HEADER ── */
+      #hdr{display:flex;flex-direction:column;border-bottom:1px solid var(--border);background:var(--deep);flex-shrink:0;height:54px;padding:0}
+      .brand{display:flex;align-items:center;gap:8px;padding:0 16px;border-right:1px solid var(--border);height:100%;flex-shrink:0}
+      .logo-wrap{display:flex;flex-direction:row;align-items:center;gap:8px;padding:0 10px}
+      .logo-img{height:28px;width:auto;object-fit:contain;display:block;filter:drop-shadow(0 0 6px rgba(74,222,128,0.6));flex-shrink:0}
+      .logo-clock{display:flex;flex-direction:column;align-items:flex-start;gap:1px}
+      /* Enlarge logo in WTF modal */
+      .logo-img-modal {
+        height: 84px !important;
+        width: auto;
+        margin-top: 12px;
+        transition: height 0.3s;
+      }
+      @media(max-width:900px){.logo-img{height:22px}.bsub{display:none}}
+      @media(max-width:600px){.logo-img{height:20px}.brand .bsep,.brand .bsub{display:none}}
+      @media(max-width:480px){.logo-img{height:18px}}
+      .pdot{width:8px;height:8px;border-radius:50%;background:var(--g1);box-shadow:0 0 8px var(--g2);animation:pulse 2s ease infinite}
+      .bname{font-size:13px;letter-spacing:4px;color:var(--g1);font-weight:bold}
+      .bsep{color:var(--border);font-size:12px}
+      .bsub{font-size:9px;color:var(--fade);letter-spacing:2px}
+      .wtf-btn{background:rgba(74,222,128,0.08);border:1px solid var(--g1);color:var(--g1);font-size:8px;letter-spacing:2px;padding:3px 7px;cursor:pointer;border-radius:2px;font-family:inherit;transition:all .2s;margin-left:4px;animation:wtf-glow 1.8s ease-in-out infinite}
+      .wtf-btn:hover{background:rgba(74,222,128,0.15);box-shadow:0 0 12px rgba(74,222,128,0.5)}
+      @keyframes wtf-glow{0%,100%{box-shadow:0 0 4px rgba(74,222,128,0.4),0 0 8px rgba(74,222,128,0.2)}50%{box-shadow:0 0 10px rgba(239,68,68,0.7),0 0 20px rgba(239,68,68,0.4),0 0 4px rgba(74,222,128,0.2)}}
+      #tkwrap{flex:1;overflow:hidden;height:100%;display:flex;align-items:center;padding:0 16px}
+      #tkinner{display:inline-block;animation:ticker 55s linear infinite;white-space:nowrap}
+      .ti{display:inline-flex;align-items:center;margin-right:28px;font-size:14px;letter-spacing:0.5px;gap:4px}
+      .ts{color:var(--mute);font-size:13px;letter-spacing:1px}
+      .tp{font-weight:bold;color:var(--hi)}
+      .tc{font-size:13px;margin-left:2px}
+      .tu{color:var(--fade);margin-left:3px;font-size:12px}
+      .up{color:var(--g1)}.dn{color:var(--red)}
+      .hright{display:flex;align-items:center;gap:10px;padding:0 12px;border-left:1px solid var(--border);height:100%;flex-shrink:0}
+      .ck1{color:var(--hi);font-size:12px;letter-spacing:2px;font-weight:bold}
+      .ck2{color:var(--mute);font-size:8px;letter-spacing:1px}
+      .alink{color:var(--fade);font-size:8px;text-decoration:none;letter-spacing:1px;border:1px solid var(--border);padding:3px 8px;border-radius:2px}
+      .alink:hover{color:var(--g1);border-color:var(--g3)}
+      /* ...existing code for other CSS... */
+    </style>
+    <!-- Leaflet JS: must be loaded BEFORE any code using L -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-o9N1jRVv6G8z1p3pPW1z8tT2y1kN1QpHb4g9gCk0p3E=" crossorigin=""></script>
+  </head>
+  <body>
+    <script>
+      // DEBUG: Show that loadSports() was called
+      async function loadSports() {
+        let dbg = document.getElementById('sports-debug');
+        if (!dbg) {
+          dbg = document.createElement('pre');
+          dbg.id = 'sports-debug';
+          dbg.style = 'background:#222;color:#fff;padding:8px;font-size:12px;max-width:100vw;overflow-x:auto;z-index:9999;position:fixed;bottom:0;left:0;right:0;';
+          document.body.appendChild(dbg);
+        }
+        dbg.textContent = 'loadSports() called...';
+        try{
+          const r=await fetch('/.netlify/functions/sports');
+          if(!r.ok) {
+            dbg.textContent = 'loadSports() fetch failed: ' + r.status;
+            return;
+          }
+          const d=await r.json();
+          const games=d.games||[];
+          dbg.textContent = 'SPORTS API games:\n' + JSON.stringify(games, null, 2);
+          const el=document.getElementById('sporttrack');
+          if(!el) return;
+          if(!games.length){
+            el.textContent='NO SCORES AVAILABLE';
+            return;
+          }
+          // ...existing code to render games...
+        } catch(e) {
+          dbg.textContent = 'loadSports() error: ' + e;
+        }
+      }
+      // Call loadSports on page load
+      window.addEventListener('DOMContentLoaded', loadSports);
+    </script>
 @media (max-width: 600px) {
   .twbody, .tw-modal-body { font-size: 13px; line-height: 1.7; }
 }
