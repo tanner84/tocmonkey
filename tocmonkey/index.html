@@ -21,60 +21,23 @@ html,body{height:100%;background:var(--bg);color:var(--hi);font-family:var(--mon
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 #app{display:flex;flex-direction:column;height:100vh}
 
-/* ── HEADER ── */
-#hdr{display:flex;flex-direction:column;border-bottom:1px solid var(--border);background:var(--deep);flex-shrink:0;height:54px;padding:0}
-.brand{display:flex;align-items:center;gap:8px;padding:0 16px;border-right:1px solid var(--border);height:100%;flex-shrink:0}
-.logo-wrap{display:flex;flex-direction:row;align-items:center;gap:8px;padding:0 10px}
-.logo-img{height:28px;width:auto;object-fit:contain;display:block;filter:drop-shadow(0 0 6px rgba(74,222,128,0.6));flex-shrink:0}
-.logo-clock{display:flex;flex-direction:column;align-items:flex-start;gap:1px}
-/* Enlarge logo in WTF modal */
-.logo-img-modal {
-  // ...existing code...
-.ftrack{transition:transform .4s cubic-bezier(.4,0,.2,1)}
-
-/* Tweet card */
-.twcard{padding:36px 32px 36px 40px;border-bottom:1px solid var(--blt);cursor:pointer;transition:background .12s; font-size: 1.55rem; line-height:2.5; font-weight:bold;}
-.twcard:hover{background:var(--hover)}
-.twhdr{display:flex;align-items:flex-start;gap:9px;margin-bottom:6px}
-.twavatar{width:34px;height:34px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:bold;font-family:var(--sans);color:#fff;margin-top:2px}
-.twnames{flex:1;min-width:0;display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
-.twdname{font-size:1.1em;font-weight:bold;color:var(--hi);font-family:var(--sans);display:flex;align-items:center;gap:3px;white-space:nowrap}
-.twhandle{font-size:1em;color:var(--mute);font-family:var(--sans);white-space:nowrap}
-.twverified{color:var(--blue);font-size:11px;flex-shrink:0}
-.twtime{font-size:1em;color:var(--fade);flex-shrink:0;white-space:nowrap;margin-left:auto}
-.twbody{font-size:1.85rem;color:var(--hi);line-height:2.6;font-family:var(--sans);margin-bottom:0;word-break:break-word;font-weight:bold;}
-.twfooter{display:flex;gap:14px;font-size:10px;color:var(--fade);font-family:var(--sans)}
-.twstat{display:flex;align-items:center;gap:3px}
-.twstat svg{opacity:.6}
-.twrss{border-left:3px solid var(--amber);padding-left:10px}
-
-@media (max-width: 600px) {
-  .twbody { font-size: 1rem; line-height:1.5; font-weight:normal; }
-  .twcard { font-size: 0.98rem; padding:11px 14px; line-height:1.5; font-weight:normal; }
+    <style>
+:root{
+  --bg:#1e211e;--panel:#252825;--deep:#1a1d1a;--hover:#2d312d;--sel:#323632;
+  --border:#3a4d3a;--blt:#2d3d2d;
+  --g1:#4ade80;--g2:#22c55e;--g3:#16a34a;--g4:#166534;
+  --hi:#f0f4f0;--mid:#b8cdb8;--mute:#7a9e7a;--fade:#4a6a4a;
+  --red:#f87171;--amber:#fbbf24;--lo:#34d399;--blue:#60a5fa;
+  --mono:'Courier New',monospace;--sans:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 }
-@media (min-width: 1025px) {
-  .twbody { font-size: 1.85rem; line-height:2.6; font-weight:bold; }
-  .twcard { font-size: 1.55rem; line-height:2.5; font-weight:bold; }
-}
-
-/* ── ORG PANEL ── */
-.orgtabs{display:flex;flex-shrink:0;border-bottom:1px solid var(--border);background:var(--deep);overflow-x:auto}
-.otab{padding:4px 10px;font-size:8px;letter-spacing:1px;font-weight:bold;color:var(--fade);cursor:pointer;border:none;background:transparent;border-bottom:2px solid transparent;font-family:var(--mono);white-space:nowrap;flex-shrink:0}
-.otab:hover{color:var(--mid);background:var(--hover)}
-.otab.on{color:var(--g1);border-bottom-color:var(--g1)}
-#orgscroll{flex:1;overflow-y:auto;padding:8px 10px;min-height:0}
-.ohq{font-size:11px;color:var(--g1);font-weight:bold;letter-spacing:1px;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--border);line-height:1.4}
-.ocomp{margin-bottom:10px}
-.ocompname{font-size:10px;color:var(--g2);font-weight:bold;margin-bottom:3px;display:flex;align-items:baseline;gap:6px}
-.otype{font-size:8px;color:var(--fade);font-weight:normal}
-.ounit{font-size:9px;color:var(--hi);padding:2px 0 2px 12px;border-left:1px solid var(--blt);margin-left:5px;line-height:1.5}
-.osub{font-size:8px;color:var(--mid);padding:2px 0 2px 22px;border-left:1px dashed var(--blt);margin-left:5px;line-height:1.5}
-.onote{font-size:8px;color:var(--fade);margin-top:10px;padding-top:6px;border-top:1px solid var(--blt);line-height:1.6;font-style:italic}
-.ocountry{display:inline-block;font-size:8px;padding:1px 6px;border-radius:2px;margin-bottom:8px;font-weight:bold}
-
-/* ── EQUIPMENT ROTATOR ── */
-.eqwrap{flex:1;overflow:hidden;position:relative}
-.eqtrack{transition:transform .4s cubic-bezier(.4,0,.2,1)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--hi);font-family:var(--mono);overflow:hidden}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:var(--panel)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+#app{display:flex;flex-direction:column;height:100vh}
+/* ...existing code for other CSS... */
+    </style>
 .eqrow{padding:7px 10px;border-bottom:1px solid var(--blt);cursor:pointer;transition:background .12s;overflow:hidden;display:flex;gap:8px;align-items:center}
 .eqrow:hover{background:var(--hover)}
 .eqflag{font-size:14px;flex-shrink:0;width:22px;text-align:center}
