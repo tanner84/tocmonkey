@@ -1974,7 +1974,7 @@ function getFeedItems(){
  }).map(r=>({
   src:r.source,handle:r.sourceHandle,dname:r.source,
   time:r.age,displayTime:r.age,
-  text: (r.description && r.description.length > 40 ? r.description : (r.summary || r.content || r.title)),
+  text: (r.desc && r.desc.length > 40 ? r.desc : (r.description && r.description.length > 40 ? r.description : (r.summary || r.content || r.title))),
   aor:[id],likes:0,rts:0,replies:0,
   url:r.url,isRSS:true,_assignedMins:parseTimeToMins(r.age)
  }));
