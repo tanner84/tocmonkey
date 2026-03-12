@@ -18,6 +18,36 @@ const LEAGUES = [
   { key: 'mls',     sport: 'soccer',    league: 'usa.1',            label: 'MLS'  },
 ];
 
+// --- GOLF (PGA) ---
+async function fetchPGA() {
+  try {
+    const res = await fetch('https://site.api.espn.com/apis/site/v2/sports/golf/pga/leaderboard');
+    if (!res.ok) return [];
+    const data = await res.json();
+    const event = data.events?.[0];
+    if (!event) return [];
+    const leaderboard = event.competitions?.[0]?.competitors || [];
+    const top = leaderboard.slice(0, 3).map((p, i) => `${i === 0 ? '🏆' : ''}${p.athlete?.displayName || ''} (${p.status?.position || ''}, ${p.score || ''})`).join(' | ');
+    return [{ label: 'PGA', state: 'post', display: `Golf Leaderboard: ${top}` }];
+  } catch { return []; }
+}
+
+// --- F1 ---
+async function fetchF1() {
+  try {
+    const res = await fetch('https://ergast.com/api/f1/current/last/results.json');
+    if (!res.ok) return [];
+    const data = await res.json();
+    const race = data.MRData?.RaceTable?.Races?.[0];
+    if (!race) return [];
+    const results = race.Results || [];
+    const winner = results[0]?.Driver;
+    const team = results[0]?.Constructor?.name;
+    const display = `F1: ${race.raceName} — Winner: ${winner.givenName} ${winner.familyName} (${team})`;
+    return [{ label: 'F1', state: 'post', display }];
+  } catch { return []; }
+}
+
 function espnUrl(sport, league) {
   return `https://site.api.espn.com/apis/site/v2/sports/${sport}/${league}/scoreboard`;
 }
@@ -68,6 +98,8 @@ exports.handler = async function(event) {
 
   const results = [];
 
+
+  // Fetch regular leagues
   await Promise.allSettled(LEAGUES.map(async ({ key, sport, league, label }) => {
     try {
       const res = await fetch(espnUrl(sport, league), {
@@ -77,8 +109,6 @@ exports.handler = async function(event) {
       if (!res.ok) return;
       const data = await res.json();
       const events = data.events || [];
-
-      // Only show: live games, games finished in last 12h, games starting in next 24h
       const now = Date.now();
       const relevant = events.filter(ev => {
         const state = ev.competitions?.[0]?.status?.type?.state;
@@ -88,22 +118,22 @@ exports.handler = async function(event) {
         if (state === 'pre'  && d - now < 24 * 3600 * 1000) return true;
         return false;
       });
-
-      // Sort: live first, then post (most recent), then pre (soonest)
       const ORDER = { in: 0, post: 1, pre: 2 };
       relevant.sort((a, b) => {
         const sa = a.competitions?.[0]?.status?.type?.state;
         const sb = b.competitions?.[0]?.status?.type?.state;
         return (ORDER[sa] ?? 3) - (ORDER[sb] ?? 3);
       });
-
-      // Cap per league — live/recent first, max 4 per league
       relevant.slice(0, 4).forEach(ev => {
         const g = parseGame(ev, label);
         if (g) results.push(g);
       });
     } catch { /* league offline — skip */ }
   }));
+
+  // Fetch PGA and F1
+  const [pga, f1] = await Promise.all([fetchPGA(), fetchF1()]);
+  results.push(...pga, ...f1);
 
   // Sort final output: live > post > pre, then by label
   const ORDER = { in: 0, post: 1, pre: 2 };
