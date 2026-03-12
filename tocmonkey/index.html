@@ -2014,7 +2014,7 @@ const FSHOW=3;
 function renderFeed(){
  const track=document.getElementById('ftrack');
  if(!feedItems.length){track.innerHTML='<div style="padding:14px 10px;color:var(--fade);font-size:10px">No feed items for this AOR.</div>';return;}
- const visible=Array.from({length:FSHOW+1},(_,i)=>feedItems[(feedOffset+i)%feedItems.length]);
+ const visible=Array.from({length:FSHOW},(_,i)=>feedItems[(feedOffset+i)%feedItems.length]);
  track.innerHTML=visible.map(p=>{
   const enc=encodeURIComponent(JSON.stringify(p));
   const isRSS=!!p.isRSS;
@@ -2039,13 +2039,13 @@ function renderFeed(){
   </div>`;
  }).join('');
  const wrap=track.parentElement;
- const rh=wrap&&wrap.clientHeight>10?Math.floor(wrap.clientHeight/(FSHOW+1)):120;
+ const rh=wrap&&wrap.clientHeight>10?Math.floor(wrap.clientHeight/(FSHOW)):120;
  if(rh>0) track.querySelectorAll('.twcard').forEach(r=>{r.style.height=rh+'px';r.style.overflow='hidden';});
 }
 
 function slideFeed(){
  const track=document.getElementById('ftrack'),wrap=track.parentElement;
- const rh=wrap&&wrap.clientHeight>10?Math.floor(wrap.clientHeight/(FSHOW+1)):0;
+ const rh=wrap&&wrap.clientHeight>10?Math.floor(wrap.clientHeight/(FSHOW)):0;
  if(!rh)return;
  track.style.transition='transform .4s cubic-bezier(.4,0,.2,1)';
  track.style.transform=`translateY(-${rh}px)`;
