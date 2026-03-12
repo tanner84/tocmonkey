@@ -103,7 +103,7 @@ html,body{height:100%;background:var(--bg);color:var(--hi);font-family:var(--mon
 .ftrack{transition:transform .4s cubic-bezier(.4,0,.2,1)}
 
 /* Tweet card */
-.twcard{padding:28px 24px 28px 32px;border-bottom:1px solid var(--blt);cursor:pointer;transition:background .12s; font-size: 1.35rem; line-height:2.3;}
+.twcard{padding:36px 32px 36px 40px;border-bottom:1px solid var(--blt);cursor:pointer;transition:background .12s; font-size: 1.55rem; line-height:2.5; font-weight:bold;}
 .twcard:hover{background:var(--hover)}
 .twhdr{display:flex;align-items:flex-start;gap:9px;margin-bottom:6px}
 .twavatar{width:34px;height:34px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:bold;font-family:var(--sans);color:#fff;margin-top:2px}
@@ -112,19 +112,19 @@ html,body{height:100%;background:var(--bg);color:var(--hi);font-family:var(--mon
 .twhandle{font-size:1em;color:var(--mute);font-family:var(--sans);white-space:nowrap}
 .twverified{color:var(--blue);font-size:11px;flex-shrink:0}
 .twtime{font-size:1em;color:var(--fade);flex-shrink:0;white-space:nowrap;margin-left:auto}
-.twbody{font-size:1.65rem;color:var(--hi);line-height:2.4;font-family:var(--sans);margin-bottom:7px;word-break:break-word;}
+.twbody{font-size:1.85rem;color:var(--hi);line-height:2.6;font-family:var(--sans);margin-bottom:0;word-break:break-word;font-weight:bold;}
 .twfooter{display:flex;gap:14px;font-size:10px;color:var(--fade);font-family:var(--sans)}
 .twstat{display:flex;align-items:center;gap:3px}
 .twstat svg{opacity:.6}
 .twrss{border-left:3px solid var(--amber);padding-left:10px}
 
 @media (max-width: 600px) {
-  .twbody { font-size: 1rem; line-height:1.5; }
-  .twcard { font-size: 0.98rem; padding:11px 14px; line-height:1.5; }
+  .twbody { font-size: 1rem; line-height:1.5; font-weight:normal; }
+  .twcard { font-size: 0.98rem; padding:11px 14px; line-height:1.5; font-weight:normal; }
 }
 @media (min-width: 1025px) {
-  .twbody { font-size: 1.65rem; line-height:2.4; }
-  .twcard { font-size: 1.35rem; line-height:2.3; }
+  .twbody { font-size: 1.85rem; line-height:2.6; font-weight:bold; }
+  .twcard { font-size: 1.55rem; line-height:2.5; font-weight:bold; }
 }
 
 /* ── ORG PANEL ── */
