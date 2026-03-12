@@ -230,7 +230,8 @@ html,body{height:100%;background:var(--bg);color:var(--hi);font-family:var(--mon
 @keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 #hdr-top{display:flex;align-items:center;width:100%;height:32px;flex-shrink:0}
 #sportwrap{width:100%;height:22px;overflow:hidden;background:#1a1a14;border-top:1px solid #2a2a1a;display:flex;align-items:center;padding:0 8px}
-#sportinner{display:inline-block;animation:ticker 60s linear infinite;white-space:nowrap;font-family:var(--mono);font-size:11px}
+#sportinner{display:inline-block;overflow:hidden;white-space:nowrap;font-family:var(--mono);font-size:11px}
+#sporttrack{display:inline-block;white-space:nowrap;}
 .sgi{display:inline-flex;align-items:center;gap:5px;margin-right:32px}
 .sgl{color:#d97706;font-size:10px;letter-spacing:1px;font-weight:bold}
 .sgd{color:#e5c87a;font-size:11px}
@@ -386,7 +387,7 @@ html,body{height:100%;background:var(--bg);color:var(--hi);font-family:var(--mon
     <a href="/admin" class="alink" style="font-size:9px;letter-spacing:2px">ADMIN</a>
   </div><!-- /hright -->
   </div><!-- /hdr-top -->
-  <div id="sportwrap"><div id="sportinner">LOADING SCORES...</div></div>
+  <div id="sportwrap"><div id="sportinner"><div id="sporttrack">LOADING SCORES...</div></div></div>
 </div>
 
 <!-- COCOM TABS -->
@@ -2226,7 +2227,7 @@ async function loadSports(){
     if(!r.ok) return;
     const d=await r.json();
     const games=d.games||[];
-    const el=document.getElementById('sportinner');
+    const el=document.getElementById('sporttrack');
     if(!el) return;
     if(!games.length){
       el.textContent='NO SCORES AVAILABLE';
@@ -2237,6 +2238,33 @@ async function loadSports(){
       const lbl=`<span class="sgl${isLive?' sgl-live':''}">${g.label}</span>`;
       return `<span class="sgi">${lbl}<span class="sgd">${g.display}</span></span>`;
     }).join('<span style="color:#4a4a2a;margin-right:32px">|</span>');
+    // Dynamic ticker animation
+    const sportinner = document.getElementById('sportinner');
+    if (sportinner && el) {
+      // Remove previous animation
+      el.style.animation = 'none';
+      void el.offsetWidth;
+      // Calculate widths
+      const containerWidth = sportinner.offsetWidth;
+      const contentWidth = el.scrollWidth;
+      // Minimum duration for short tickers
+      const minDuration = 12; // seconds
+      // Pixels per second speed (higher = faster)
+      const pxPerSec = 80;
+      const duration = Math.max(minDuration, (contentWidth + containerWidth) / pxPerSec);
+      // Set up keyframes dynamically
+      const styleId = 'sportticker-anim';
+      let styleTag = document.getElementById(styleId);
+      if (!styleTag) {
+        styleTag = document.createElement('style');
+        styleTag.id = styleId;
+        document.head.appendChild(styleTag);
+      }
+      styleTag.textContent = `@keyframes sportticker { from { transform: translateX(${containerWidth}px); } to { transform: translateX(-${contentWidth}px); } }`;
+      el.style.display = 'inline-block';
+      el.style.whiteSpace = 'nowrap';
+      el.style.animation = `sportticker ${duration}s linear infinite`;
+    }
   }catch(e){
     console.warn('Sports API error:',e.message);
   }
