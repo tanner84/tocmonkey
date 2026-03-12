@@ -103,7 +103,7 @@ html,body{height:100%;background:var(--bg);color:var(--hi);font-family:var(--mon
 .ftrack{transition:transform .4s cubic-bezier(.4,0,.2,1)}
 
 /* Tweet card */
-.twcard{padding:11px 14px;border-bottom:1px solid var(--blt);cursor:pointer;transition:background .12s; font-size: 1.05rem; }
+.twcard{padding:20px 18px 20px 24px;border-bottom:1px solid var(--blt);cursor:pointer;transition:background .12s; font-size: 1.22rem; }
 .twcard:hover{background:var(--hover)}
 .twhdr{display:flex;align-items:flex-start;gap:9px;margin-bottom:6px}
 .twavatar{width:34px;height:34px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:bold;font-family:var(--sans);color:#fff;margin-top:2px}
@@ -112,7 +112,7 @@ html,body{height:100%;background:var(--bg);color:var(--hi);font-family:var(--mon
 .twhandle{font-size:1em;color:var(--mute);font-family:var(--sans);white-space:nowrap}
 .twverified{color:var(--blue);font-size:11px;flex-shrink:0}
 .twtime{font-size:1em;color:var(--fade);flex-shrink:0;white-space:nowrap;margin-left:auto}
-.twbody{font-size:1.35rem;color:var(--hi);line-height:2.1;font-family:var(--sans);margin-bottom:7px;word-break:break-word;max-height:7.5em;overflow:auto;}
+.twbody{font-size:1.45rem;color:var(--hi);line-height:2.2;font-family:var(--sans);margin-bottom:7px;word-break:break-word;}
 .twfooter{display:flex;gap:14px;font-size:10px;color:var(--fade);font-family:var(--sans)}
 .twstat{display:flex;align-items:center;gap:3px}
 .twstat svg{opacity:.6}
@@ -120,11 +120,11 @@ html,body{height:100%;background:var(--bg);color:var(--hi);font-family:var(--mon
 
 @media (max-width: 600px) {
   .twbody { font-size: 1rem; }
-  .twcard { font-size: 0.98rem; }
+  .twcard { font-size: 0.98rem; padding:11px 14px; }
 }
 @media (min-width: 1025px) {
-  .twbody { font-size: 1.25rem; }
-  .twcard { font-size: 1.1rem; }
+  .twbody { font-size: 1.45rem; }
+  .twcard { font-size: 1.22rem; }
 }
 
 /* ── ORG PANEL ── */
