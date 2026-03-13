@@ -54,6 +54,9 @@ const X_ACCOUNTS = [
   { handle:"christogrozev",    dname:"Christo Grozev",          verified:true,  aor:["EUCOM"] },
   { handle:"IAPonomarenko",    dname:"Illia Ponomarenko",       verified:true,  aor:["EUCOM"] },
   { handle:"DaraMassicot",     dname:"Dara Massicot",           verified:true,  aor:["EUCOM"] },
+  { handle:"OCCRP",            dname:"OCCRP",                   verified:true,  aor:["EUCOM","CENTCOM","AFRICOM","SOUTHCOM"] },
+  { handle:"balkaninsight",    dname:"Balkan Insight",          verified:true,  aor:["EUCOM"] },
+  { handle:"Europol",          dname:"Europol",                 verified:true,  aor:["EUCOM","NORTHCOM"] },
   // ── CENTCOM / Middle East ────────────────────────────────
   { handle:"JominiW",          dname:"Jomini of the West",      verified:true,  aor:["EUCOM","CENTCOM","INDOPACOM"] },
   { handle:"MT_Anderson",      dname:"MT Anderson",             verified:false, aor:["CENTCOM","NORTHCOM"] },
