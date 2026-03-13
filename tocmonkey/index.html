@@ -523,7 +523,7 @@ const COCOMS=[
    {id:4,name:"Kaliningrad",lat:54.7,lng:20.5,intensity:"MED",type:"A2/AD"},
    {id:5,name:"NATO Eastern Flank",lat:54.0,lng:24.0,intensity:"MED",type:"Deterrence"},
   ],
-  keywords:["ukraine","russia","nato","europe","baltic","black sea","kaliningrad","leopard","abrams","himars","f-16","shahed","zaporizhzhia","kherson","kharkiv","drone","zelensky","putin","kursk"],
+  keywords:["ukraine","russia","nato","europe","baltic","black sea","kaliningrad","leopard","abrams","himars","f-16","shahed","zaporizhzhia","kherson","kharkiv","drone","zelensky","putin","kursk","bratva","oligarch","occrp","sanctions","mogilevich","solntsevskaya","vory","money laundering","fsb"],
   orgTabs:[
    {label:"US / NATO",flag:"🇺🇸",id:"us",cat:"allied"},
    {label:"UK",flag:"🇬🇧",id:"uk",cat:"allied"},
@@ -535,6 +535,7 @@ const COCOMS=[
    {label:"Belarus",flag:"🇧🇾",id:"blr",cat:"adversary"},
    {label:"Wagner / Africa Corps",flag:"⚔️",id:"wagner",cat:"nonstate"},
    {label:"Kadyrovtsy",flag:"🇷🇺",id:"kadyrov",cat:"nonstate"},
+   {label:"Russian OC / Bratva",flag:"🏴‍☠️",id:"roc",cat:"nonstate"},
   ],
   orgs:{
    us:{hq:"HQ USEUCOM — Stuttgart, GE · SACEUR dual-hat",flag:"🇺🇸",
@@ -707,6 +708,31 @@ const COCOMS=[
      ]},
     ],
     note:"Kadyrovtsy serve political loyalty function for Chechen regime. Combat effectiveness debated. High-profile information operations. Alaudinov is prominent Russian military commentator on Telegram."},
+   roc:{hq:"Distributed — Moscow (Solntsevskaya), St. Petersburg (Tambovskaya), Budapest (Mogilevich network)",flag:"🏴‍☠️",
+    components:[
+     {name:"Vory v Zakone (Thieves-in-Law)",type:"Criminal Hierarchy",units:[
+      {u:"Supreme Council / Skhodka (criminal parliament)",subs:["Pan-Russian dispute resolution body for OPGs","Enforces 'vorovskoy zakon' (thieves' code) across factions","Zakhar 'Shakro' Kalashov — senior vor, imprisoned Spain","~1,000-2,000 active vory globally (Russia, Georgia, Spain, France, Israel, USA)"]},
+      {u:"Georgian Vory network",subs:["Ethnic Georgian thieves-in-law hold disproportionate influence","Tbilisi / Moscow / Madrid / Paris / Miami nodes","Control diaspora criminal enterprises across Western Europe"]},
+     ]},
+     {name:"Solntsevskaya Bratva",type:"OPG (Organized Crime Group)",units:[
+      {u:"Leadership",subs:["Sergei Mikhailov ('Mikhas') — Moscow-based, leads Solntsevskaya","Viktor Averin (co-founder) — deceased Dec 2025 (boat incident)","~5,000 active members globally","FSB protection confirmed per 2010 WikiLeaks diplomatic cables"]},
+      {u:"Criminal Industries",subs:["Heroin/fentanyl trafficking — Central Asian/Afghan routes","Arms trafficking — post-Soviet stockpile brokerage","Money laundering — Cyprus, Malta, UAE, UK LLP shell companies","Cybercrime facilitation — ransomware infrastructure hosting","Human trafficking — Eastern Europe → Western Europe corridors"]},
+     ]},
+     {name:"Tambovskaya / Malyshevskaya",type:"OPG",units:[
+      {u:"St. Petersburg Operations",subs:["Dominant OPG in St. Petersburg through 1990s-2000s","Vladimir Kumarin ('Night Governor of St. Pete') — imprisoned 2016","Documented links to current Russian political figures (Navalny/FBK investigations)","Port of St. Petersburg drug/arms transshipment"]},
+     ]},
+     {name:"Izmaylovskaya OPG",type:"OPG",units:[
+      {u:"Moscow-based",subs:["Soviet army veteran founding membership","Aluminum industry privatization ties (1990s Aluminum Wars)","Connected to Oleg Deripaska per US Treasury allegations","OFAC-sanctioned individuals within network"]},
+     ]},
+     {name:"Semion Mogilevich Network",type:"Senior Criminal Enterprise",units:[
+      {u:"Budapest / Moscow / Kyiv",subs:["FBI Top 10 Most Wanted (since 2009, active listing)","Characterized by FBI/CIA as 'boss of bosses' of Russian organized crime","YBM Magnex stock fraud — $150M US securities scheme","RosUkrEnergo gas trading company — FSB/oligarch/crime nexus","Financial corridors: Hungary → Austria → UK → offshore"]},
+     ]},
+     {name:"FSB ↔ Bratva Nexus (State-Crime Interface)",type:"Intelligence Interface",units:[
+      {u:"Structural relationship",subs:["FSB provides 'krysha' (roof / protection) for compliant OPGs","OPG revenue taxed and laundered for Kremlin covert op funding","Sanctions evasion logistics outsourced to bratva networks","Sergei Korolev (FSB Deputy Dir.) — documented mob ties, 2018","Viktor Zolotov (Rosgvardiya chief) — attended vor funerals"]},
+      {u:"Oligarch layer",subs:["Roman Abramovich — sanctioned, ~$13.5B net worth (OFAC/UK/EU)","Yury Kovalchuk — 'Putin's personal banker', Bank Rossiya","Arkady Rotenberg — Putin judo partner, infrastructure contractor","Gennady Timchenko — Volga Group, energy trading, sanctioned"]},
+     ]},
+    ],
+    note:"Russian organized crime functions as a strategic instrument of state power. Under Putin, the FSB formalized protection-for-cooperation arrangements with major bratvas: covert operations funding, sanctions evasion, and assassination logistics are outsourced to OPG networks. Key exposure corridors: Cyprus (EU gateway, now mostly blocked), Malta, UAE/Dubai (primary current laundering hub), UK shell companies (LLPs), and offshore jurisdictions exposed by Panama Papers / Pandora Papers / ICIJ Offshore Leaks. OCCRP, Bellingcat, and Navalny FBK investigations are primary tracking sources."},
   },
   equipment:[
    {n:"F-16AM Fighting Falcon",t:"Fighter",o:"Ukraine/NATO",flag:"🇺🇦",d:"4th-gen multirole. Ukraine receiving from BE/DK/NL/NO. AIM-120 AMRAAM capable.",l:"https://en.wikipedia.org/wiki/General_Dynamics_F-16_Fighting_Falcon"},
@@ -2476,6 +2502,10 @@ const SIGACTS_DATA=[
  {date:"2026-01-22",type:"Escalation",loc:"Belarus-Poland border",lat:52.1,lng:24.0,cocom:"EUCOM",summary:"Belarusian military deploys 3 BMP-2 company tactical groups to Brest Oblast; NATO monitors assess as exercises, not pre-attack.",src:"NATO SHAPE / OSINT satimagery"},
  {date:"2026-01-15",type:"Escalation",loc:"Baltic Sea / GPS corridor",lat:57.0,lng:22.0,cocom:"EUCOM",summary:"Russia jams GPS across Latvia and Lithuania; commercial aviation disrupted for 6 hours. Pattern consistent with 2024 incidents.",src:"Eurocontrol / Lithuanian CAA"},
  {date:"2026-01-08",type:"Terror",loc:"Kyiv, Ukraine",lat:50.4,lng:30.5,cocom:"EUCOM",summary:"Shahed-136 swarm attack; 9 drones penetrate air defense, strike residential Obolonskyi district. 2 killed, 14 wounded.",src:"Kyiv City Military Administration"},
+ {date:"2026-03-07",type:"Political",loc:"London, United Kingdom",lat:51.5,lng:-0.1,cocom:"EUCOM",summary:"UK NCA and OFSI freeze £340M in assets linked to Solntsevskaya Bratva-connected shell companies. 14 UK LLPs dissolved. Proceeds traced to Russian sanctions evasion network used to procure dual-use electronics for MoD.",src:"UK NCA / OFSI / OCCRP"},
+ {date:"2026-02-21",type:"Terror",loc:"Vienna, Austria",lat:48.2,lng:16.4,cocom:"EUCOM",summary:"Bulgarian national linked to Semion Mogilevich network found dead in apparent contract killing; polonium-210 traces detected. Third suspected Russian OC assassination in EU in 12 months. Europol activates EMPACT organized crime protocol.",src:"Austrian BVT / Europol / Bellingcat"},
+ {date:"2026-02-03",type:"Cyber",loc:"Frankfurt, Germany (EU banking infrastructure)",lat:50.1,lng:8.7,cocom:"EUCOM",summary:"ECB alerts member banks to coordinated sanctions-evasion scheme; Solntsevskaya-linked entities used layered UAE→Malta→Estonia accounts to move $2.1B in Kremlin-adjacent funds since 2022. SWIFT compliance failures identified at 3 EU institutions.",src:"ECB / FATF / OCCRP investigation"},
+ {date:"2026-01-19",type:"Political",loc:"Dubai, UAE",lat:25.2,lng:55.3,cocom:"EUCOM",summary:"OCCRP/Pandora Papers follow-up: 47 Russian oligarchs and OPG-linked entities identified holding $18B+ in UAE real estate. US Treasury issues secondary sanction warnings to UAE banks facilitating transactions for OFAC-designated individuals.",src:"OCCRP / US Treasury OFAC"},
  // ── CENTCOM ──
  {date:"2026-03-11",type:"Terror",loc:"Tel Aviv, Israel",lat:32.1,lng:34.8,cocom:"CENTCOM",summary:"Car ramming at Dizengoff Square; 2 killed, 5 injured. Attacker neutralized by off-duty officer. No group claim within 24h.",src:"Israeli Police / Haaretz"},
  {date:"2026-03-09",type:"Airstrike",loc:"Hodeidah, Yemen",lat:14.8,lng:42.9,cocom:"CENTCOM",summary:"CENTCOM precision strike destroys Houthi over-the-horizon radar site used to target commercial shipping. No civilian casualties reported.",src:"CENTCOM PAO"},

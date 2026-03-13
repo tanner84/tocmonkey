@@ -25,6 +25,14 @@ const FEEDS = [
   { name:"r/geopolitics",           handle:"GEOPOLITICS_R",    cocom:"ALL",       color:"mute",   url:"https://www.reddit.com/r/geopolitics/.rss" },
   { name:"r/worldnews",             handle:"WORLDNEWS_R",      cocom:"ALL",       color:"mute",   url:"https://www.reddit.com/r/worldnews/.rss" },
 
+  // ── INVESTIGATIVE / ORGANIZED CRIME / CORRUPTION ────────────────────────
+  { name:"OCCRP",                    handle:"OCCRP",            cocom:"ALL",       color:"amber",  url:"https://www.occrp.org/en/rss" },
+  { name:"Bellingcat",               handle:"BELLINGCAT2",      cocom:"ALL",       color:"amber",  url:"https://www.bellingcat.com/feed/" },
+  { name:"Transparency Intl.",       handle:"TRANSPARENCY",     cocom:"ALL",       color:"amber",  url:"https://www.transparency.org/en/feed" },
+  { name:"GIJN",                     handle:"GIJN",             cocom:"ALL",       color:"amber",  url:"https://gijn.org/feed/" },
+  { name:"Gangsters Inc.",           handle:"GANGSTERSINC",     cocom:"EUCOM",     color:"mute",   url:"https://gangstersinc.org/profiles/blogs/feed/featured" },
+  { name:"New Lines Institute",      handle:"NEWLINES",         cocom:"ALL",       color:"amber",  url:"https://newlinesinstitute.org/feed/" },
+
   // ── ANALYSIS / THINK TANKS ──────────────────────────────────────────────
   { name:"War on the Rocks",        handle:"WARONTHEROCKS",    cocom:"ALL",       color:"amber",  url:"https://warontherocks.com/feed/" },
   { name:"ISW",                     handle:"UNDERSTANDINGWAR", cocom:"EUCOM",     color:"amber",  url:"https://www.understandingwar.org/rss.xml" },
