@@ -3082,12 +3082,15 @@ function fmtNum(n){if(n>=1000)return(n/1000).toFixed(1)+'K';return String(n);}
 function openFeedModal(encoded){
  const p=JSON.parse(encoded);
  const isRSS=!!p.isRSS;
+ const isTruth=p.source==='truthsocial';
  const col=avColor(p.handle||p.src);
  const init=avInit(p.handle||p.src);
- const link=isRSS?(p.url||'#'):`https://x.com/${(p.handle||p.src||'').replace('@','')}`;
- const linkTxt=isRSS?'READ FULL ARTICLE ↗':'VIEW ON X ↗';
+ const link=isRSS?(p.url||'#'):isTruth?(p.url||`https://truthsocial.com/@${p.handle}`):`https://x.com/${(p.handle||p.src||'').replace('@','')}`;
+ const linkTxt=isRSS?'READ FULL ARTICLE ↗':isTruth?'VIEW ON TRUTH SOCIAL ↗':'VIEW ON X ↗';
+ const srcLabel=isRSS?'RSS FEED':isTruth?'TRUTH SOCIAL · GOV OFFICIAL':'OSINT · X/TWITTER';
+ const srcColor=isRSS?'var(--amber)':isTruth?'#e8603c':'var(--g1)';
  openModal(`
-  <div class="mtag" style="color:${isRSS?'var(--amber)':'var(--g1)'}">${isRSS?'RSS FEED':'OSINT · X/TWITTER'} · ${AC.id}</div>
+  <div class="mtag" style="color:${srcColor}">${srcLabel} · ${AC.id}</div>
   <div class="tw-modal-card">
    <div class="tw-modal-hdr">
     <div class="tw-modal-avatar" style="background:${col}">${init}</div>

@@ -27,6 +27,15 @@ const BLUESKY_ACCOUNTS = [
   { bsky:"warmatters.bsky.social",       xHandle:"@WarMatters",       dname:"War on the Rocks",     verified:true,  aor:["CENTCOM","EUCOM","INDOPACOM","AFRICOM"] },
 ];
 
+// ── TRUTH SOCIAL ACCOUNTS (public RSS — no auth required) ────────────────────
+const TRUTH_ACCOUNTS = [
+  { handle:"realDonaldTrump", dname:"Donald J. Trump (POTUS 47)", verified:true, aor:["NORTHCOM","EUCOM","CENTCOM","INDOPACOM","AFRICOM","SOUTHCOM"] },
+  { handle:"JDVance",          dname:"JD Vance (VP)",              verified:true, aor:["NORTHCOM","EUCOM","CENTCOM","INDOPACOM"] },
+  { handle:"PeteHegseth",      dname:"Pete Hegseth (SecDef)",       verified:true, aor:["NORTHCOM","EUCOM","CENTCOM","INDOPACOM","AFRICOM","SOUTHCOM"] },
+  { handle:"TulsiGabbard",     dname:"Tulsi Gabbard (DNI)",         verified:true, aor:["NORTHCOM","EUCOM","CENTCOM","INDOPACOM"] },
+  { handle:"Kash_Patel",       dname:"Kash Patel (FBI Dir.)",       verified:true, aor:["NORTHCOM"] },
+];
+
 // ── NITTER / X ACCOUNTS ───────────────────────────────────────────────────────
 const NITTER_INSTANCES = [
   "https://nitter.privacydev.net",
@@ -153,6 +162,46 @@ async function fetchNitter(account) {
   return [];
 }
 
+async function fetchTruthSocial(account) {
+  const url = `https://truthsocial.com/@${account.handle}.rss`;
+  const res = await fetch(url, {
+    signal: AbortSignal.timeout(6000),
+    headers: { "User-Agent": "Mozilla/5.0 (compatible; TOCMonkey/1.0)" },
+  });
+  if (!res.ok) return [];
+  const xml = await res.text();
+  const items = [];
+  const rx = /<item>([\s\S]*?)<\/item>/gi;
+  let m;
+  while ((m = rx.exec(xml)) !== null && items.length < 4) {
+    const block = m[1];
+    const get = tag => {
+      const r = block.match(new RegExp(`<${tag}[^>]*><!\\[CDATA\\[([\\s\\S]*?)\\]\\]><\\/${tag}>`, "i"))
+             || block.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, "i"));
+      return r ? r[1].trim() : "";
+    };
+    const text    = stripHtml(get("title") || get("description"));
+    const pubDate = get("pubDate") || "";
+    const link    = get("link") || `https://truthsocial.com/@${account.handle}`;
+    if (text && text.length > 10) {
+      items.push({
+        src:      `@${account.handle}`,
+        handle:   account.handle,
+        dname:    account.dname,
+        text,
+        time:     parseAge(pubDate),
+        pubDate,
+        likes:    0, rts: 0, replies: 0,
+        verified: account.verified,
+        url:      link,
+        source:   "truthsocial",
+        aor:      account.aor,
+      });
+    }
+  }
+  return items;
+}
+
 exports.handler = async function() {
   if (cache && Date.now() - cacheTime < TTL) {
     return { statusCode:200, headers:{"Content-Type":"application/json","Cache-Control":"public,max-age=300"}, body:JSON.stringify(cache) };
@@ -160,11 +209,14 @@ exports.handler = async function() {
 
   const posts = [];
 
-  await Promise.allSettled(
-    BLUESKY_ACCOUNTS.map(acc =>
+  await Promise.allSettled([
+    ...BLUESKY_ACCOUNTS.map(acc =>
       fetchBluesky(acc).then(items => posts.push(...items)).catch(() => {})
-    )
-  );
+    ),
+    ...TRUTH_ACCOUNTS.map(acc =>
+      fetchTruthSocial(acc).then(items => posts.push(...items)).catch(() => {})
+    ),
+  ]);
 
   for (const acc of X_ACCOUNTS) {
     try {
