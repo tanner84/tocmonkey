@@ -119,8 +119,8 @@ exports.handler = async function(event) {
         const state = ev.competitions?.[0]?.status?.type?.state;
         const d = new Date(ev.date).getTime();
         if (state === 'in') return true;
-        if (state === 'post' && now - d < 12 * 3600 * 1000) return true;
-        if (state === 'pre'  && d - now < 24 * 3600 * 1000) return true;
+        if (state === 'post' && now - d < 24 * 3600 * 1000) return true;
+        if (state === 'pre'  && d - now < 36 * 3600 * 1000) return true;
         return false;
       });
       const ORDER = { in: 0, post: 1, pre: 2 };
@@ -129,7 +129,7 @@ exports.handler = async function(event) {
         const sb = b.competitions?.[0]?.status?.type?.state;
         return (ORDER[sa] ?? 3) - (ORDER[sb] ?? 3);
       });
-      relevant.slice(0, 4).forEach(ev => {
+      relevant.slice(0, 6).forEach(ev => {
         const g = parseGame(ev, label);
         if (g) results.push(g);
       });

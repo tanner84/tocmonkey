@@ -3162,11 +3162,6 @@ async function loadSports(){
       el.textContent='NO SCORES AVAILABLE';
       return;
     }
-    if(!el) return;
-    if(!games.length){
-      el.textContent='NO SCORES AVAILABLE';
-      return;
-    }
     // Build ticker line and repeat it for seamless scroll
     const tickerLine = games.map(g=>{
       const isLive=g.state==='in';
