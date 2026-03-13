@@ -943,9 +943,15 @@ const COCOMS=[
   ],
   keywords:["northcom","arctic","alaska","canada","norad","homeland","border","air defense","missile defense","tu-95","giuk","polar","bmds","submarine","russian"],
   orgTabs:[
-   {label:"US / NORAD",flag:"🇺🇸",id:"us"},
-   {label:"RUSSIA (Arctic)",flag:"🇷🇺",id:"rus"},
-   {label:"CANADA (NORAD)",flag:"🇨🇦",id:"can"},
+   {label:"US / NORAD",flag:"🇺🇸",id:"us",cat:"allied"},
+   {label:"CANADA (NORAD)",flag:"🇨🇦",id:"can",cat:"allied"},
+   {label:"RUSSIA (Arctic)",flag:"🇷🇺",id:"rus",cat:"adversary"},
+   {label:"Sinaloa Cartel (CDS)",flag:"⚠",id:"sinaloa",cat:"nonstate"},
+   {label:"CJNG",flag:"⚠",id:"cjng",cat:"nonstate"},
+   {label:"Gulf Cartel / CDN",flag:"⚠",id:"gulfcartel",cat:"nonstate"},
+   {label:"MS-13 / M-18",flag:"⚠",id:"ms13",cat:"nonstate"},
+   {label:"Hells Angels MC",flag:"⚠",id:"hamc",cat:"nonstate"},
+   {label:"Major Street Gangs",flag:"⚠",id:"streetgangs",cat:"nonstate"},
   ],
   orgs:{
    us:{hq:"HQ USNORTHCOM — Peterson SFB, CO · Dual-hat: CINCNORAD",flag:"🇺🇸",
@@ -990,6 +996,122 @@ const COCOMS=[
      ]},
     ],
     note:"Canada committed to NORAD modernization — $40B+ investment. Arctic sovereignty increasingly stressed. F-35 delivery underway to replace CF-188."},
+
+   sinaloa:{hq:"Sinaloa Cartel (CDS) — HQ: Culiacán, Sinaloa, MX · Active in all 50 U.S. states",flag:"⚠",
+    components:[
+     {name:"LOS CHAPITOS (Guzmán faction)",type:"Criminal Org",units:[
+      {u:"Joaquín 'El Chapo' Guzmán Jr.",subs:["Controls fentanyl / meth production pipeline","Primary US market: Chicago, LA, Phoenix","Est. 70,000–100,000 affiliates globally"]},
+      {u:"Iván Archivaldo Guzmán Salazar",subs:["Oversees smuggling corridors — Sonora/AZ border","Coordinates with US street gang distributors"]},
+      {u:"Ovidio Guzmán López (extradited 2023)",subs:["Awaiting trial — $5B+ fentanyl trafficking charges","Extradition triggered armed cartel response in Culiacán"]},
+     ]},
+     {name:"LOS MAYOS (Zambada faction)",type:"Criminal Org",units:[
+      {u:"Ismael 'El Mayo' Zambada (arrested Jul 2024)",subs:["Co-founder; controlled logistics & corruption network","40+ year run before US arrest","Revelations reshaping cartel alliance structure"]},
+      {u:"Vicente Zambada 'El Vicentillo' (cooperating)",subs:["DEA informant since 2010","Testified on police/military corruption networks"]},
+     ]},
+     {name:"US DISTRIBUTION NETWORK",type:"Narco-trafficking",units:[
+      {u:"Chicago Hub — Primary US HQ",subs:["DEA: CDS controls ~80% of Chicago drug supply","Links to Latin Kings, Two-Six Nation for street distribution","~$3B annual flow through Chicago metro"]},
+      {u:"Los Angeles / Southwest",subs:["Point-of-entry corridor: San Diego, Nogales, El Paso","Meth & fentanyl pills primary products","Ties to La eMe (Mexican Mafia) for distribution"]},
+      {u:"Atlanta / Southeast Corridor",subs:["Atlanta designated 'national HQ' by DEA for southeastern ops","Distribution nodes: Dallas, Houston, Atlanta, Charlotte"]},
+     ]},
+    ],
+    note:"⚠ DEA Priority Target. CDS is world's largest drug trafficking org. Est. revenue $3–5B annually. Primary fentanyl supplier to US — responsible for 70,000+ US overdose deaths/year. Post-Mayo arrest, internal power struggle ongoing. LOS CHAPITOS consolidating control."},
+
+   cjng:{hq:"Cartel Jalisco Nueva Generación — HQ: Guadalajara, Jalisco, MX · Active in all 50 U.S. states (DEA)",flag:"⚠",
+    components:[
+     {name:"LEADERSHIP",type:"Criminal Org",units:[
+      {u:"Nemesio 'El Mencho' Oseguera Cervantes",subs:["FBI/DEA: $10M reward — one of most wanted globally","Former Guadalajara PD officer turned cartel boss","Controls paramilitary enforcement arm (CJNG Grupo Elite)"]},
+      {u:"Rosalinda González Valencia ('La Jefa')",subs:["Wife; financial network manager","Money laundering through legitimate businesses"]},
+      {u:"Rubén Oseguera González 'El Menchito' (arrested)",subs:["Son; extradited to US 2020","Sentenced to life — continued ops from prison before transfer"]},
+     ]},
+     {name:"GRUPO ELITE — Paramilitary Arm",type:"Enforcement",units:[
+      {u:"Tactical units — est. 5,000–20,000 fighters",subs:["Military-grade weapons: RPGs, armored vehicles, drones","Combat experience vs rival Sinaloa, Zetas remnants","Responsible for mass killings, law enforcement murders"]},
+      {u:"Drone Warfare Program",subs:["Weaponized consumer drones with C-4/IEDs","Used against Mexican security forces","DHS concern: potential US border application"]},
+     ]},
+     {name:"US PRESENCE",type:"Narco-trafficking",units:[
+      {u:"Total US cities with confirmed presence (DEA): all 50 states",subs:["Most aggressive expansion of any cartel — 2018 to present","Primary products: fentanyl, meth, cocaine, heroin"]},
+      {u:"Key US nodes",subs:["Los Angeles (logistics hub)","New York / New Jersey","Chicago, Dallas, Houston"]},
+      {u:"Revenue estimate",subs:["DEA: $3B+ annually","Rapidly approaching Sinaloa parity","Extortion, kidnapping, fuel theft (huachicol) supplement drug income"]},
+     ]},
+    ],
+    note:"⚠ DEA/FBI Priority 1 Target. CJNG is fastest-growing, most violent cartel. Designated foreign terrorist org by some legislators — not yet official. Paramilitary tactics exceed traditional cartel norms. Significant concern for spillover violence into US border region."},
+
+   gulfcartel:{hq:"Gulf Cartel (CDG) / Cartel del Noreste (CDN) — HQ: Matamoros / Nuevo Laredo, Tamaulipas, MX",flag:"⚠",
+    components:[
+     {name:"GULF CARTEL (CDG)",type:"Criminal Org",units:[
+      {u:"Current leadership — fragmented",subs:["Multiple factions post-Osiel Cárdenas Guillén (extradited 2007)","'El Coss', 'El Metro' factions in ongoing conflict","Weakened but controls Tamaulipas / Texas border zone"]},
+      {u:"Los Zetas split (2010) — now rivals",subs:["Original enforcers broke off forming Zetas","CDG/Zeta war killed 10,000+ 2010–2012","Zeta remnants absorbed into CDN"]},
+      {u:"US corridors: Laredo / McAllen / Brownsville",subs:["Controls Texas Gulf Coast entry points","Human smuggling major revenue stream alongside drugs","Est. membership: 5,000–10,000"]},
+     ]},
+     {name:"CARTEL DEL NORESTE (CDN) — Zetas Remnant",type:"Criminal Org",units:[
+      {u:"Juan Gerardo 'El Huevo' Treviño Chávez",subs:["Controls Nuevo Laredo — key border crossing","Extremely violent — beheadings, mass killings","US classified CDN as 'most dangerous' in 2021 assessment"]},
+      {u:"Kidnapping & Human Trafficking",subs:["Primary revenue: migrant kidnapping at US border","$5,000–$15,000 per migrant extorted","Operates with impunity in Tamaulipas state"]},
+      {u:"Texas entry vectors",subs:["Eagle Pass, Del Rio, Laredo main corridors","Collaborates with US prison gangs for distribution","Texas DPS / Border Patrol main interdiction focus"]},
+     ]},
+    ],
+    note:"⚠ Gulf Cartel historically most powerful Texas border org. Now fragmented but CDN under Treviño is extreme threat — responsible for mass kidnappings of migrants and murder of US citizens in Matamoros (2023 incident). High US law enforcement attention on Laredo-McAllen corridor."},
+
+   ms13:{hq:"MS-13 (Mara Salvatrucha) — Founded Los Angeles 1980s · Transnational presence · M-18 (18th Street) — rival org same origins",flag:"⚠",
+    components:[
+     {name:"MS-13 STRUCTURE",type:"Street Gang / Transnational",units:[
+      {u:"National leadership — 'La Ranfla Nacional'",subs:["Leadership council based in El Salvador prisons","Directs US clique operations remotely","El Salvador crackdown (Bukele 2022) disrupted but didn't eliminate"]},
+      {u:"US Membership estimate: 10,000–50,000",subs:["Concentrated: Northern VA, Long Island NY, LA, Houston, Boston","Clique structure — autonomous but report to national leadership","Heavily recruited from Central American migrant youth"]},
+      {u:"Criminal operations",subs:["Murder-for-hire, extortion (renta), human smuggling","Drug distribution — cocaine, meth (sub-contractor to cartels)","Brutal violence — machete killings a signature","Designated foreign terrorist org (Trump EO, Jan 2025)"]},
+     ]},
+     {name:"18TH STREET GANG (M-18 / Barrio 18)",type:"Street Gang / Transnational",units:[
+      {u:"US Membership: est. 30,000–50,000 (US + Central America)",subs:["Largest street gang in Los Angeles","Heavy presence: LA, San Diego, Dallas, DC","Two factions: Revolucionarios and Sureños"]},
+      {u:"Criminal operations",subs:["Drug trafficking — marijuana, cocaine, meth","Extortion, robbery, carjacking","Human smuggling — collects tolls on migrants in corridor","Inter-gang conflict with MS-13 drives street violence"]},
+     ]},
+     {name:"US HOTSPOTS",type:"Geographic Presence",units:[
+      {u:"Northern Virginia / DC Metro",subs:["Largest US MS-13 concentration outside LA","Prince William County, Fairfax — active recruitment in schools","FBI CAST task force dedicated to region"]},
+      {u:"Long Island, New York",subs:["Multiple high-profile machete killings 2016–2022","Suffolk/Nassau County major enforcement effort","Some MS-13 relocation to other states post-pressure"]},
+      {u:"Los Angeles Basin",subs:["Original recruitment ground — Salvadoran diaspora community","M-18 dominant in some areas; MS-13 in others","Complex overlap with Mexican street gang territory"]},
+     ]},
+    ],
+    note:"⚠ Both MS-13 and M-18 designated foreign terrorist organizations (2025). MS-13 est. revenue $30–50M annually in US — relatively small vs cartels but extreme violence used as force multiplier. Often subcontract to Mexican cartels for drug distribution. El Salvador's mass incarceration (80,000+) disrupted Central American command but US cliques increasingly autonomous."},
+
+   hamc:{hq:"Hells Angels Motorcycle Club (HAMC) — Founded 1948 Fontana, CA · Global OMG (Outlaw Motorcycle Gang)",flag:"⚠",
+    components:[
+     {name:"ORGANIZATION",type:"OMG — Outlaw MC",units:[
+      {u:"Full patch members (1%ers): est. 3,000–6,000 worldwide",subs:["~467 chapters in 60+ countries","US chapters: California, New York, Texas, Southeast, Pacific NW","Hierarchical: Hangaround → Prospect → Full Patch (1%)"]},
+      {u:"Associates / support clubs: est. 30,000+ worldwide",subs:["Support clubs (Red & White affiliates) extend reach","Nomads chapter — conducts ops between chapter territories","HA-aligned clubs: Red Devils, Tribe, Ghostriders"]},
+     ]},
+     {name:"CRIMINAL OPERATIONS",type:"Organized Crime",units:[
+      {u:"Methamphetamine — primary product",subs:["DEA: HAMC one of largest meth distribution networks in North America","Manufacture (labs) and distribution","Major corridors: California, Arizona, Pacific Northwest"]},
+      {u:"Other drug trafficking",subs:["Cocaine, heroin, marijuana — varies by chapter","International smuggling via European/Australian chapters","Cooperation with Mexican cartels for US supply"]},
+      {u:"Additional criminal enterprises",subs:["Weapons trafficking and illegal firearms","Prostitution / escort services","Extortion of businesses (protection rackets)","Money laundering through motorcycle repair shops, tattoo parlors, cash businesses","Stolen vehicle / parts trafficking"]},
+     ]},
+     {name:"RIVAL OMGs",type:"OMG Rivalry",units:[
+      {u:"Mongols MC — Primary US rival",subs:["West Coast rivalry — California turf war ongoing","DOJ RICO prosecution targeting Mongols club trademark (2018–ongoing)","Strong presence: SoCal, Chicago, Texas"]},
+      {u:"Outlaws MC (American Outlaws Association)",subs:["Primary East Coast / Midwest rival","~700 members, 176 chapters","Intermittent conflict with HA chapters"]},
+      {u:"Bandidos MC",subs:["Gulf Coast / Texas dominant OMG","~2,400 members, 210+ US chapters","Neutral/adversarial relationship with HA varies by region"]},
+     ]},
+    ],
+    note:"⚠ ATF & FBI classify HAMC and major OMGs as Outlaw Motorcycle Gangs (OMGs) engaged in organized crime. Est. annual US criminal revenue: $1B+ across OMG spectrum. HAMC international structure complicates prosecution — chapters operate semi-autonomously. Despite criminal operations, membership includes legitimate professionals (lawyers, veterans, tradesmen) alongside full criminal elements."},
+
+   streetgangs:{hq:"Major US Street Gangs — Distributed national presence · Crips, Bloods, Latin Kings, Gangster Disciples, Mexican Mafia (La eMe)",flag:"⚠",
+    components:[
+     {name:"CRIPS",type:"Street Gang Network",units:[
+      {u:"Membership estimate: 30,000–35,000 (US)",subs:["Founded: 1969 South Central Los Angeles","No central leadership — confederation of sets","Major sets: Rollin 60s, Eight Trey Gangster, Grape Street"]},
+      {u:"Criminal operations",subs:["Drug distribution: cocaine, crack, marijuana, PCP","Armed robbery, carjacking","Firearms trafficking","US cities: LA, Long Beach, Seattle, Denver, Kansas City, Las Vegas"]},
+     ]},
+     {name:"BLOODS",type:"Street Gang Network",units:[
+      {u:"Membership estimate: 20,000–35,000 (US)",subs:["Founded: 1972 Compton, CA — anti-Crip coalition","United Blood Nation (UBN) — East Coast faction","Major sets: Piru, Fruit Town, Rollin 20s"]},
+      {u:"Criminal operations",subs:["Drug trafficking — crack cocaine primary","Robbery, assault, murder","Strong prison gang component (UBN in federal system)","East Coast presence: NY, NJ, CT, DC, Baltimore"]},
+     ]},
+     {name:"LATIN KINGS",type:"Street Gang / Organized",units:[
+      {u:"Membership estimate: 20,000–35,000 (US)",subs:["Founded: 1940s Chicago — originally Puerto Rican community org","Chapters nationwide; international presence (Spain, Mexico, Ecuador)","Most organized major street gang — quasi-military structure"]},
+      {u:"Criminal operations",subs:["Drug trafficking: heroin, cocaine, meth","Murder-for-hire, extortion","Human trafficking","NY, Chicago, Miami, Hartford as primary strongholds"]},
+     ]},
+     {name:"GANGSTER DISCIPLES (GD)",type:"Street Gang / Organized",units:[
+      {u:"Membership estimate: 25,000–50,000 (US)",subs:["Founded: 1969 Chicago by Larry Hoover","Largest Chicago street gang","National expansion: 35+ states with active chapters"]},
+      {u:"Criminal operations",subs:["Crack cocaine / heroin primary products","Armed robbery, extortion","Chicago gang violence accounts for ~700+ homicides/year (GD major contributor)","Prison gang arm controls distribution networks inside federal system"]},
+     ]},
+     {name:"MEXICAN MAFIA (LA eMe)",type:"Prison Gang",units:[
+      {u:"Full members (carnales): est. 400–500",subs:["Founded: 1957 Deuel Vocational Institution, CA","Operates from within federal/state prisons","Extremely selective membership — murder required for full membership"]},
+      {u:"Street-level control",subs:["Taxes Southern California Hispanic street gangs (Sureños)","10% cut of drug sales from affiliated street gangs","Controls prison drug trafficking in CA/federal system","Estimated annual tax revenue: $50–100M from Sureño network"]},
+     ]},
+    ],
+    note:"⚠ Major street gangs collectively represent 1.4 million members across ~33,000 gangs (FBI National Gang Threat Assessment). Street gangs are primary retail distributors for cartel wholesale product. Mexican Mafia (La eMe) is unique — tiny full membership but enormous influence as prison-based taxing authority over Sureño street gang network. CBP/DEA assess gang-cartel cooperation as primary driver of domestic drug violence."},
   },
   equipment:[
    {n:"F-22A Raptor",t:"Fighter",o:"USA",flag:"🇺🇸",d:"Primary NORAD ADIZ intercept platform. 3rd Wing (JBER) and 1st FW (Langley).",l:"https://en.wikipedia.org/wiki/Lockheed_Martin_F-22_Raptor"},
