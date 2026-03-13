@@ -1,156 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
-  <html lang="en">
-  <head>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>TOC MONKEY | What's Chief Tracking?</title>
-    <!-- Leaflet CSS (already present) -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-sA+vx6kG2zLkLZ8p+U8zE6QJtGkTgkG0jzF2zF+4pFk=" crossorigin=""/>
-    <!-- Custom CSS -->
-    <style>
-      #app{display:flex;flex-direction:column;height:100vh}
-      /* ── HEADER ── */
-      #hdr{display:flex;flex-direction:column;border-bottom:1px solid var(--border);background:var(--deep);flex-shrink:0;height:54px;padding:0}
-      .brand{display:flex;align-items:center;gap:8px;padding:0 16px;border-right:1px solid var(--border);height:100%;flex-shrink:0}
-      .logo-wrap{display:flex;flex-direction:row;align-items:center;gap:8px;padding:0 10px}
-      .logo-img{height:28px;width:auto;object-fit:contain;display:block;filter:drop-shadow(0 0 6px rgba(74,222,128,0.6));flex-shrink:0}
-      .logo-clock{display:flex;flex-direction:column;align-items:flex-start;gap:1px}
-      /* Enlarge logo in WTF modal */
-      .logo-img-modal {
-        height: 84px !important;
-        width: auto;
-        margin-top: 12px;
-        transition: height 0.3s;
-      }
-      @media(max-width:900px){.logo-img{height:22px}.bsub{display:none}}
-      @media(max-width:600px){.logo-img{height:20px}.brand .bsep,.brand .bsub{display:none}}
-      @media(max-width:480px){.logo-img{height:18px}}
-      .pdot{width:8px;height:8px;border-radius:50%;background:var(--g1);box-shadow:0 0 8px var(--g2);animation:pulse 2s ease infinite}
-      .bname{font-size:13px;letter-spacing:4px;color:var(--g1);font-weight:bold}
-      .bsep{color:var(--border);font-size:12px}
-      .bsub{font-size:9px;color:var(--fade);letter-spacing:2px}
-      .wtf-btn{background:rgba(74,222,128,0.08);border:1px solid var(--g1);color:var(--g1);font-size:8px;letter-spacing:2px;padding:3px 7px;cursor:pointer;border-radius:2px;font-family:inherit;transition:all .2s;margin-left:4px;animation:wtf-glow 1.8s ease-in-out infinite}
-      .wtf-btn:hover{background:rgba(74,222,128,0.15);box-shadow:0 0 12px rgba(74,222,128,0.5)}
-      @keyframes wtf-glow{0%,100%{box-shadow:0 0 4px rgba(74,222,128,0.4),0 0 8px rgba(74,222,128,0.2)}50%{box-shadow:0 0 10px rgba(239,68,68,0.7),0 0 20px rgba(239,68,68,0.4),0 0 4px rgba(74,222,128,0.2)}}
-      #tkwrap{flex:1;overflow:hidden;height:100%;display:flex;align-items:center;padding:0 16px}
-      #tkinner{display:inline-block;animation:ticker 55s linear infinite;white-space:nowrap}
-      .ti{display:inline-flex;align-items:center;margin-right:28px;font-size:14px;letter-spacing:0.5px;gap:4px}
-      .ts{color:var(--mute);font-size:13px;letter-spacing:1px}
-      .tp{font-weight:bold;color:var(--hi)}
-      .tc{font-size:13px;margin-left:2px}
-      .tu{color:var(--fade);margin-left:3px;font-size:12px}
-      .up{color:var(--g1)}.dn{color:var(--red)}
-      .hright{display:flex;align-items:center;gap:10px;padding:0 12px;border-left:1px solid var(--border);height:100%;flex-shrink:0}
-      .ck1{color:var(--hi);font-size:12px;letter-spacing:2px;font-weight:bold}
-      .ck2{color:var(--mute);font-size:8px;letter-spacing:1px}
-      .alink{color:var(--fade);font-size:8px;text-decoration:none;letter-spacing:1px;border:1px solid var(--border);padding:3px 8px;border-radius:2px}
-      .alink:hover{color:var(--g1);border-color:var(--g3)}
-      /* ...existing code for other CSS... */
-    </style>
-    <!-- Leaflet JS: must be loaded BEFORE any code using L -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-o9N1jRVv6G8z1p3pPW1z8tT2y1kN1QpHb4g9gCk0p3E=" crossorigin=""></script>
-  </head>
-  <body>
-    <script>
-      // DEBUG: Show that loadSports() was called
-      async function loadSports() {
-        let dbg = document.getElementById('sports-debug');
-        if (!dbg) {
-          dbg = document.createElement('pre');
-          dbg.id = 'sports-debug';
-          dbg.style = 'background:#222;color:#fff;padding:8px;font-size:12px;max-width:100vw;overflow-x:auto;z-index:9999;position:fixed;bottom:0;left:0;right:0;';
-          document.body.appendChild(dbg);
-        }
-        dbg.textContent = 'loadSports() called...';
-        try {
-          const r = await fetch('/.netlify/functions/sports');
-          if (!r.ok) {
-            dbg.textContent = 'loadSports() fetch failed: ' + r.status;
-            return;
-          }
-          const d = await r.json();
-          const games = d.games || [];
-          dbg.textContent = 'SPORTS API games:\n' + JSON.stringify(games, null, 2);
-          const el = document.getElementById('sporttrack');
-          if (!el) return;
-          if (!games.length) {
-            el.textContent = 'NO SCORES AVAILABLE';
-            return;
-          }
-          // Build ticker line and repeat it for seamless scroll
-          const tickerLine = games.map(g => {
-            const isLive = g.state === 'in';
-            const lbl = `<span class="sgl${isLive ? ' sgl-live' : ''}">${g.label}</span>`;
-            return `<span class="sgi">${lbl}<span class="sgd">${g.display}</span></span>`;
-          }).join('<span style="color:#4a4a2a;margin-right:32px">|</span>');
-          el.innerHTML = tickerLine + '<span style="color:#4a4a2a;margin-right:32px">|</span>' + tickerLine;
-          // Dynamic ticker animation
-          const sportinner = document.getElementById('sportinner');
-          if (sportinner && el) {
-            // Remove previous animation
-            el.style.animation = 'none';
-            void el.offsetWidth;
-            // Calculate widths
-            const containerWidth = sportinner.offsetWidth;
-            const contentWidth = el.scrollWidth;
-            // Minimum duration for short tickers
-            const minDuration = 12; // seconds
-            // Pixels per second speed (higher = faster)
-            const pxPerSec = 80;
-            const duration = Math.max(minDuration, (contentWidth + containerWidth) / pxPerSec);
-            // Set up keyframes dynamically
-            const styleId = 'sportticker-anim';
-            let styleTag = document.getElementById(styleId);
-            if (!styleTag) {
-              styleTag = document.createElement('style');
-              styleTag.id = styleId;
-              document.head.appendChild(styleTag);
-            }
-            styleTag.textContent = `@keyframes sportticker { from { transform: translateX(${containerWidth}px); } to { transform: translateX(-${contentWidth}px); } }`;
-            el.style.display = 'inline-block';
-            el.style.whiteSpace = 'nowrap';
-            el.style.animation = `sportticker ${duration}s linear infinite`;
-          }
-        } catch (e) {
-          dbg.textContent = 'loadSports() error: ' + e;
-        }
-      }
-      // Call loadSports on page load
-      window.addEventListener('DOMContentLoaded', loadSports);
-    </script>
-@media (max-width: 600px) {
-  .twbody, .tw-modal-body { font-size: 13px; line-height: 1.7; }
+<head>
+<meta charset="UTF-8"/>
+<!-- No-op change for git commit: random harmless line -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>TOC MONKEY | What's Chief Tracking?</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<style>
+:root{
+  --bg:#1e211e;--panel:#252825;--deep:#1a1d1a;--hover:#2d312d;--sel:#323632;
+  --border:#3a4d3a;--blt:#2d3d2d;
+  --g1:#4ade80;--g2:#22c55e;--g3:#16a34a;--g4:#166534;
+  --hi:#f0f4f0;--mid:#b8cdb8;--mute:#7a9e7a;--fade:#4a6a4a;
+  --red:#f87171;--amber:#fbbf24;--lo:#34d399;--blue:#60a5fa;
+  --mono:'Courier New',monospace;--sans:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 }
-@media (min-width: 601px) and (max-width: 1024px) {
-  .twbody, .tw-modal-body { font-size: 15px; line-height: 1.8; }
-}
-@media (min-width: 1025px) {
-  .twbody, .tw-modal-body { font-size: 17px; line-height: 2.0; }
-}
-.twfooter{display:flex;gap:14px;font-size:10px;color:var(--fade);font-family:var(--sans)}
-.twstat{display:flex;align-items:center;gap:3px}
-.twstat svg{opacity:.6}
-.twrss{border-left:3px solid var(--amber);padding-left:10px}
-
-/* ── ORG PANEL ── */
-.orgtabs{display:flex;flex-shrink:0;border-bottom:1px solid var(--border);background:var(--deep);overflow-x:auto}
-.otab{padding:4px 10px;font-size:8px;letter-spacing:1px;font-weight:bold;color:var(--fade);cursor:pointer;border:none;background:transparent;border-bottom:2px solid transparent;font-family:var(--mono);white-space:nowrap;flex-shrink:0}
-.otab:hover{color:var(--mid);background:var(--hover)}
-.otab.on{color:var(--g1);border-bottom-color:var(--g1)}
-#orgscroll{flex:1;overflow-y:auto;padding:8px 10px;min-height:0}
-.ohq{font-size:11px;color:var(--g1);font-weight:bold;letter-spacing:1px;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--border);line-height:1.4}
-.ocomp{margin-bottom:10px}
-.ocompname{font-size:10px;color:var(--g2);font-weight:bold;margin-bottom:3px;display:flex;align-items:baseline;gap:6px}
-.otype{font-size:8px;color:var(--fade);font-weight:normal}
-.ounit{font-size:9px;color:var(--hi);padding:2px 0 2px 12px;border-left:1px solid var(--blt);margin-left:5px;line-height:1.5}
-.osub{font-size:8px;color:var(--mid);padding:2px 0 2px 22px;border-left:1px dashed var(--blt);margin-left:5px;line-height:1.5}
-.onote{font-size:8px;color:var(--fade);margin-top:10px;padding-top:6px;border-top:1px solid var(--blt);line-height:1.6;font-style:italic}
-.ocountry{display:inline-block;font-size:8px;padding:1px 6px;border-radius:2px;margin-bottom:8px;font-weight:bold}
-
-/* ── EQUIPMENT ROTATOR ── */
-.eqwrap{flex:1;overflow:hidden;position:relative}
-.eqtrack{transition:transform .4s cubic-bezier(.4,0,.2,1)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--hi);font-family:var(--mono);overflow:hidden}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:var(--panel)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+#app{display:flex;flex-direction:column;height:100vh}
 .eqrow{padding:7px 10px;border-bottom:1px solid var(--blt);cursor:pointer;transition:background .12s;overflow:hidden;display:flex;gap:8px;align-items:center}
 .eqrow:hover{background:var(--hover)}
 .eqflag{font-size:14px;flex-shrink:0;width:22px;text-align:center}
@@ -313,59 +183,36 @@
   #sportwrap{height:20px;padding:0 6px}
   #sportinner{font-size:10px}
 
-    <style>
-      :root{
-        --bg:#1e211e;--panel:#252825;--deep:#1a1d1a;--hover:#2d312d;--sel:#323632;
-        --border:#3a4d3a;--blt:#2d3d2d;
-        --g1:#4ade80;--g2:#22c55e;--g3:#16a34a;--g4:#166534;
-        --hi:#f0f4f0;--mid:#b8cdb8;--mute:#7a9e7a;--fade:#4a6a4a;
-        --red:#f87171;--amber:#fbbf24;--lo:#34d399;--blue:#60a5fa;
-        --mono:'Courier New',monospace;--sans:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-      }
-      html,body{height:100%;background:var(--bg);color:var(--hi);font-family:var(--mono);overflow:hidden}
-      #app{display:flex;flex-direction:column;height:100vh}
-      /* ── HEADER ── */
-      #hdr{display:flex;flex-direction:column;border-bottom:1px solid var(--border);background:var(--deep);flex-shrink:0;height:54px;padding:0}
-      .brand{display:flex;align-items:center;gap:8px;padding:0 16px;border-right:1px solid var(--border);height:100%;flex-shrink:0}
-      .logo-wrap{display:flex;flex-direction:row;align-items:center;gap:8px;padding:0 10px}
-      .logo-img{height:28px;width:auto;object-fit:contain;display:block;filter:drop-shadow(0 0 6px rgba(74,222,128,0.6));flex-shrink:0}
-      .logo-clock{display:flex;flex-direction:column;align-items:flex-start;gap:1px}
-      .pdot{width:8px;height:8px;border-radius:50%;background:var(--g1);box-shadow:0 0 8px var(--g2);animation:pulse 2s ease infinite}
-      .bname{font-size:13px;letter-spacing:4px;color:var(--g1);font-weight:bold}
-      .bsep{color:var(--border);font-size:12px}
-      .bsub{font-size:9px;color:var(--fade);letter-spacing:2px}
-      .wtf-btn{background:rgba(74,222,128,0.08);border:1px solid var(--g1);color:var(--g1);font-size:8px;letter-spacing:2px;padding:3px 7px;cursor:pointer;border-radius:2px;font-family:inherit;transition:all .2s;margin-left:4px;animation:wtf-glow 1.8s ease-in-out infinite}
-      .wtf-btn:hover{background:rgba(74,222,128,0.15);box-shadow:0 0 12px rgba(74,222,128,0.5)}
-      @keyframes wtf-glow{0%,100%{box-shadow:0 0 4px rgba(74,222,128,0.4),0 0 8px rgba(74,222,128,0.2)}50%{box-shadow:0 0 10px rgba(239,68,68,0.7),0 0 20px rgba(239,68,68,0.4),0 0 4px rgba(74,222,128,0.2)}}
-      #tkwrap{flex:1;overflow:hidden;height:100%;display:flex;align-items:center;padding:0 16px}
-      #tkinner{display:inline-block;animation:ticker 55s linear infinite;white-space:nowrap}
-      .ti{display:inline-flex;align-items:center;margin-right:28px;font-size:14px;letter-spacing:0.5px;gap:4px}
-      .ts{color:var(--mute);font-size:13px;letter-spacing:1px}
-      .tp{font-weight:bold;color:var(--hi)}
-      /* Debug panel: small, floating, unobtrusive */
-      #sports-debug {
-        position: fixed;
-        bottom: 18px;
-        right: 18px;
-        min-width: 220px;
-        max-width: 340px;
-        max-height: 180px;
-        background: rgba(30,33,30,0.92);
-        color: #fff;
-        font-size: 12px;
-        padding: 8px 12px;
-        border-radius: 7px;
-        box-shadow: 0 2px 12px rgba(0,0,0,0.25);
-        z-index: 9999;
-        overflow: auto;
-        opacity: 0.85;
-        pointer-events: none;
-      }
-      #sports-debug:hover {
-        opacity: 1;
-        pointer-events: auto;
-      }
-    </style>
+  /* Tabs */
+  #tabbar{height:34px;-webkit-overflow-scrolling:touch}
+  .ctab{padding:0 10px;font-size:9px;letter-spacing:1px}
+
+  /* Main layout — stack vertically */
+  #main{flex-direction:column;height:auto;overflow:visible}
+  #cpane{flex-direction:column;height:auto;overflow:visible;border-right:none}
+
+  /* Map — fixed height, full width */
+  #mappnl{width:100% !important;height:52vw;min-height:220px;max-height:300px;flex-shrink:0;border-right:none;border-bottom:1px solid var(--border)}
+
+  /* Quad becomes single column with tab switcher */
+  #quadgrid{display:flex;flex-direction:column;height:auto}
+  #mobiletabs{display:flex !important;background:var(--deep);border-bottom:1px solid var(--border);overflow-x:auto;-webkit-overflow-scrolling:touch;flex-shrink:0}
+  .mtab{padding:9px 14px;font-size:9px;letter-spacing:1px;font-weight:bold;color:var(--fade);cursor:pointer;border:none;background:transparent;border-bottom:2px solid transparent;white-space:nowrap;font-family:var(--mono);flex-shrink:0}
+  .mtab.on{color:var(--g1);border-bottom-color:var(--g1)}
+  .pnl{height:calc(100vh - 210px);min-height:340px;display:none !important}
+  .pnl.mob-on{display:flex !important}
+  .pnl.qr{border-right:none}
+  .pnl.qb{border-bottom:none}
+
+  /* Sitrep full width */
+  #sitrep{width:calc(100vw - 16px);left:8px;top:8px;max-height:75vw}
+  #srpbody{font-size:11px;line-height:1.6}
+}
+
+/* ── WTF IS THIS? ─────────────────────────── */
+.sa-sep{width:1px;background:var(--border);height:14px;margin:0 4px;align-self:center}
+.sa-wtf{background:none;border:1px solid var(--g1)!important;color:var(--g1)!important;cursor:pointer;font-family:inherit;font-size:8px;letter-spacing:1.5px;padding:3px 8px;transition:all .2s}
+.sa-wtf:hover{background:var(--g1)!important;color:var(--deep)!important}
 #wtfoverlay{display:none}
 #wtfbox{background:var(--panel);border:1px solid var(--border);width:min(680px,92vw);max-height:80vh;display:flex;flex-direction:column;overflow:hidden}
 #wtfhead{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid var(--border);background:var(--deep)}
@@ -392,14 +239,14 @@
   .mtab{padding:7px 10px;font-size:8px}
   #mappnl{min-height:180px}
 }
+#markettickerwrap{width:100%;background:var(--deep);border-bottom:1px solid var(--border);overflow:hidden;height:22px;display:flex;align-items:center}
+#markettickerinner{display:inline-block;animation:ticker 55s linear infinite;white-space:nowrap;font-family:var(--mono);font-size:11px;width:100%}
 </style>
-  <!-- Leaflet CSS (already present) -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-sA+vx6kG2zLkLZ8p+U8zE6QJtGkTgkG0jzF2zF+4pFk=" crossorigin=""/>
-  <!-- Leaflet JS: must be loaded BEFORE any code using L -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-o9N1jRVv6G8z1p3pPW1z8tT2y1kN1QpHb4g9gCk0p3E=" crossorigin=""></script>
 </head>
 <body>
-<!-- <div id="html-debug" style="background:#c00;color:#fff;padding:8px;font-size:14px;z-index:99999;position:fixed;top:0;left:0;right:0;text-align:center;">HTML loaded: tocmonkey/index.html</div> -->
+
+<!-- Move Leaflet.js script here to ensure it loads before any inline scripts that use 'L' -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <div id="app">
 
 <!-- HEADER -->
@@ -407,6 +254,7 @@
   <div id="hdr-top">
     <div class="brand">
       <div class="pdot"></div>
+      <!-- v2026-03-11: forced refresh comment -->
       <span class="bname">TOC MONKEY</span>
       <span class="bsep">|</span>
       <span class="bsub">WHAT'S CHIEF TRACKING?</span>
@@ -421,13 +269,97 @@
         <div class="ck2" id="clockdate"></div>
       </div>
     </div>
-    <a href="/admin" class="alink" style="font-size:9px;letter-spacing:2px">ADMIN</a>
+    <a href="#" class="alink" style="font-size:9px;letter-spacing:2px" onclick="openAdminModal();return false;">ADMIN</a>
+  <!-- ADMIN MODAL -->
+  <div id="admin-modal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center;">
+    <div style="background:#222;padding:24px 32px;border-radius:8px;max-width:420px;width:96vw;max-height:90vh;overflow:auto;position:relative;">
+      <button onclick="closeAdminModal()" style="position:absolute;top:8px;right:12px;font-size:18px;background:none;border:none;color:#fff;cursor:pointer">×</button>
+      <h3 style="margin-bottom:10px">Manage Articles by COCOM</h3>
+      <label>COCOM:
+        <select id="admin-cocom">
+          <option>EUCOM</option><option>CENTCOM</option><option>INDOPACOM</option>
+          <option>AFRICOM</option><option>SOUTHCOM</option><option>NORTHCOM</option>
+        </select>
+      </label>
+      <input id="admin-pass" type="password" placeholder="Admin Password" style="margin-left:8px;width:120px"/>
+      <button onclick="fetchAdminArticles()">Load</button>
+      <div id="admin-article-list" style="margin:12px 0;"></div>
+      <h4>Add/Edit Article</h4>
+      <form id="admin-article-form" onsubmit="return saveArticle()">
+        <input id="art-id" type="hidden"/>
+        <input id="art-title" placeholder="Title" required style="width:100%;margin-bottom:4px"/>
+        <input id="art-url" placeholder="URL" required style="width:100%;margin-bottom:4px"/>
+        <input id="art-source" placeholder="Source" required style="width:100%;margin-bottom:4px"/>
+        <input id="art-desc" placeholder="Description" required style="width:100%;margin-bottom:4px"/>
+        <button type="submit">Save</button>
+      </form>
+    </div>
+  </div>
+  <script>
+  function openAdminModal(){document.getElementById('admin-modal').style.display='flex';}
+  function closeAdminModal(){document.getElementById('admin-modal').style.display='none';}
+  let adminArticles = [];
+  function fetchAdminArticles() {
+    const cocom = document.getElementById('admin-cocom').value;
+    fetch(`/netlify/functions/articles?cocom=${cocom}`)
+      .then(r => r.json())
+      .then(arts => {
+        adminArticles = arts;
+        document.getElementById('admin-article-list').innerHTML = arts.map(a =>
+          `<div style='margin-bottom:6px'>
+            <b>${a.title}</b> (${a.source}) <a href="${a.url}" target="_blank">[link]</a>
+            <button onclick="editArticle('${a.id}')">Edit</button>
+            <button onclick="deleteArticle('${a.id}')">Delete</button>
+          </div>`
+        ).join('');
+      });
+  }
+  function saveArticle() {
+    const cocom = document.getElementById('admin-cocom').value;
+    const pass = document.getElementById('admin-pass').value;
+    const id = document.getElementById('art-id').value;
+    const article = {
+      id,
+      title: document.getElementById('art-title').value,
+      url: document.getElementById('art-url').value,
+      source: document.getElementById('art-source').value,
+      description: document.getElementById('art-desc').value,
+      cocom
+    };
+    fetch(`/netlify/functions/articles?cocom=${cocom}`, {
+      method: id ? 'PUT' : 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-password': pass },
+      body: JSON.stringify(article)
+    }).then(fetchAdminArticles);
+    document.getElementById('admin-article-form').reset();
+    return false;
+  }
+  function editArticle(id) {
+    const a = adminArticles.find(x => x.id === id);
+    document.getElementById('art-id').value = a.id;
+    document.getElementById('art-title').value = a.title;
+    document.getElementById('art-url').value = a.url;
+    document.getElementById('art-source').value = a.source;
+    document.getElementById('art-desc').value = a.description;
+  }
+  function deleteArticle(id) {
+    const cocom = document.getElementById('admin-cocom').value;
+    const pass = document.getElementById('admin-pass').value;
+    fetch(`/netlify/functions/articles?cocom=${cocom}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json', 'x-admin-password': pass },
+      body: JSON.stringify({ id })
+    }).then(fetchAdminArticles);
+  }
+  </script>
   </div><!-- /hright -->
   </div><!-- /hdr-top -->
+  <!-- Move market ticker outside header, above sports ticker -->
+  </div><!-- /hdr-top -->
+  <div id="markettickerwrap"><div id="markettickerinner">LOADING MARKET DATA...</div></div>
   <div id="sportwrap"><div id="sportinner"><div id="sporttrack">LOADING SCORES...</div></div></div>
-</div>
 
-<!-- COCOM TABS -->
+<!-- COCOM TABS --><!-- COCOM TABS -->
 <div id="tabbar"></div>
 
 <!-- MAIN -->
@@ -476,7 +408,18 @@
       <div class="pnl qr qb" id="tocpnl">
         <div class="ph"><span class="pht">TOC MONKEY</span><span class="phs" id="tocphs">Chief's Picks</span></div>
         <div id="toclist"></div>
-        <!-- Recommend article form and button removed -->
+        <div id="tocaddwrap">
+          <button id="tocaddbtn" onclick="toggleForm()">+ RECOMMEND AN ARTICLE</button>
+        </div>
+        <div id="tocform">
+          <input class="fi" id="ft" placeholder="Title *"/>
+          <div class="fg2"><input class="fi" id="fa" placeholder="Author"/><input class="fi" id="fp" placeholder="Publication"/></div>
+          <div class="fg2"><input class="fi" id="fu" placeholder="URL *"/><input class="fi" id="fd" placeholder="Date"/></div>
+          <input class="fi" id="fb" placeholder="Why you're recommending it…"/>
+          <input class="fi" id="ftg" placeholder="Tags: Drones, COIN…"/>
+          <button class="fsave" onclick="saveArticle()">+ ADD TO LIST</button>
+          <button class="fcancel" onclick="toggleForm()">CANCEL</button>
+        </div>
       </div>
     </div>
   </div>
@@ -521,7 +464,30 @@
 </div>
 
 <script>
-console.log('SCRIPT EXECUTED: tocmonkey/index.html');
+async function loadMarketTicker() {
+  try {
+    const r = await fetch('/.netlify/functions/ticker');
+    if (!r.ok) return;
+    const data = await r.json();
+    const indices = data.filter(t =>
+      ["NASDAQ", "S&P 500", "DOW JONES", "FTSE 100", "NIKKEI 225"].includes(t.symbol)
+    );
+    if (!indices.length) {
+      document.getElementById('markettickerinner').textContent = 'NO MARKET DATA AVAILABLE';
+      return;
+    }
+    const d = [...indices, ...indices];
+    document.getElementById('markettickerinner').innerHTML = d.map(t => {
+      const up = t.change >= 0;
+      return `<span class="ti"><span class="ts">${t.symbol}</span>`
+           + `<span class="tp ${up ? 'up' : 'dn'}">${Number(t.price).toFixed(2)}</span>`
+           + `<span class="tc ${up ? 'up' : 'dn'}">${up ? '▲' : '▼'}${Math.abs(t.change || 0).toFixed(2)}</span></span>`;
+    }).join('<span style="color:#4a4a2a;margin-right:32px">|</span>');
+  } catch (e) {
+    document.getElementById('markettickerinner').textContent = 'MARKET TICKER ERROR';
+    console.warn('Market ticker unavailable:', e.message);
+  }
+}
 // ═══════════════════════════════════════════════════════════════════
 // AVATAR COLORS per handle
 // ═══════════════════════════════════════════════════════════════════
@@ -1540,17 +1506,18 @@ const GLOBAL_PICKS = [
 ];
 
 // Merge COCOM picks with global picks and user-saved articles
-// Fetch Chiefs Picks dynamically from backend
-async function getChiefsPicks(cocomId){
-  try {
-    const r = await fetch(`/.netlify/functions/articles?cocom=${cocomId}`);
-    if (r.ok) {
-      const data = await r.json();
-      return data || [];
-    }
-  } catch (e) { console.warn('Chiefs Picks API unavailable', e); }
-  // fallback to static if API fails
-  return (CHIEFS_PICKS[cocomId] || CHIEFS_PICKS.EUCOM || []);
+function getChiefsPicks(cocomId){
+ const picks = CHIEFS_PICKS[cocomId] || CHIEFS_PICKS.EUCOM || [];
+ const userArts = (ARTICLES||[]).filter(a => a._cocom===cocomId||!a._cocom);
+ return [...userArts, ...picks, ...GLOBAL_PICKS];
+}
+
+// Merge COCOM picks with user-saved articles (user articles always first)
+function getChiefsPicks(cocomId){
+ const picks = CHIEFS_PICKS[cocomId] || CHIEFS_PICKS.EUCOM;
+ // User-saved articles that are COCOM-tagged or global come first
+ const userArts = ARTICLES.filter(a => !a._isDefault);
+ return [...userArts, ...picks];
 }
 
 let ARTICLES=[];
@@ -1866,7 +1833,8 @@ function getFeedItems(){
  }).map(r=>({
   src:r.source,handle:r.sourceHandle,dname:r.source,
   time:r.age,displayTime:r.age,
-  text:r.title,aor:[id],likes:0,rts:0,replies:0,
+  text: (r.desc && r.desc.length > 40 ? r.desc : (r.description && r.description.length > 40 ? r.description : (r.summary || r.content || r.title))),
+  aor:[id],likes:0,rts:0,replies:0,
   url:r.url,isRSS:true,_assignedMins:parseTimeToMins(r.age)
  }));
 
@@ -1906,18 +1874,20 @@ const FSHOW=3;
 function renderFeed(){
  const track=document.getElementById('ftrack');
  if(!feedItems.length){track.innerHTML='<div style="padding:14px 10px;color:var(--fade);font-size:10px">No feed items for this AOR.</div>';return;}
- const visible=Array.from({length:FSHOW+1},(_,i)=>feedItems[(feedOffset+i)%feedItems.length]);
+ const visible=Array.from({length:FSHOW},(_,i)=>feedItems[(feedOffset+i)%feedItems.length]);
  track.innerHTML=visible.map(p=>{
   const enc=encodeURIComponent(JSON.stringify(p));
   const isRSS=!!p.isRSS;
   const col=avColor(p.handle||p.src);
   const init=avInit(p.handle||p.src);
   const rssClass=isRSS?' twrss':'';
+  console.log('FEED DEBUG:', p);
   return `<div class="twcard${rssClass}" onclick="openFeedModal(decodeURIComponent('${enc}'))">
+    <div style='font-size:13px;color:#000;background:#fffd7a;padding:8px 10px 8px 10px;word-break:break-all;'><b>DEBUG:</b> <pre style='white-space:pre-wrap;margin:0;'>${JSON.stringify(p, null, 2)}</pre></div>
     <div class="twhdr">
       <div class="twavatar" style="background:${col}">${init}</div>
       <div class="twnames">
-        <div class="twdname">${p.dname||p.src}${p.verified?'<span class="twverified" title="Verified">✓</span>':''}</div>
+        <div class="twdname">${p.dname||p.src}${p.verified?'<span class=\"twverified\" title=\"Verified\">✓</span>':''}</div>
         <div class="twhandle">${p.src}</div>
       </div>
       <div class="twtime">${p.displayTime||p.time}${String(p.displayTime||p.time).endsWith('ago')?'':' ago'}</div>
@@ -1931,13 +1901,13 @@ function renderFeed(){
   </div>`;
  }).join('');
  const wrap=track.parentElement;
- const rh=wrap&&wrap.clientHeight>10?Math.floor(wrap.clientHeight/(FSHOW+1)):120;
+ const rh=wrap&&wrap.clientHeight>10?Math.floor(wrap.clientHeight/(FSHOW)):120;
  if(rh>0) track.querySelectorAll('.twcard').forEach(r=>{r.style.height=rh+'px';r.style.overflow='hidden';});
 }
 
 function slideFeed(){
  const track=document.getElementById('ftrack'),wrap=track.parentElement;
- const rh=wrap&&wrap.clientHeight>10?Math.floor(wrap.clientHeight/(FSHOW+1)):0;
+ const rh=wrap&&wrap.clientHeight>10?Math.floor(wrap.clientHeight/(FSHOW)):0;
  if(!rh)return;
  track.style.transition='transform .4s cubic-bezier(.4,0,.2,1)';
  track.style.transform=`translateY(-${rh}px)`;
@@ -2042,49 +2012,52 @@ async function loadArticles(){
  }catch(e){ console.warn('Articles API unavailable'); }
 }
 
-async function renderArticles(){
-  const el=document.getElementById('toclist');
-  const cocomId = AC ? AC.id : 'EUCOM';
-  const picks = await getChiefsPicks(cocomId);
-  const rss = (window.RSS_ITEMS||[]).filter(r => r.cocom === cocomId || r.cocom === 'ALL');
-  // Deduplicate by title (prefer RSS if duplicate)
-  const seen = new Set();
-  const allArticles = [...rss, ...picks].filter(a => {
-    const t = (a.title||'').slice(0,60).toLowerCase();
-    if(seen.has(t)) return false;
-    seen.add(t);
-    return true;
-  });
-  // Sort: RSS by pubDate/age, picks by order
-  allArticles.sort((a,b)=>{
-    if(a.pubDate && b.pubDate) return new Date(b.pubDate)-new Date(a.pubDate);
-    if(a.pubDate) return -1;
-    if(b.pubDate) return 1;
-    return 0;
-  });
-  // Update subtitle
-  const sub = document.getElementById('tocphs');
-  if(sub) sub.textContent = cocomId + ' · Chiefs Picks + Live';
-  if(!allArticles.length){el.innerHTML='<div style="padding:12px;color:var(--fade);font-size:9px;text-align:center">No articles yet.</div>';return;}
-  // Asynchronously check link reachability and render only confirmed links
-  const checkUrl = async url => {
-    try {
-      const res = await fetch(url, { method: 'HEAD', mode: 'no-cors' });
-      return res && (res.ok || res.type === 'opaque');
-    } catch { return false; }
-  };
-  const filtered = [];
-  for (const a of allArticles) {
-    const safeUrl = (a.url||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;');
-    if (safeUrl && safeUrl.startsWith('http')) {
-      // Only add if reachable
-      if (await checkUrl(safeUrl)) filtered.push(a);
-    }
-  }
-  el.innerHTML = filtered.map((a,i)=>{
-    const safeUrl = (a.url||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;');
-    return `
+function renderArticles(){
+ const el=document.getElementById('toclist');
+ const cocomId = AC ? AC.id : 'EUCOM';
+ const picks = getChiefsPicks(cocomId) || [];
+ const rss = (window.RSS_ITEMS||[]).filter(r => r.cocom === cocomId || r.cocom === 'ALL');
+ // Deduplicate by title (prefer RSS if duplicate)
+ const seen = new Set();
+ const allArticles = [...rss, ...picks].filter(a => {
+   const t = (a.title||'').slice(0,60).toLowerCase();
+   if(seen.has(t)) return false;
+   seen.add(t);
+   return true;
+ });
+ // Sort: RSS by pubDate/age, picks by order
+ allArticles.sort((a,b)=>{
+   if(a.pubDate && b.pubDate) return new Date(b.pubDate)-new Date(a.pubDate);
+   if(a.pubDate) return -1;
+   if(b.pubDate) return 1;
+   return 0;
+ });
+ // Update subtitle
+ const sub = document.getElementById('tocphs');
+ if(sub) sub.textContent = cocomId + ' · Chiefs Picks + Live';
+ if(!allArticles.length){el.innerHTML='<div style="padding:12px;color:var(--fade);font-size:9px;text-align:center">No articles yet.</div>';return;}
+ // Asynchronously check link reachability and render only confirmed links
+ (async () => {
+   const checkUrl = async url => {
+     try {
+       const res = await fetch(url, { method: 'HEAD', mode: 'no-cors' });
+       return res && (res.ok || res.type === 'opaque');
+     } catch { return false; }
+   };
+   const filtered = [];
+   for (const a of allArticles) {
+     const safeUrl = (a.url||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+     if (safeUrl && safeUrl.startsWith('http')) {
+       // Only add if reachable
+       if (await checkUrl(safeUrl)) filtered.push(a);
+     }
+   }
+   el.innerHTML = filtered.map((a,i)=>{
+     const isUserArt = !a._isDefault && !String(a.id).startsWith('9') && !a.isRSS;
+     const safeUrl = (a.url||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+     return `
      <a class="art" href="${safeUrl}" target="_blank" rel="noopener noreferrer" style="display:block;text-decoration:none;color:inherit">
+      ${isUserArt?`<button class="artdel" onclick="event.preventDefault();event.stopPropagation();delArticle(${a.id})">&#x2715;</button>`:''}
       <div class="arttitle">${a.title}</div>
       <div class="artmeta">
        <span class="artauthor">${a.author||a.source||''}</span>
@@ -2096,7 +2069,8 @@ async function renderArticles(){
       <div class="arttags">${(a.tags||[]).map(t=>`<span class="arttag">${t}</span>`).join('')}</div>
      </a>
     `;
-  }).join('');
+   }).join('');
+ })();
 }
 
 async function delArticle(id){
@@ -2105,6 +2079,22 @@ async function delArticle(id){
  renderArticles();
 }
 
+function toggleForm(){
+ formOpen=!formOpen;
+ document.getElementById('tocform').style.display=formOpen?'block':'none';
+ document.getElementById('tocaddbtn').textContent=formOpen?'✕ CANCEL':'+ RECOMMEND AN ARTICLE';
+}
+
+async function saveArticle(){
+ const t=document.getElementById('ft').value.trim(),u=document.getElementById('fu').value.trim();
+ if(!t||!u){alert('Title and URL required.');return;}
+ const art={title:t,author:document.getElementById('fa').value.trim()||'Unknown',publication:document.getElementById('fp').value.trim()||'External',date:document.getElementById('fd').value.trim()||new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),blurb:document.getElementById('fb').value.trim(),url:u,tags:document.getElementById('ftg').value.split(',').map(x=>x.trim()).filter(Boolean)};
+ try{const r=await fetch('/.netlify/functions/articles',{method:'POST',headers:{'Content-Type':'application/json','x-admin-password':sessionStorage.getItem('admpw')||''},body:JSON.stringify({article:art})});ARTICLES=r.ok?await r.json():[{...art,id:Date.now()},...ARTICLES];}
+ catch{ARTICLES=[{...art,id:Date.now()},...ARTICLES];}
+ renderArticles();
+ ['ft','fa','fp','fu','fd','fb','ftg'].forEach(id=>document.getElementById(id).value='');
+ toggleForm();
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // RSS
@@ -2259,7 +2249,56 @@ async function loadOSINT(){
 // ═══════════════════════════════════════════════════════════════════
 // SPORTS TICKER
 // ═══════════════════════════════════════════════════════════════════
-// ...existing code...
+async function loadSports(){
+  try{
+    const r=await fetch('/.netlify/functions/sports');
+    if(!r.ok) return;
+    const d=await r.json();
+    const games=d.games||[];
+    const el=document.getElementById('sporttrack');
+    if(!el) return;
+    if(!games.length){
+      el.textContent='NO SCORES AVAILABLE';
+      return;
+    }
+    // Build ticker line and repeat it for seamless scroll
+    const tickerLine = games.map(g=>{
+      const isLive=g.state==='in';
+      const lbl=`<span class="sgl${isLive?' sgl-live':''}">${g.label}</span>`;
+      return `<span class="sgi">${lbl}<span class="sgd">${g.display}</span></span>`;
+    }).join('<span style="color:#4a4a2a;margin-right:32px">|</span>');
+    el.innerHTML = tickerLine + '<span style="color:#4a4a2a;margin-right:32px">|</span>' + tickerLine;
+    // Dynamic ticker animation
+    const sportinner = document.getElementById('sportinner');
+    if (sportinner && el) {
+      // Remove previous animation
+      el.style.animation = 'none';
+      void el.offsetWidth;
+      // Calculate widths
+      const containerWidth = sportinner.offsetWidth;
+      const contentWidth = el.scrollWidth;
+      // Minimum duration for short tickers
+      const minDuration = 12; // seconds
+      // Pixels per second speed (higher = faster)
+      const pxPerSec = 80;
+      const duration = Math.max(minDuration, (contentWidth + containerWidth) / pxPerSec);
+      // Set up keyframes dynamically
+      const styleId = 'sportticker-anim';
+      let styleTag = document.getElementById(styleId);
+      if (!styleTag) {
+        styleTag = document.createElement('style');
+        styleTag.id = styleId;
+        document.head.appendChild(styleTag);
+      }
+      styleTag.textContent = `@keyframes sportticker { from { transform: translateX(${containerWidth}px); } to { transform: translateX(-${contentWidth}px); } }`;
+      el.style.display = 'inline-block';
+      el.style.whiteSpace = 'nowrap';
+      el.style.animation = `sportticker ${duration}s linear infinite`;
+    }
+  }catch(e){
+    console.warn('Sports API error:',e.message);
+  }
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // BOOT
@@ -2275,6 +2314,7 @@ function boot(){
  loadArticles();
  loadRSS(); loadTelegram();
  loadTicker();
+ loadMarketTicker();
  loadSports();
  loadACLED();
  loadOSINT().then(()=>{ setTimeout(()=>generateSitrep(AC), 800); });
@@ -2290,6 +2330,7 @@ if(document.readyState==='loading'){
 
 // Refresh intervals — ticker every 15min, OSINT every 5min, ACLED every 6h
 setInterval(loadTicker, 15 * 60 * 1000);
+setInterval(loadMarketTicker, 15 * 60 * 1000);
 setInterval(loadSports,  5 * 60 * 1000);
 setInterval(loadOSINT,   5 * 60 * 1000);
 setInterval(loadACLED,   6 * 60 * 60 * 1000);
