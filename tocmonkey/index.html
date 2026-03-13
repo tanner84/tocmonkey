@@ -412,6 +412,7 @@ html,body{height:100%;background:var(--bg);color:var(--hi);font-family:var(--mon
       <div class="ph">
         <div><span class="pht" id="maptitle">MAP</span><span class="phs" id="mapsub"></span></div>
         <button class="phb on" id="ringsbtn" onclick="toggleRings()">◎ RINGS</button>
+        <button class="phb" id="boundsbtn" onclick="toggleBounds()">◻ AOR</button>
       </div>
       <div id="map"></div>
       <!-- SITREP OVERLAY -->
@@ -2100,14 +2101,60 @@ setTimeout(()=>map.invalidateSize(),50);
 setTimeout(()=>map.invalidateSize(),300);
 setTimeout(()=>map.invalidateSize(),1000);
 window.addEventListener('resize',()=>map.invalidateSize());
-const mg=L.layerGroup().addTo(map), rg=L.layerGroup().addTo(map);
+const mg=L.layerGroup().addTo(map), rg=L.layerGroup().addTo(map), cg=L.layerGroup().addTo(map);
 function iCol(i){return i==='HIGH'?'#f87171':i==='MED'?'#fbbf24':'#34d399'}
+
+// ── COCOM BOUNDARY POLYGONS (approximate / open-source) ──────────────
+const COCOM_POLYS={
+  NORTHCOM:{color:'#38bdf8',polys:[
+    [[90,-168],[90,-10],[65,-15],[58,-30],[47,-53],[35,-75],[24,-77],[15,-83],[15,-92],[22,-107],[22,-117],[32,-117],[32,-125],[49,-125],[60,-141],[72,-143],[90,-168]]
+  ]},
+  SOUTHCOM:{color:'#34d399',polys:[
+    [[15,-92],[15,-83],[24,-77],[14,-63],[8,-60],[5,-52],[-5,-35],[-55,-35],[-56,-67],[-56,-80],[0,-80],[8,-77],[15,-92]]
+  ]},
+  EUCOM:{color:'#818cf8',polys:[
+    [[90,-45],[90,65],[38,65],[35,36],[36,25],[38,-5],[36,-10],[48,-10],[57,-30],[67,-30],[65,-50],[84,-50],[90,-45]]
+  ]},
+  CENTCOM:{color:'#f97316',polys:[
+    [[55,25],[55,87],[-5,87],[-5,42],[10,44],[22,37],[29,34],[36,25],[55,25]]
+  ]},
+  INDOPACOM:{color:'#fbbf24',polys:[
+    [[65,62],[65,180],[-55,180],[-55,62],[65,62]],
+    [[65,-100],[65,-180],[-55,-180],[-55,-100],[65,-100]]
+  ]},
+  AFRICOM:{color:'#a78bfa',polys:[
+    [[37,-18],[37,25],[29,34],[22,37],[10,44],[-5,42],[-5,55],[-35,55],[-35,-18],[37,-18]]
+  ]}
+};
+let boundsOn=false;
+function drawCocomBounds(){
+  cg.clearLayers();
+  if(!boundsOn)return;
+  Object.entries(COCOM_POLYS).forEach(([id,data])=>{
+    const active=id===AC.id;
+    data.polys.forEach(pts=>{
+      const p=L.polygon(pts,{
+        color:data.color, fillColor:data.color,
+        weight:active?2:1, opacity:active?0.9:0.22,
+        fillOpacity:active?0.10:0.02,
+        dashArray:active?null:'6,5', interactive:false
+      }).addTo(cg);
+      if(active) p.bringToFront();
+    });
+  });
+}
+function toggleBounds(){
+  boundsOn=!boundsOn;
+  document.getElementById('boundsbtn').classList.toggle('on',boundsOn);
+  drawCocomBounds();
+}
 
 function updateMap(){
  mg.clearLayers();rg.clearLayers();
  document.getElementById('maptitle').textContent=AC.id+' — '+AC.full;
  document.getElementById('mapsub').textContent=AC.zones.length+' ZONES';
  map.flyTo(AC.center,AC.zoom,{duration:1.0});
+ drawCocomBounds();
  AC.zones.forEach(z=>{
   const col=iCol(z.intensity);
   const icon=L.divIcon({className:'',html:`<div style="width:12px;height:12px;border-radius:50%;background:${col};box-shadow:0 0 9px ${col}"></div>`,iconSize:[12,12],iconAnchor:[6,6]});
