@@ -21,14 +21,70 @@ const LEAGUES = [
 // --- GOLF (PGA) ---
 async function fetchPGA() {
   try {
-    const res = await fetch('https://site.api.espn.com/apis/site/v2/sports/golf/pga/leaderboard');
+    const res = await fetch('https://site.api.espn.com/apis/site/v2/sports/golf/pga/leaderboard', {
+      signal: AbortSignal.timeout(5000),
+    });
     if (!res.ok) return [];
     const data = await res.json();
     const event = data.events?.[0];
     if (!event) return [];
-    const leaderboard = event.competitions?.[0]?.competitors || [];
-    const top = leaderboard.slice(0, 3).map((p, i) => `${i === 0 ? '🏆' : ''}${p.athlete?.displayName || ''} (${p.status?.position || ''}, ${p.score || ''})`).join(' | ');
-    return [{ label: 'PGA', state: 'post', display: `Golf Leaderboard: ${top}` }];
+    const comp = event.competitions?.[0];
+    const leaderboard = comp?.competitors || [];
+    if (!leaderboard.length) return [];
+    const roundStatus = comp?.status?.type?.shortDetail || '';
+    const tournamentName = event.shortName || event.name || 'PGA TOUR';
+    const top = leaderboard.slice(0, 5).map(p => {
+      const pos   = p.status?.position?.displayValue || p.status?.position || '';
+      const name  = p.athlete?.shortName || p.athlete?.displayName || '';
+      const score = p.score || 'E';
+      const thru  = p.status?.thru ? `thru ${p.status.thru}` : '';
+      return `${pos} ${name} ${score}${thru ? ' ('+thru+')' : ''}`;
+    }).join('  ·  ');
+    const display = `${tournamentName}${roundStatus ? ' · ' + roundStatus : ''}: ${top}`;
+    return [{ label: 'PGA', state: comp?.status?.type?.state || 'post', display }];
+  } catch { return []; }
+}
+
+// --- UFC / MMA ---
+async function fetchUFC() {
+  try {
+    const res = await fetch('https://site.api.espn.com/apis/site/v2/sports/mma/ufc/scoreboard', {
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    const events = data.events || [];
+    if (!events.length) return [];
+    const results = [];
+    for (const ev of events.slice(0, 4)) {
+      const comp = ev.competitions?.[0];
+      if (!comp) continue;
+      const state  = comp.status?.type?.state || 'pre';
+      const fighters = comp.competitors || [];
+      const f1 = fighters[0]; const f2 = fighters[1];
+      if (!f1 || !f2) continue;
+      const n1 = f1.athlete?.shortName || f1.athlete?.displayName || f1.team?.displayName || '?';
+      const n2 = f2.athlete?.shortName || f2.athlete?.displayName || f2.team?.displayName || '?';
+      const eventName = ev.shortName || ev.name || 'UFC';
+      // Odds
+      const odds = comp.odds?.[0];
+      const oddsStr = odds ? ` (${odds.awayTeamOdds?.moneyLine > 0 ? '+'+odds.awayTeamOdds?.moneyLine : odds.awayTeamOdds?.moneyLine || ''} / ${odds.homeTeamOdds?.moneyLine > 0 ? '+'+odds.homeTeamOdds?.moneyLine : odds.homeTeamOdds?.moneyLine || ''})` : '';
+      if (state === 'post') {
+        const winner   = fighters.find(f => f.winner);
+        const winName  = winner?.athlete?.shortName || winner?.athlete?.displayName || '';
+        const method   = comp.status?.type?.shortDetail || 'DEC';
+        results.push({ label: 'UFC', state: 'post', display: `${eventName} · ${n1} vs ${n2} — ${winName ? winName + ' def.' : ''} ${method}` });
+      } else if (state === 'in') {
+        const rnd  = comp.status?.period || 1;
+        const clk  = comp.status?.displayClock || '';
+        results.push({ label: 'UFC', state: 'in', display: `${eventName} · ${n1} vs ${n2} — RD ${rnd} ${clk} LIVE` });
+      } else {
+        const d = new Date(ev.date);
+        const dateStr = d.toLocaleDateString('en-US', { month:'numeric', day:'numeric', timeZone:'UTC' });
+        results.push({ label: 'UFC', state: 'pre', display: `${eventName} · ${n1} vs ${n2}${oddsStr} — ${dateStr}` });
+      }
+    }
+    return results;
   } catch { return []; }
 }
 
@@ -100,9 +156,9 @@ exports.handler = async function(event) {
   }
 
 
-  // Always fetch PGA and F1 first and include their results
-  const [pga, f1] = await Promise.all([fetchPGA(), fetchF1()]);
-  const results = [...pga, ...f1];
+  // Always fetch PGA, F1, and UFC first
+  const [pga, f1, ufc] = await Promise.all([fetchPGA(), fetchF1(), fetchUFC()]);
+  const results = [...pga, ...f1, ...ufc];
 
   // Fetch regular leagues
   await Promise.allSettled(LEAGUES.map(async ({ key, sport, league, label }) => {
