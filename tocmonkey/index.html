@@ -875,9 +875,15 @@ const COCOMS=[
   ],
   keywords:["southcom","latin america","colombia","venezuela","haiti","cartel","drug","maritime","interdiction","narco","cuba","nicaragua","gang","ms-13","tren de aragua"],
   orgTabs:[
-   {label:"US",flag:"🇺🇸",id:"us"},
-   {label:"CARTELS",flag:"⚠️",id:"cartel"},
-   {label:"VENEZUELA",flag:"🇻🇪",id:"vzla"},
+   {label:"US",flag:"🇺🇸",id:"us",cat:"allied"},
+   {label:"Colombia (Partner)",flag:"🇨🇴",id:"col",cat:"allied"},
+   {label:"Cuba (FAR)",flag:"🇨🇺",id:"cuba",cat:"adversary"},
+   {label:"Nicaragua",flag:"🇳🇮",id:"nica",cat:"adversary"},
+   {label:"Venezuela (FANB)",flag:"🇻🇪",id:"vzla",cat:"adversary"},
+   {label:"CARTELS / TCOs",flag:"⚠",id:"cartel",cat:"nonstate"},
+   {label:"Haiti Gangs",flag:"⚠",id:"haitigangs",cat:"nonstate"},
+   {label:"FARC / ELN",flag:"⚠",id:"farceln",cat:"nonstate"},
+   {label:"Tren de Aragua",flag:"⚠",id:"tda",cat:"nonstate"},
   ],
   orgs:{
    us:{hq:"HQ USSOUTHCOM — Doral, FL",flag:"🇺🇸",
@@ -926,6 +932,128 @@ const COCOMS=[
      ]},
     ],
     note:"FANB professional capacity degraded by emigration and political purges. Colectivos (armed pro-Maduro groups) and cartel ties complicate security picture. Russian/Cuban advisory presence reported."},
+
+   col:{hq:"Colombian Armed Forces (FFMM) — Min. of Defense, Bogotá · Commander: Gen. Luis Ospina Garzón",flag:"🇨🇴",
+    components:[
+     {name:"Colombian Army (Ejército)",type:"ARFOR",units:[
+      {u:"~240,000 active personnel (largest in region)",subs:["6 Joint Task Forces for internal security","5 Divisions covering national territory","Decades of COIN experience vs FARC/ELN","US FID partner since Plan Colombia (2000–present)"]},
+      {u:"Special Forces / Lanceros",subs:["Fuerzas Especiales — CT/CT/DA missions","Lancero school — regional SOF training hub","Joint ops with DEA / SOCSOUTH"]},
+     ]},
+     {name:"Colombian Air Force (FAC)",type:"AFFOR",units:[
+      {u:"~13,500 personnel",subs:["A-29 Super Tucano — primary COIN platform","Kfir C10/C12 — air superiority","UH-60, UH-1H — rotary wing","ISR: Cessna Citation intel platforms"]},
+     ]},
+     {name:"Colombian Navy (ARC)",type:"NAFOR",units:[
+      {u:"Pacific + Caribbean fleets",subs:["4 German Type 209 SSKs (ARC Pijao class)","FS-1500 frigates × 2","Riverine Brigade — jungle interdiction","Strong counter-narcotics maritime partner with 4th Fleet"]},
+     ]},
+    ],
+    note:"Colombia remains SOUTHCOM's most capable partner. Plan Colombia transformed military from near-failed state. Now exports COIN expertise to regional partners. FARC peace deal (2016) partially unraveled — dissident factions active. ELN peace talks stalled under Petro government."},
+
+   cuba:{hq:"Revolutionary Armed Forces of Cuba (FAR) — HQ: Havana · First Secretary: Miguel Díaz-Canel · Min. FAR: Gen. Álvaro López Miera",flag:"🇨🇺",
+    components:[
+     {name:"GROUND FORCES — Three Armies",type:"ARFOR",units:[
+      {u:"Western Army — Havana / Pinar del Río",subs:["Primary defense force — strategic approaches","~38,000 active personnel across all branches","T-62 / T-55 MBTs (aging Soviet-era stock)","BMP-1 IFVs, BTR-60/70 APCs"]},
+      {u:"Central Army — Villa Clara",subs:["Territorial defense / reserve mobilization"]},
+      {u:"Eastern Army — Santiago de Cuba",subs:["Guantánamo area counterforce","Militia: Milicias de Tropas Territoriales (MTT) — ~1M nominally trained civilians"]},
+     ]},
+     {name:"Air Force / Air Defense (DAAFAR)",type:"AFFOR",units:[
+      {u:"Fighter Aviation",subs:["MiG-29 Fulcrum (est. 8–12 operational)","MiG-21bis (aging, limited serviceability)","Air force capability severely degraded — fuel/parts shortages"]},
+      {u:"Air Defense",subs:["S-125 Neva/Pechora (SA-3) — aging","S-75 Dvina (SA-2) — limited sites","Note: China reportedly upgrading Cuban radar network (2023 WSJ)"]},
+     ]},
+     {name:"Revolutionary Navy (MGR)",type:"NAFOR",units:[
+      {u:"Coastal defense flotilla",subs:["Foxtrot-class submarine (non-operational)","Osa-II missile boats — limited serviceability","Primary mission: coastal patrol / SLOC denial"]},
+     ]},
+     {name:"INTELLIGENCE & INFLUENCE",type:"Intel/Influence",units:[
+      {u:"DGI (Dirección General de Inteligencia)",subs:["Cuba's foreign intelligence — extensive HUMINT history","Operations in US, Latin America, Europe","Longstanding FBI counterintelligence concern"]},
+      {u:"China SIGINT Facility (Reported 2023)",subs:["WSJ/US officials: Chinese SIGINT facility near Havana","Targets US SOUTHCOM comms + Florida military installations","Cuba denies; US assessing scope"]},
+      {u:"Russian Military Presence",subs:["Russian warships periodic port calls (Havana 2024)","Intelligence sharing / advisory presence","Cuba base of operations for Russian intelligence in Western Hemisphere"]},
+     ]},
+    ],
+    note:"⚠ Cuba remains an adversary under US law. FAR conventional capacity is severely degraded (fuel, parts, training deficits) but intelligence apparatus remains robust. China-Cuba SIGINT cooperation is an active SOUTHCOM concern. ~20,000 Cuban military/security personnel reportedly supporting Maduro in Venezuela. Economic collapse accelerating military readiness decline."},
+
+   nica:{hq:"Nicaraguan Army (Ejército de Nicaragua) — HQ: Managua · Supreme Commander: Daniel Ortega · Chief of Army: Gen. Julio César Avilés",flag:"🇳🇮",
+    components:[
+     {name:"ARMY (Ejército de Nicaragua)",type:"ARFOR",units:[
+      {u:"~12,000 active personnel",subs:["7 Military Detachments covering national territory","T-55 MBTs (Soviet-era)","BTR-60/70 APCs","Artillery: D-30, BM-21 Grad MLRS (limited)"]},
+      {u:"Special Operations Forces",subs:["Counter-narcotics / border control","Training focus shifted to internal security since 2018 crackdown","Cooperation with Russia renewed post-2022"]},
+     ]},
+     {name:"AIR FORCE / NAVY",type:"Air/Naval",units:[
+      {u:"Air Force — ~600 personnel",subs:["No combat aircraft — transport and helicopter only","Mi-17, Mi-24 (aging)"]},
+      {u:"Navy — ~800 personnel",subs:["Coastal patrol boats — Caribbean and Pacific","Limited blue-water capability"]},
+     ]},
+     {name:"POLITICAL / INFLUENCE",type:"Government/Hybrid",units:[
+      {u:"Ortega-Murillo Dynastic Rule",subs:["Daniel Ortega (President) + Rosario Murillo (VP / de facto co-ruler)","Expelled OAS, UN human rights observers 2022","Mass political imprisonment — 200+ dissidents jailed or exiled"]},
+      {u:"Foreign Alignment",subs:["Russia: military cooperation agreement 2022","Authorized Russian troops/equipment transit on Nicaraguan territory","Cuba: intelligence/security advisory cooperation","China: infrastructure investment, potential dual-use projects"]},
+      {u:"SOUTHCOM Concern",subs:["Russian naval access to Corinto (Pacific) under discussion","No US military cooperation — all agreements canceled","Drug transit corridor — Caribbean coast (Mosquito Coast) is key NARCO route"]},
+     ]},
+    ],
+    note:"⚠ Nicaragua under Ortega is effectively a closed authoritarian state aligned with Russia/Cuba/Venezuela. US Embassy presence limited. SOUTHCOM has no active security cooperation. Mosquito Coast remains a significant drug trafficking corridor — estimated 15–20% of US-bound cocaine transits Nicaraguan waters. Russian and Chinese engagement increasing."},
+
+   haitigangs:{hq:"Haiti Gang Landscape — No unified command · ~200 active gangs · Control est. 80% of Port-au-Prince (UN 2024)",flag:"⚠",
+    components:[
+     {name:"VIV ANSANM COALITION ('Living Together')",type:"Gang Coalition",units:[
+      {u:"Formed Feb 2024 — G9 + G-Pèp merger",subs:["Launched coordinated assault on Port-au-Prince — govt near collapse","Forced PM Ariel Henry to resign Mar 2024","Seizure of major infrastructure: Toussaint Louverture Airport area, ports","UN estimate: coalition controls 80%+ of capital"]},
+      {u:"Jimmy 'Barbeque' Chérizier (G9 leader)",subs:["Former HNP (Haitian National Police) officer — dismissed 2018","Commands largest coalition faction","Faces UN sanctions (2022) — asset freeze, travel ban","Responsible for La Saline massacre (2018): 71+ killed"]},
+      {u:"G-Pèp faction",subs:["Originally G9 rivals — united under common goal","Controls parts of Cité Soleil, Martissant","Drug trafficking, kidnapping, weapons smuggling from US/DOM REP"]},
+     ]},
+     {name:"400 MAWOZO",type:"Gang",units:[
+      {u:"Eastern Haiti / Dominican border area",subs:["~150–300 members","High-profile: kidnapped 17 Christian Aid Ministries missionaries (2021)","Ransom kidnapping primary revenue — targets Haitian diaspora returnees","Drug transit from Dominican Republic"]},
+     ]},
+     {name:"GRAN GRIF",type:"Gang",units:[
+      {u:"Artibonite Valley / Northern Haiti",subs:["Agricultural heartland — controls food supply routes","Massacres in Pont-Sondé (Oct 2024): 70+ killed","Human rights orgs: war crime allegations","Extortion of farmers, road tolls, kidnapping"]},
+     ]},
+     {name:"CRIMINAL INDUSTRIES",type:"Revenue",units:[
+      {u:"Kidnapping for ransom",subs:["UN: 2,490 kidnappings in 2023 — record high","Avg. ransom: $15,000–$200,000 per victim","Targeting: missionaries, aid workers, wealthy Haitians, diaspora returnees"]},
+      {u:"Drug trafficking",subs:["Haiti is key transit point: Colombian cocaine → US/Europe","JIATF-South / USCG interdiction focus","Gangs tax drug shipments through territory"]},
+      {u:"Weapons pipeline",subs:["Majority of gang weapons traced to US (ATF)","Smuggled via maritime routes from South Florida","UN Group of Experts: US-sourced weapons arming Haitian gangs"]},
+     ]},
+     {name:"INTERNATIONAL RESPONSE",type:"Stabilization",units:[
+      {u:"MSSM — Kenyan-led Multinational Security Support Mission",subs:["UN-authorized, deployed 2024","~1,000 Kenyan police (initial tranche)","Authorized: 2,500 total from 10+ nations","Limited effect — outgunned in many engagements"]},
+      {u:"US Role (SOUTHCOM)",subs:["Logistics support to MSSM","Coast Guard interdiction — weapons and drug trafficking","JTF-Haiti HADR contingency planning"]},
+     ]},
+    ],
+    note:"⚠ Haiti is SOUTHCOM's most acute humanitarian/security crisis. State has effectively collapsed — elected government unable to operate. Gang revenue estimated $200M+/year. MSSM (Kenya-led) making slow progress against well-armed coalition. Weapons pipeline from US to Haiti gangs is active SOUTHCOM/DEA/ATF concern. Potential for mass migration event if stabilization fails."},
+
+   farceln:{hq:"FARC Dissidents (EMC) + ELN — Colombia / Venezuela border region",flag:"⚠",
+    components:[
+     {name:"FARC DISSIDENTS — Estado Mayor Central (EMC)",type:"Insurgency / TCO",units:[
+      {u:"Iván Mordisco — Supreme Commander",subs:["Rejected 2016 Havana Peace Accord","Est. 3,000–5,000 combatants","Active in Caquetá, Putumayo, Meta, Guaviare departments","Colombia re-designated EMC as terrorist org 2023"]},
+      {u:"2nd Marquetalia (Iván Márquez faction remnant)",subs:["Smaller: ~800–1,200 fighters","Venezuelan sanctuary — Apure, Amazonas states","Russia/Cuba tied historically through FARC networks"]},
+      {u:"Criminal economy",subs:["Coca cultivation / cocaine production — primary revenue","Gold mining extortion — illegal mines","Kidnapping, extortion of municipalities","Revenue est. $300–500M annually across dissident factions"]},
+     ]},
+     {name:"ELN (Ejército de Liberación Nacional)",type:"Insurgency",units:[
+      {u:"'Gabino' National Directorate",subs:["Marxist-Leninist — active since 1964","Est. 5,000–6,000 combatants","Strongest in Norte de Santander, Arauca, Chocó"]},
+      {u:"Venezuela cross-border operations",subs:["Sanctuary in Apure and Bolívar states — Maduro tolerates presence","Armed conflict with FANB limited — de facto accommodation","Control of border crossing revenue (taxes, smuggling)"]},
+      {u:"Urban networks",subs:["Milicias Bolivarianas — urban cells Medellín, Cali, Cúcuta","Narco-trafficking and extortion in cities","Petro government (2022–) held intermittent peace talks — stalled 2024"]},
+     ]},
+     {name:"CONFLICT ECOLOGY",type:"Multi-actor Zone",units:[
+      {u:"Arauca / Venezuelan border — most complex zone",subs:["ELN vs FARC-EMC clashes 2021–present","Venezuelan military nominally present but ineffective","Civilian displacement: 200,000+ in 2022–23","SOUTHCOM / Colombia ISR focus on cross-border sanctuaries"]},
+      {u:"Coca production",subs:["Colombia: ~230,000 hectares coca cultivation (UNODC 2023)","Insurgent groups tax production and export","Despite fumigation/eradication — net production near record levels"]},
+     ]},
+    ],
+    note:"⚠ FARC-EMC and ELN represent active insurgencies degrading Colombia's security and regional stability. Venezuelan sanctuary is key enabler — Maduro tolerates armed groups in exchange for political buffer. SOUTHCOM supports Colombian military through 7th SFG, ISR, and JIATF-South counter-narcotics."},
+
+   tda:{hq:"Tren de Aragua (TdA) — Founded: Tocoron Prison, Venezuela, ~2014 · Now transnational",flag:"⚠",
+    components:[
+     {name:"ORIGINS & STRUCTURE",type:"Transnational Gang",units:[
+      {u:"Founded inside Tocoron Prison — Aragua state, Venezuela",subs:["Grew under Venezuela's 'pran' (prison boss) system","Maduro government tolerated — used as deniable instrument","Venezuelan government 'raid' of Tocoron 2023: symbolic, leadership dispersed","Now functions without single central leadership"]},
+      {u:"Estimated membership: 4,000–8,000 active across region",subs:["Presence in 13+ countries","OFAC designated: SDN list 2023","Trump EO: FTO designation January 2025","US IC assesses TdA as fastest-growing transnational gang threat"]},
+     ]},
+     {name:"REGIONAL PRESENCE",type:"Geographic",units:[
+      {u:"Venezuela — origin/core",subs:["Controls territory in Aragua, Carabobo states","Human trafficking pipelines into Colombia"]},
+      {u:"Chile / Peru / Ecuador",subs:["Largest South American concentration outside Venezuela","Chilean intel: ~500–1,000 members","Responsible for organized crime surge in Santiago, Lima","Assassinations of rival gang leaders using professional methods"]},
+      {u:"Colombia",subs:["Transit country — coordinates with ELN/FARC for corridor access","Recruitment of Venezuelan migrants along migratory routes"]},
+     ]},
+     {name:"US PRESENCE (NORTHCOM/SOUTHCOM nexus)",type:"Domestic Threat",units:[
+      {u:"Confirmed US cells — FBI/DHS",subs:["Denver, CO: Aurora apartment complex takeovers (2024)","New York City, Houston, Los Angeles cells confirmed","ICE/HSI: 600+ TdA-linked arrests in US (2024)","Exploits irregular migration corridors (Darién Gap → Mexico → US border)"]},
+      {u:"Criminal operations in US",subs:["Human trafficking — primary revenue","Extortion of Venezuelan diaspora communities","Drug distribution sub-contractor to Mexican cartels","Weapons acquisition for export to South America"]},
+     ]},
+     {name:"CRIMINAL INDUSTRIES",type:"Revenue",units:[
+      {u:"Human trafficking / smuggling",subs:["Primary revenue across all regions","Controls Darién Gap crossing points","$300–500M estimated annual revenue globally"]},
+      {u:"Extortion",subs:["'Vacuna' (vaccine) — businesses, Venezuelan migrants, transport operators","Executions for non-payment — documented in Chile and Peru"]},
+      {u:"Drug trafficking",subs:["Secondary to trafficking but growing","Distribution in South American cities","US: sub-contracts to Sinaloa/CJNG for domestic distribution"]},
+     ]},
+    ],
+    note:"⚠ Tren de Aragua is unique: born from Venezuela's failed state conditions, weaponized by Maduro as hybrid tool, then went fully autonomous. FTO designation (2025) increases pressure but disrupts LEA deconfliction. Aurora, CO incident (2024) brought TdA to mainstream US awareness. IC assesses risk of TdA targeting US officials/facilities if cornered by deportation pressure."},
   },
   equipment:[
    {n:"P-8A Poseidon",t:"MPA",o:"USA",flag:"🇺🇸",d:"Maritime patrol. Used by 4th Fleet for counter-narcotics interdiction in Caribbean.",l:"https://en.wikipedia.org/wiki/Boeing_P-8_Poseidon"},
@@ -945,6 +1073,7 @@ const COCOMS=[
   orgTabs:[
    {label:"US / NORAD",flag:"🇺🇸",id:"us",cat:"allied"},
    {label:"CANADA (NORAD)",flag:"🇨🇦",id:"can",cat:"allied"},
+   {label:"Mexico (SEDENA/SEMAR)",flag:"🇲🇽",id:"mexico",cat:"allied"},
    {label:"RUSSIA (Arctic)",flag:"🇷🇺",id:"rus",cat:"adversary"},
    {label:"Sinaloa Cartel (CDS)",flag:"⚠",id:"sinaloa",cat:"nonstate"},
    {label:"CJNG",flag:"⚠",id:"cjng",cat:"nonstate"},
@@ -996,6 +1125,30 @@ const COCOMS=[
      ]},
     ],
     note:"Canada committed to NORAD modernization — $40B+ investment. Arctic sovereignty increasingly stressed. F-35 delivery underway to replace CF-188."},
+
+   mexico:{hq:"Mexican Armed Forces — SEDENA (Army/Air) + SEMAR (Navy) · President: Claudia Sheinbaum · Sec. SEDENA: Gen. Ricardo Trevilla Trejo",flag:"🇲🇽",
+    components:[
+     {name:"SEDENA — Army (SEDENA / Ejército Mexicano)",type:"ARFOR",units:[
+      {u:"~200,000 active personnel",subs:["12 Military Regions covering national territory","9 Armored / Motorized Cavalry Regiments","Artillery: M114, DN-IV (domestic)","AFVs: M8 Greyhound, M3A1 Half-track (aging mix + upgrades)","US cooperation: Mérida Initiative successor (BIEN — Bienestar y Seguridad)"]},
+      {u:"National Guard (Guardia Nacional)",subs:["~110,000 personnel (est.)","Transferred to SEDENA oversight (2022 — Obrador reform)","Primary internal security / migration enforcement force","Deployed to all 32 states — heavily used for anti-cartel ops","NORTHCOM concern: GN cartel infiltration documented in multiple incidents"]},
+      {u:"SEDENA Special Forces",subs:["GAFE (Fuerzas Especiales) — small elite force","Training from US SOCOM / JSOC historically","GAFE defectors formed Los Zetas cartel — ongoing institutional concern","ISR: Israeli Heron UAVs, Cessna Citation 560 platforms"]},
+     ]},
+     {name:"SEMAR — Navy (Secretaría de Marina)",type:"NAFOR",units:[
+      {u:"~65,000 personnel (Pacific + Gulf fleets)",subs:["11 Naval Regions — Pacific, Gulf of Mexico, Caribbean","Frigates: ARM Benito Juárez (ex-USN Knox-class)","Offshore Patrol Vessels + interceptor boats","Primary counter-narcotics maritime arm — most trusted by US DEA/JIATF-South"]},
+      {u:"SEMAR Marine Infantry (FES)",subs:["Fuerzas Especiales de la Armada — special operations","Most capable and least-corrupt Mexican security force (per DEA assessment)","Conducted El Chapo capture operations (2014, 2016)","Joint ops with JIATF-South for maritime interdiction"]},
+      {u:"SEMAR Air Force",subs:["MH-60R Seahawks (US-supplied) for maritime patrol","P-8A capable integration under discussion","Surveillance: MX-15 EO/IR pods on King Air 350ER"]},
+     ]},
+     {name:"CNI / INTELLIGENCE",type:"Intelligence",units:[
+      {u:"Centro Nacional de Inteligencia (CNI)",subs:["National intelligence directorate","US-Mexico intel sharing strained since 2020 (Cienfuegos affair)","DEA senior officials declared persona non grata 2020","Intelligence cooperation slowly rebuilding under Sheinbaum"]},
+      {u:"FGR (Fiscalía General) — Federal Prosecution",subs:["Primary extradition authority","161 cartel extraditions to US since 2007","Political pressure on extraditions varies by administration","Ovidio Guzmán extradition (2023) a landmark — cartel retaliated in Culiacán"]},
+     ]},
+     {name:"KEY SECURITY ISSUES",type:"Assessment",units:[
+      {u:"Cartel infiltration of security forces",subs:["DEA: significant penetration at municipal/state/federal levels","'Chapulines' — corrupt officers who flip for cartels","SEMAR most resistant; municipal police most vulnerable"]},
+      {u:"US-Mexico Security Cooperation",subs:["NORTHCOM primary interlocutor for military-to-military","JTF-North (Fort Bliss) coordinates border ops","BIEN program: replacement for Mérida — emphasis on social programs vs security","Friction point: US wants more cartel targeting; Mexico sovereignty concerns"]},
+      {u:"Territorial control gaps",subs:["Multiple states effectively under cartel co-governance: Sinaloa, Michoacán, Guerrero, Tamaulipas","'Plazas' — cartel-controlled checkpoints on highways including federal roads","October 2022: CJNG ambushed state police — 14 killed in Zacatecas"]},
+     ]},
+    ],
+    note:"Mexico is NORTHCOM's most critical bilateral partner and most complex — simultaneously a security partner and a country where cartels operate as quasi-states. SEMAR is the most effective and trusted Mexican security institution. US-Mexico military relations improving under Sheinbaum after AMLO tensions. Active NORTHCOM engagement on border security, counter-narcotics, and migration management."},
 
    sinaloa:{hq:"Sinaloa Cartel (CDS) — HQ: Culiacán, Sinaloa, MX · Active in all 50 U.S. states",flag:"⚠",
     components:[
