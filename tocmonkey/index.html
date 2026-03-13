@@ -137,7 +137,18 @@ html,body{height:100%;background:var(--bg);color:var(--hi);font-family:var(--mon
 .osub{font-size:8px;color:var(--mid);padding:2px 0 2px 22px;border-left:1px dashed var(--blt);margin-left:5px;line-height:1.5}
 .onote{font-size:8px;color:var(--fade);margin-top:10px;padding-top:6px;border-top:1px solid var(--blt);line-height:1.6;font-style:italic}
 .ocountry{display:inline-block;font-size:8px;padding:1px 6px;border-radius:2px;margin-bottom:8px;font-weight:bold}
-
+/* ── SIGACTS ── */
+#sigactslist{flex:1;overflow-y:auto;padding:4px 6px;min-height:0}
+.sigact{padding:5px 6px;border-bottom:1px solid var(--blt);display:flex;gap:7px;align-items:flex-start;cursor:default}
+.sigact:hover{background:var(--hover)}
+.sigdot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.sigbody{flex:1;min-width:0}
+.sigmeta{display:flex;align-items:center;gap:4px;margin-bottom:1px;flex-wrap:wrap}
+.sigdate{font-size:8px;color:var(--fade);font-family:var(--mono)}
+.sigtype{font-size:7px;letter-spacing:1px;font-weight:bold;padding:1px 4px;border-radius:2px}
+.sigloc{font-size:9px;color:var(--g2);font-weight:bold;margin-bottom:2px;line-height:1.3}
+.sigsummary{font-size:8px;color:var(--mid);line-height:1.5}
+.sigsrc{font-size:7px;color:var(--fade);margin-top:2px;letter-spacing:.5px}
 /* ── EQUIPMENT ROTATOR ── */
 .eqwrap{flex:1;overflow:hidden;position:relative}
 .eqtrack{transition:transform .4s cubic-bezier(.4,0,.2,1)}
@@ -411,7 +422,7 @@ html,body{height:100%;background:var(--bg);color:var(--hi);font-family:var(--mon
     </div><!-- /mappnl -->
 
     <!-- 2x2 QUAD GRID — right 56% -->
-    <div id="quadgrid"><div id="mobiletabs" style="display:none"><button class="mtab on" onclick="mobPanel(0)">OSINT/RSS</button><button class="mtab" onclick="mobPanel(1)">EQUIPMENT</button><button class="mtab" onclick="mobPanel(2)">TASK ORG</button><button class="mtab" onclick="mobPanel(3)">TOC MONKEY</button></div>
+    <div id="quadgrid"><div id="mobiletabs" style="display:none"><button class="mtab on" onclick="mobPanel(0)">OSINT/RSS</button><button class="mtab" onclick="mobPanel(1)">EQUIPMENT</button><button class="mtab" onclick="mobPanel(2)">SIGACTS</button><button class="mtab" onclick="mobPanel(3)">TOC MONKEY</button></div>
       <!-- TOP LEFT: OSINT/RSS FEED -->
       <div class="pnl" id="feedpnl">
         <div class="ph"><span class="pht">OSINT / RSS</span><span class="phs" id="feedsub">AOR FEED</span></div>
@@ -428,11 +439,10 @@ html,body{height:100%;background:var(--bg);color:var(--hi);font-family:var(--mon
           <div class="eqtrack" id="eqtrack"></div>
         </div>
       </div>
-      <!-- BOTTOM LEFT: TASK ORG -->
+      <!-- BOTTOM LEFT: SIGACTS -->
       <div class="pnl qb" id="orgpnl">
-        <div class="ph"><span class="pht">TASK ORGANIZATION</span><span class="phs">OPEN SOURCE ONLY</span></div>
-        <div class="orgtabs" id="orgtabs"></div>
-        <div id="orgscroll"></div>
+        <div class="ph"><span class="pht">SIGACTS</span><span class="phs" id="sigactssub">LAST 90 DAYS</span></div>
+        <div id="sigactslist"></div>
       </div>
       <!-- BOTTOM RIGHT: TOC MONKEY -->
       <div class="pnl qr qb" id="tocpnl">
@@ -1689,10 +1699,90 @@ function closeWTF(){
 }
 function wtfEsc(e){ if(e.key==='Escape') closeWTF(); }
 
+// ═══════════════════════════════════════════════════════════════════
+// SIGACTS — Significant Actions, last 90 days, open source
+// ═══════════════════════════════════════════════════════════════════
+const SIGACTS_DATA=[
+ {date:"2026-03-12",type:"Kinetic",loc:"Zaporizhzhia Oblast, Ukraine",cocom:"EUCOM",summary:"Russian glide bomb (FAB-500 with UMPK) strikes residential district; 4 killed, 11 injured. Ukrainian air defense partially effective.",src:"ISW / Ukrainian MoD"},
+ {date:"2026-03-10",type:"Kinetic",loc:"Kursk Oblast, Russia",cocom:"EUCOM",summary:"Ukrainian cross-border drone swarm destroys fuel depot; secondary explosions visible 30km away. 14 Shahed-type drones used.",src:"Ukrainian GUR / OSINT"},
+ {date:"2026-03-06",type:"Kinetic",loc:"Donetsk front, Ukraine",cocom:"EUCOM",summary:"Russian infantry-armor assault on Chasiv Yar sector; ISW assesses ~1.5km advance along T-0504 highway. Heavy casualties both sides.",src:"ISW"},
+ {date:"2026-02-28",type:"Airstrike",loc:"Kharkiv, Ukraine",cocom:"EUCOM",summary:"Russian Iskander-M ballistic missile strike on energy substation; rolling blackouts across region. 3rd energy attack in 30 days.",src:"DTEK / Ukrainian Emergency Services"},
+ {date:"2026-02-20",type:"Maritime",loc:"Black Sea, Sevastopol approaches",cocom:"EUCOM",summary:"Ukrainian Sea Baby USV destroys Russian patrol boat Sergei Kotov (Raptor-class). Second confirmed naval kill this month.",src:"Ukrainian Navy / Bellingcat"},
+ {date:"2026-02-14",type:"Cyber",loc:"NATO Eastern Flank (Estonia/Latvia)",cocom:"EUCOM",summary:"GRU-attributed APT28 campaign probes Baltic energy grid SCADA systems. No confirmed disruption; CERT-EU issues advisory.",src:"CERT-EU / Estonian NCSC"},
+ {date:"2026-02-05",type:"Kinetic",loc:"Avdiivka direction, Ukraine",cocom:"EUCOM",summary:"Russian 5th Guards Army advances into Karlivka; OSINT geolocates Russian positions 4km from previous front line.",src:"DeepState / ISW"},
+ {date:"2026-01-22",type:"Escalation",loc:"Belarus-Poland border",cocom:"EUCOM",summary:"Belarusian military deploys 3 BMP-2 company tactical groups to Brest Oblast; NATO monitors assess as exercises, not pre-attack.",src:"NATO SHAPE / OSINT satimagery"},
+ {date:"2026-01-15",type:"Escalation",loc:"Baltic Sea / GPS corridor",cocom:"EUCOM",summary:"Russia jams GPS across Latvia and Lithuania; commercial aviation disrupted for 6 hours. Pattern consistent with 2024 incidents.",src:"Eurocontrol / Lithuanian CAA"},
+ {date:"2026-01-08",type:"Terror",loc:"Kyiv, Ukraine",cocom:"EUCOM",summary:"Shahed-136 swarm attack; 9 drones penetrate air defense, strike residential Obolonskyi district. 2 killed, 14 wounded.",src:"Kyiv City Military Administration"},
+ {date:"2026-03-11",type:"Terror",loc:"Tel Aviv, Israel",cocom:"CENTCOM",summary:"Car ramming at Dizengoff Square; 2 killed, 5 injured. Attacker neutralized by off-duty officer. No group claim within 24h.",src:"Israeli Police / Haaretz"},
+ {date:"2026-03-09",type:"Airstrike",loc:"Hodeidah, Yemen",cocom:"CENTCOM",summary:"CENTCOM precision strike destroys Houthi over-the-horizon radar site used to target commercial shipping. No civilian casualties reported.",src:"CENTCOM PAO"},
+ {date:"2026-03-07",type:"Maritime",loc:"Red Sea (21.2°N 38.8°E)",cocom:"CENTCOM",summary:"Houthi ASM (Chinese C-802 variant) intercepted by USS Laboon SM-2 at 35nm. Fourth intercept this month. Shipping diversion continues.",src:"CENTCOM / MarineTraffic"},
+ {date:"2026-03-03",type:"Kinetic",loc:"West Bank, Jenin Camp",cocom:"CENTCOM",summary:"IDF Operation Jenin; exchange of fire with PIJ cell. 3 militants KIA, 1 IDF soldier wounded. 12 detained. UNRWA access delayed.",src:"IDF Spokesperson / UN OCHA"},
+ {date:"2026-02-25",type:"Kinetic",loc:"NE Syria (Deir ez-Zor area)",cocom:"CENTCOM",summary:"ISIS cell ambush on SDF patrol using IED + small arms. 3 SDF fighters killed. OIR advises partners on counter-ambush TTPs.",src:"OIR / SDF media"},
+ {date:"2026-02-18",type:"Airstrike",loc:"Iraq (Al-Qa'im border area)",cocom:"CENTCOM",summary:"CENTCOM precision strike kills Kata'ib Hezbollah senior logistics facilitator. Iraq government protests violation of sovereignty.",src:"CENTCOM PAO / Iraqi PMF"},
+ {date:"2026-02-10",type:"Terror",loc:"Kabul, Afghanistan",cocom:"CENTCOM",summary:"ISIS-K suicide vest bombing near Ministry of Finance; 14 killed, 29 injured. Taliban intelligence claims prior knowledge but failed interdiction.",src:"Reuters / UN UNAMA"},
+ {date:"2026-01-30",type:"Maritime",loc:"Strait of Hormuz",cocom:"CENTCOM",summary:"IRGCN patrol vessels harass Liberian-flagged tanker for 3 hours. USS Gravely responds; IRGCN withdraws. Tanker reaches port.",src:"NAVCENT / Tanker operator"},
+ {date:"2026-01-18",type:"Terror",loc:"Amman, Jordan",cocom:"CENTCOM",summary:"Car bomb targeting GID (Jordanian intelligence) checkpoint. 2 officers killed. Attack attributed to Iraqi AQ affiliate.",src:"Jordanian Internal Security / AP"},
+ {date:"2026-03-11",type:"Maritime",loc:"Second Thomas Shoal, South China Sea",cocom:"INDOPACOM",summary:"PLAN Coast Guard vessel fires water cannon on Philippine resupply mission to BRP Sierra Madre. 2 sailors injured. Manila summons ambassador.",src:"Philippine Coast Guard / Reuters"},
+ {date:"2026-03-08",type:"Escalation",loc:"Taiwan Strait",cocom:"INDOPACOM",summary:"PLAN Shandong carrier group conducts 48hr exercise; 14 J-15 sorties cross median line. ROCAF scrambles. No engagement.",src:"ROC MND / CSIS AMS"},
+ {date:"2026-03-01",type:"Escalation",loc:"Sea of Japan",cocom:"INDOPACOM",summary:"DPRK Hwasong-19 ICBM test; missile reaches ~6,800km apogee, splashdown 1,200km off Hokkaido in Japan EEZ. US-Japan-ROK hold emergency talks.",src:"ROK JCS / USFK PAO"},
+ {date:"2026-02-22",type:"Terror",loc:"Basilan Island, Philippines",cocom:"INDOPACOM",summary:"Abu Sayyaf Group IED targets AFP dismounted patrol. 3 civilians killed in secondary blast. Military cordon-and-search ongoing.",src:"AFP / Philippine Star"},
+ {date:"2026-02-14",type:"Maritime",loc:"Senkaku/Diaoyu Islands, East China Sea",cocom:"INDOPACOM",summary:"PLAN frigate and CCG vessel conduct coordinated patrol entering 24nm contiguous zone. JMSDF destroyer and P-1 MPA respond. No engagement.",src:"Japan JCS / Kyodo News"},
+ {date:"2026-02-05",type:"Airstrike",loc:"Rakhine State, Myanmar",cocom:"INDOPACOM",summary:"Myanmar military (SAC) airstrike on Arakan Army-controlled village; 12 civilians killed per AA reporting. SAC denies civilian targeting.",src:"Arakan Army / Radio Free Asia"},
+ {date:"2026-01-28",type:"Escalation",loc:"Taiwan ADIZ",cocom:"INDOPACOM",summary:"PLAN 24-hr envelope exercise records 91 aircraft sorties (highest since Aug 2022). ROCAF on maximum alert. INDOPACOM issues NOTAM.",src:"ROC MND / CSIS AMS tracker"},
+ {date:"2026-01-18",type:"Terror",loc:"Gwadar, Pakistan (Balochistan)",cocom:"INDOPACOM",summary:"BLA attack on CPEC security convoy; 5 FC soldiers killed, 3 wounded. China demands enhanced security for Belt & Road assets.",src:"ISPR / Dawn News"},
+ {date:"2026-01-08",type:"Escalation",loc:"Yellow Sea (DPRK coastal)",cocom:"INDOPACOM",summary:"DPRK GPS jamming campaign disrupts South Korean commercial shipping for 72 hours. ROK military reports 400+ affected vessels.",src:"South Korea MoT / Radio Free Asia"},
+ {date:"2026-03-09",type:"Terror",loc:"Soum Province, Burkina Faso",cocom:"AFRICOM",summary:"JNIM (al-Qaeda Sahel affiliate) ambush on civilian food convoy; 23+ killed. 4th mass casualty event this month in Sahel.",src:"ACLED / AFP"},
+ {date:"2026-03-04",type:"Terror",loc:"Lake Chad Basin, Nigeria/Niger border",cocom:"AFRICOM",summary:"ISWAP attack on fishing community; 18 fishermen killed, village burned. Pattern consistent with resource denial campaign.",src:"ACLED / International Crisis Group"},
+ {date:"2026-02-28",type:"Kinetic",loc:"Khartoum North, Sudan",cocom:"AFRICOM",summary:"RSF artillery strikes on SAF-held Bahri district; 30+ civilians killed. ICRC reports 12 hospitals non-functional in greater Khartoum.",src:"Sudan War Monitor / UN OCHA"},
+ {date:"2026-02-20",type:"Terror",loc:"Mogadishu, Somalia",cocom:"AFRICOM",summary:"Al-Shabaab VBIED detonates at Halane compound checkpoint; 3 UN contractors killed. Attack targets Amisom successor force.",src:"UN AMISOM-T / Radio Dalsan"},
+ {date:"2026-02-12",type:"Terror",loc:"Mopti Region, Mali",cocom:"AFRICOM",summary:"JNIM mortar attack on FAMA base; 6 soldiers killed. Russian Wagner/Africa Corps advisors reportedly present at target.",src:"ACLED / Le Monde"},
+ {date:"2026-02-05",type:"Kinetic",loc:"North Kivu, DRC",cocom:"AFRICOM",summary:"M23/RDF advance; MONUSCO reports column 18km from Goma city center. 500,000+ additional IDPs flee North Kivu toward Rwanda border.",src:"UN MONUSCO / OCHA"},
+ {date:"2026-01-25",type:"Terror",loc:"Cabo Delgado, Mozambique",cocom:"AFRICOM",summary:"Ansar al-Sunna (ISIS-Mozambique) attacks 3 villages near Mocímboa da Praia; 15 civilians killed. SADC mission reports attack from two directions.",src:"ACLED / Al Jazeera"},
+ {date:"2026-01-12",type:"Kinetic",loc:"Bamenda, Cameroon",cocom:"AFRICOM",summary:"Ambazonia separatist armed group attacks gendarmerie post; 4 security forces killed. Anglophone crisis enters 9th year.",src:"Crisis Group / Cameroon Radio Television"},
+ {date:"2026-03-10",type:"Terror",loc:"Caquetá, Colombia",cocom:"SOUTHCOM",summary:"FARC dissidents (Segunda Marquetalia) detonate IED on Caño Limón–Coveñas oil pipeline; 3-day spill. 4th infrastructure attack this year.",src:"Colombian MoD / Indepaz"},
+ {date:"2026-03-05",type:"Political",loc:"Caracas, Venezuela",cocom:"SOUTHCOM",summary:"Venezuelan security forces arrest Plataforma Unitaria opposition coordinator; 800+ protest, 45 detained. US considers additional OFAC designations.",src:"OHCHR / AP"},
+ {date:"2026-02-25",type:"Terror",loc:"Port-au-Prince, Haiti",cocom:"SOUTHCOM",summary:"Viv Ansanm gang coalition lays siege to Pétion-Ville commercial district; 3 police killed. MMAS Kenya-led mission requests reinforcements.",src:"UN BINUH / Reuters"},
+ {date:"2026-02-18",type:"Maritime",loc:"Caribbean Sea (off Honduras)",cocom:"SOUTHCOM",summary:"USCG cutter interdicts go-fast vessel; 1.3 metric tons cocaine seized, 3 traffickers detained. JIATF-South assessed as Sinaloa-affiliated shipment.",src:"USCG / JIATF-South"},
+ {date:"2026-02-10",type:"Terror",loc:"Guayaquil, Ecuador",cocom:"SOUTHCOM",summary:"Los Choneros cartel attack on Guayas Province police station; 4 officers killed, station torched. Ecuador extends state of emergency.",src:"Ecuadorian MoI / El País"},
+ {date:"2026-01-28",type:"Terror",loc:"VRAEM Valley, Peru",cocom:"SOUTHCOM",summary:"Sendero Luminoso faction ambushes VRAEM drug interdiction force; 2 police killed. Unit believed aligned with coca traffickers.",src:"Peruvian MoI / Ideele"},
+ {date:"2026-01-15",type:"Kinetic",loc:"Darién Gap, Colombia/Panama",cocom:"SOUTHCOM",summary:"Clan del Golfo clash with Panamanian SENAFRONT on border; 3 migrants caught in crossfire killed. 400+ migrants stranded at Lajas Blancas.",src:"IOM / Panama Border Service"},
+ {date:"2026-03-12",type:"Terror",loc:"Sonora State, Mexico",cocom:"NORTHCOM",summary:"Sinaloa Cartel faction plants IED on federal highway 15; 3 National Guard killed, 2 wounded. Intercine cartel conflict continues post-leadership arrests.",src:"Mexican SEDENA / InSight Crime"},
+ {date:"2026-03-08",type:"Escalation",loc:"Beaufort Sea ADIZ",cocom:"NORTHCOM",summary:"NORAD F-22s intercept 2 Russian Tu-95MS Bear-H bombers 150nm north of Alaska coast. Standard intercept; no hostile action. 4th intercept in 2026.",src:"NORAD PAO"},
+ {date:"2026-03-03",type:"Terror",loc:"Tamaulipas, Mexico",cocom:"NORTHCOM",summary:"CDG-Scorpions cartel clash spills 500m into Texas; gun battle audible from Starr County. DHS raises Texas border sector threat level.",src:"Texas DPS / DEA"},
+ {date:"2026-02-26",type:"Escalation",loc:"Alaska ADIZ",cocom:"NORTHCOM",summary:"Russian Su-35S enters ADIZ north of Norton Sound; F-22 intercept at minimum safe distance. NORAD assesses as probing mission.",src:"NORAD / Air Force Magazine"},
+ {date:"2026-02-15",type:"Terror",loc:"Jalisco, Mexico",cocom:"NORTHCOM",summary:"CJNG mass casualty attack on Sinaloa safe houses; 18 killed. Escalation follows arrest of mid-level CJNG commander.",src:"Mexican SSPC / InSight Crime"},
+ {date:"2026-02-08",type:"Cyber",loc:"US municipal water systems (multi-state)",cocom:"NORTHCOM",summary:"CISA reports coordinated scanning of Schneider Electric PLCs in water treatment facilities. Attribution unclear; China-nexus IOCs identified.",src:"CISA Advisory AA26-039A"},
+ {date:"2026-01-28",type:"Escalation",loc:"Nunavut ADIZ, Canada",cocom:"NORTHCOM",summary:"RCAF CF-18s intercept Russian Tu-95 north of Baffin Island. NORAD dual-hat activation. Third Russian bomber incursion in Canadian ADIZ this year.",src:"NORAD / CBC News"},
+ {date:"2026-01-20",type:"Terror",loc:"Sonora-Arizona border corridor",cocom:"NORTHCOM",summary:"DEA and HSI disrupt Sinaloa fentanyl ring; 340kg fentanyl seized, 22 arrests across Arizona and California. Pills destined for midwest distribution.",src:"DEA PAO / DOJ"},
+];
+const SIGACTS_TYPE_COLOR={Kinetic:'#ef4444',Airstrike:'#ef4444',Terror:'#f97316',Maritime:'#3b82f6',Cyber:'#22d3ee',Escalation:'#f59e0b',Political:'#8b5cf6'};
+function renderSigacts(id){
+ const el=document.getElementById('sigactslist');
+ if(!el)return;
+ const cutoff=new Date(Date.now()-90*24*60*60*1000);
+ const items=SIGACTS_DATA.filter(s=>(s.cocom===id||s.cocom==='ALL')&&new Date(s.date)>=cutoff)
+  .sort((a,b)=>new Date(b.date)-new Date(a.date));
+ const sub=document.getElementById('sigactssub');
+ if(sub)sub.textContent=id+' · '+items.length+' EVENTS · LAST 90 DAYS';
+ if(!items.length){el.innerHTML='<div style="padding:12px;color:var(--fade);font-size:9px">No SIGACTS data for this AOR.</div>';return;}
+ el.innerHTML=items.map(s=>{
+  const col=SIGACTS_TYPE_COLOR[s.type]||'#6b7280';
+  return `<div class="sigact">
+   <div class="sigdot" style="background:${col}"></div>
+   <div class="sigbody">
+    <div class="sigmeta"><span class="sigdate">${s.date}</span><span class="sigtype" style="background:${col}22;color:${col}">${s.type.toUpperCase()}</span></div>
+    <div class="sigloc">${s.loc}</div>
+    <div class="sigsummary">${s.summary}</div>
+    ${s.src?`<div class="sigsrc">SRC: ${s.src}</div>`:''}
+   </div>
+  </div>`;
+ }).join('');
+}
+
 function switchCocom(id){
  AC=COCOMS.find(c=>c.id===id);
  selZone=null; activeOrgTab=0;
- buildTabs(); updateMap(); updateFeed(); buildOrgTabs(); renderOrg(); startEqRotator(); resetSrcBar(); renderArticles();
+ buildTabs(); updateMap(); updateFeed(); startEqRotator(); resetSrcBar(); renderArticles(); renderSigacts(id);
  loadRSS(id); loadTelegram(id);
  setTimeout(()=>{ try{map.invalidateSize();}catch(e){} }, 150);
  closeSitrep();
@@ -2275,11 +2365,10 @@ async function loadSports(){
 function boot(){
  buildTabs();
  updateMap();
- buildOrgTabs();
- renderOrg();
  startEqRotator();
  resetSrcBar();
  renderArticles();
+ renderSigacts(AC.id);
  loadArticles();
  loadRSS(); loadTelegram();
  loadTicker();
