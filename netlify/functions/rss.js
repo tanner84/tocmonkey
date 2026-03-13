@@ -79,6 +79,11 @@ const FEEDS = [
   { name:"ABC Australia",           handle:"ABCAUSTRALIA",     cocom:"INDOPACOM", color:"green",  url:"https://www.abc.net.au/news/feed/51120/rss.xml" },
   { name:"RNZ Pacific",             handle:"RNZPACIFIC",       cocom:"INDOPACOM", color:"green",  url:"https://www.rnz.co.nz/rss/pacific.xml" },
   { name:"Philippine Daily Inq.",   handle:"INQUIRER",         cocom:"INDOPACOM", color:"green",  url:"https://www.inquirer.net/fullfeed" },
+  { name:"Japan Times",              handle:"JAPANTIMES",       cocom:"INDOPACOM", color:"green",  url:"https://www.japantimes.co.jp/feed/" },
+  { name:"Hindustan Times",         handle:"HTIMES",           cocom:"INDOPACOM", color:"green",  url:"https://www.hindustantimes.com/feeds/rss/world/rssfeed.xml" },
+  { name:"Jakarta Post",            handle:"JAKARTAPOST",      cocom:"INDOPACOM", color:"green",  url:"https://www.thejakartapost.com/feed" },
+  { name:"Channel News Asia",       handle:"CNA",              cocom:"INDOPACOM", color:"green",  url:"https://www.channelnewsasia.com/api/v1/rss-outbound-feed?_format=xml" },
+  { name:"VOA Asia",                handle:"VOA_ASIA",         cocom:"INDOPACOM", color:"green",  url:"https://www.voanews.com/api/Zpomqgogq?_format=rss" },
   { name:"ASPI Strategist",         handle:"ASPI",             cocom:"INDOPACOM", color:"amber",  url:"https://www.aspistrategist.org.au/feed/" },
   { name:"38 North (DPRK)",         handle:"38NORTH",          cocom:"INDOPACOM", color:"amber",  url:"https://www.38north.org/feed/" },
   { name:"AMTI (S. China Sea)",     handle:"AMTI",             cocom:"INDOPACOM", color:"amber",  url:"https://amti.csis.org/feed/" },
@@ -112,21 +117,27 @@ const FEEDS = [
   { name:"r/mexico",                handle:"MEXICO_R",         cocom:"SOUTHCOM",  color:"mute",   url:"https://www.reddit.com/r/mexico/.rss" },
   { name:"r/vzla",                  handle:"VZLA_R",           cocom:"SOUTHCOM",  color:"mute",   url:"https://www.reddit.com/r/vzla/.rss" },
 
-  // ── NORTHCOM — North America / Arctic ────────────────────────────────────
+  // ── NORTHCOM — North America / Arctic / Domestic US ─────────────────────
+  { name:"NPR World",               handle:"NPR",              cocom:"NORTHCOM",  color:"green",  url:"https://feeds.npr.org/1004/rss.xml" },
+  { name:"PBS NewsHour",            handle:"PBSNEWSHOUR",      cocom:"NORTHCOM",  color:"green",  url:"https://www.pbs.org/newshour/feeds/rss/nation" },
+  { name:"The Hill — National Sec.",handle:"THEHILL",          cocom:"NORTHCOM",  color:"green",  url:"https://thehill.com/rss/syndicator/19109/feed/" },
+  { name:"DOD News",                handle:"DODnews",          cocom:"NORTHCOM",  color:"amber",  url:"https://www.defense.gov/DesktopModules/ArticleCS/RSS.ashx?ContentType=1&Site=945&max=10" },
+  { name:"Homeland Security News",  handle:"HSTODAY",          cocom:"NORTHCOM",  color:"amber",  url:"https://www.hstoday.us/feed/" },
+  { name:"Just Security",           handle:"JUSTSECURITY",     cocom:"NORTHCOM",  color:"amber",  url:"https://www.justsecurity.org/feed/" },
+  { name:"Mexico News Daily",       handle:"MEXICONEWS",       cocom:"NORTHCOM",  color:"green",  url:"https://mexiconewsdaily.com/feed/" },
+  { name:"InSight Crime",           handle:"INSIGHTCRIME_N",   cocom:"NORTHCOM",  color:"green",  url:"https://insightcrime.org/feed/" },
   { name:"CBC News",                handle:"CBC",              cocom:"NORTHCOM",  color:"green",  url:"https://www.cbc.ca/cmlink/rss-world" },
   { name:"Globe and Mail",          handle:"GLOBEMAIL",        cocom:"NORTHCOM",  color:"green",  url:"https://www.theglobeandmail.com/arc/outboundfeeds/rss/category/canada/" },
   { name:"Arctic Today",            handle:"ARCTICTODAY",      cocom:"NORTHCOM",  color:"green",  url:"https://www.arctictoday.com/feed/" },
   { name:"High North News",         handle:"HIGHNORTHNEWS",    cocom:"NORTHCOM",  color:"green",  url:"https://www.highnorthnews.com/en/rss.xml" },
-  { name:"Alaska Dispatch News",    handle:"ADN",              cocom:"NORTHCOM",  color:"green",  url:"https://www.adn.com/arc/outboundfeeds/rss/category/alaska-news/" },
-  { name:"Nunatsiaq News",          handle:"NUNATSIAQ",        cocom:"NORTHCOM",  color:"green",  url:"https://nunatsiaq.com/feed/" },
   { name:"r/canada",                handle:"CANADA_R",         cocom:"NORTHCOM",  color:"mute",   url:"https://www.reddit.com/r/canada/.rss" },
-  { name:"r/Arctic",                handle:"ARCTIC_R",         cocom:"NORTHCOM",  color:"mute",   url:"https://www.reddit.com/r/Arctic/.rss" },
+  { name:"r/USMilitary",            handle:"USMIL_R",          cocom:"NORTHCOM",  color:"mute",   url:"https://www.reddit.com/r/USMilitary/.rss" },
 
 ];
 
-// Simple in-memory cache (survives warm function invocations)
-let cache = null;
-let cacheTime = 0;
+// Per-COCOM in-memory cache (survives warm function invocations)
+const cache = {};
+const cacheTime = {};
 const CACHE_TTL = 30 * 60 * 1000; // 30 minutes
 
 function parseAge(dateStr) {
@@ -196,21 +207,22 @@ async function fetchFeed(feed) {
 }
 
 export default async (req) => {
-  // Return cached result if fresh
-  if (cache && (Date.now() - cacheTime) < CACHE_TTL) {
-    return new Response(JSON.stringify(cache), {
+  // Parse optional COCOM filter from query string
+  const url = new URL(req.url);
+  const filterCocom = url.searchParams.get("cocom")?.toUpperCase() || "ALL";
+  const cacheKey = filterCocom;
+
+  // Return per-COCOM cached result if fresh
+  if (cache[cacheKey] && (Date.now() - (cacheTime[cacheKey] || 0)) < CACHE_TTL) {
+    return new Response(JSON.stringify(cache[cacheKey]), {
       headers: { "Content-Type": "application/json", "Cache-Control": "public, max-age=1800" }
     });
   }
 
-  // Parse optional COCOM filter from query string
-  const url = new URL(req.url);
-  const filterCocom = url.searchParams.get("cocom")?.toUpperCase() || null;
-
   // Select feeds: ALL feeds + COCOM-specific feeds matching filter
-  const selectedFeeds = filterCocom
-    ? FEEDS.filter(f => f.cocom === "ALL" || f.cocom === filterCocom)
-    : FEEDS;
+  const selectedFeeds = filterCocom === "ALL"
+    ? FEEDS
+    : FEEDS.filter(f => f.cocom === "ALL" || f.cocom === filterCocom);
 
   // Fetch all feeds concurrently, cap at 40 parallel to avoid timeouts
   const results = [];
@@ -239,8 +251,8 @@ export default async (req) => {
     return true;
   });
 
-  cache = deduped;
-  cacheTime = Date.now();
+  cache[cacheKey] = deduped;
+  cacheTime[cacheKey] = Date.now();
 
   return new Response(JSON.stringify(deduped), {
     headers: { "Content-Type": "application/json", "Cache-Control": "public, max-age=1800" }

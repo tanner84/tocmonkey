@@ -2243,10 +2243,11 @@ function getFeedItems(){
   .map(assignFreshTime)
   .filter(p=>p._assignedMins<=MAX_POST_AGE_MINS); // drop anything >96h
 
- // RSS items — filter to <96h as well
+ // RSS items — filter by COCOM and age
  const rss=RSS_ITEMS.filter(r=>{
   const ageMins=parseTimeToMins(r.age);
-  return ageMins<=MAX_POST_AGE_MINS;
+  if(ageMins>MAX_POST_AGE_MINS) return false;
+  return !r.cocom || r.cocom==='ALL' || r.cocom===id;
  }).map(r=>({
   src:r.source,handle:r.sourceHandle,dname:r.source,
   time:r.age,displayTime:r.age,
