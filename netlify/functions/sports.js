@@ -35,15 +35,18 @@ async function fetchPGA() {
 // --- F1 ---
 async function fetchF1() {
   try {
-    const res = await fetch('https://ergast.com/api/f1/current/last/results.json');
+    const res = await fetch('https://api.jolpi.ca/ergast/f1/current/last/results/', {
+      signal: AbortSignal.timeout(5000),
+    });
     if (!res.ok) return [];
     const data = await res.json();
     const race = data.MRData?.RaceTable?.Races?.[0];
     if (!race) return [];
     const results = race.Results || [];
+    if (!results.length) return [];
     const winner = results[0]?.Driver;
     const team = results[0]?.Constructor?.name;
-    const display = `F1: ${race.raceName} — Winner: ${winner.givenName} ${winner.familyName} (${team})`;
+    const display = `${race.raceName} — 1st: ${winner.givenName} ${winner.familyName} (${team})`;
     return [{ label: 'F1', state: 'post', display }];
   } catch { return []; }
 }
