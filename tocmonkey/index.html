@@ -2062,7 +2062,6 @@ const SIGACTS_DATA=[
 ];
 const SIGACTS_TYPE_COLOR={Kinetic:'#ef4444',Airstrike:'#ef4444',Terror:'#f97316',Maritime:'#3b82f6',Cyber:'#22d3ee',Escalation:'#f59e0b',Political:'#8b5cf6'};
 let _sigItems=[];
-const sg=L.layerGroup().addTo(map);
 
 function renderSigacts(id){
  const el=document.getElementById('sigactslist');
@@ -2130,7 +2129,7 @@ setTimeout(()=>map.invalidateSize(),50);
 setTimeout(()=>map.invalidateSize(),300);
 setTimeout(()=>map.invalidateSize(),1000);
 window.addEventListener('resize',()=>map.invalidateSize());
-const mg=L.layerGroup().addTo(map), rg=L.layerGroup().addTo(map), cg=L.layerGroup().addTo(map);
+const mg=L.layerGroup().addTo(map), rg=L.layerGroup().addTo(map), cg=L.layerGroup().addTo(map), sg=L.layerGroup().addTo(map);
 function iCol(i){return i==='HIGH'?'#f87171':i==='MED'?'#fbbf24':'#34d399'}
 
 // NOTE: Mercator projection is undefined at ±90° — cap coords at ±85° and avoid ±180° lng

@@ -2488,7 +2488,6 @@ const SIGACTS_TYPE_COLOR={
 };
 
 let _sigItems=[];
-const sg=L.layerGroup().addTo(map);
 
 function renderSigacts(id){
  const el=document.getElementById('sigactslist');
@@ -2559,7 +2558,7 @@ setTimeout(()=>map.invalidateSize(),50);
 setTimeout(()=>map.invalidateSize(),300);
 setTimeout(()=>map.invalidateSize(),1000);
 window.addEventListener('resize',()=>map.invalidateSize());
-const mg=L.layerGroup().addTo(map), rg=L.layerGroup().addTo(map), cg=L.layerGroup().addTo(map);
+const mg=L.layerGroup().addTo(map), rg=L.layerGroup().addTo(map), cg=L.layerGroup().addTo(map), sg=L.layerGroup().addTo(map);
 function iCol(i){return i==='HIGH'?'#f87171':i==='MED'?'#fbbf24':'#34d399'}
 
 // ── COCOM BOUNDARY POLYGONS (approximate / open-source) ──────────────
