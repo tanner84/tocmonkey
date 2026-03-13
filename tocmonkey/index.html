@@ -138,6 +138,10 @@ html,body{height:100%;background:var(--bg);color:var(--hi);font-family:var(--mon
 .osub{font-size:8px;color:var(--mid);padding:2px 0 2px 22px;border-left:1px dashed var(--blt);margin-left:5px;line-height:1.5}
 .onote{font-size:8px;color:var(--fade);margin-top:10px;padding-top:6px;border-top:1px solid var(--blt);line-height:1.6;font-style:italic}
 .ocountry{display:inline-block;font-size:8px;padding:1px 6px;border-radius:2px;margin-bottom:8px;font-weight:bold}
+.orgselect{width:100%;background:var(--deep);color:var(--g1);border:1px solid var(--border);font-family:var(--mono);font-size:9px;letter-spacing:1px;padding:4px 6px;cursor:pointer;outline:none;margin-bottom:4px}
+.orgselect optgroup{color:var(--fade);font-size:8px}
+.orgselect option{color:var(--g1);background:var(--deep)}
+.orgcat{font-size:8px;letter-spacing:2px;color:var(--fade);padding:6px 0 2px 0;border-bottom:1px solid var(--border);margin-bottom:4px}
 /* ── SIGACTS ── */
 #sigactslist{flex:1;overflow-y:auto;padding:4px 6px;min-height:0}
 .sigact{padding:5px 6px;border-bottom:1px solid var(--blt);display:flex;gap:7px;align-items:flex-start;cursor:pointer}
@@ -152,6 +156,7 @@ html,body{height:100%;background:var(--bg);color:var(--hi);font-family:var(--mon
 .sigloc{font-size:9px;color:var(--g2);font-weight:bold;margin-bottom:2px;line-height:1.3}
 .sigsummary{font-size:8px;color:var(--mid);line-height:1.5}
 .sigsrc{font-size:7px;color:var(--fade);margin-top:2px;letter-spacing:.5px}
+
 /* ── EQUIPMENT ROTATOR ── */
 .eqwrap{flex:1;overflow:hidden;position:relative}
 .eqtrack{transition:transform .4s cubic-bezier(.4,0,.2,1)}
@@ -520,9 +525,16 @@ const COCOMS=[
   ],
   keywords:["ukraine","russia","nato","europe","baltic","black sea","kaliningrad","leopard","abrams","himars","f-16","shahed","zaporizhzhia","kherson","kharkiv","drone","zelensky","putin","kursk"],
   orgTabs:[
-   {label:"US / NATO",flag:"🇺🇸",id:"us"},
-   {label:"UKRAINE",flag:"🇺🇦",id:"ukr"},
-   {label:"RUSSIA",flag:"🇷🇺",id:"rus"},
+   {label:"US / NATO",flag:"🇺🇸",id:"us",cat:"allied"},
+   {label:"UK",flag:"🇬🇧",id:"uk",cat:"allied"},
+   {label:"Germany",flag:"🇩🇪",id:"deu",cat:"allied"},
+   {label:"France",flag:"🇫🇷",id:"fra",cat:"allied"},
+   {label:"Poland",flag:"🇵🇱",id:"pol",cat:"allied"},
+   {label:"Ukraine",flag:"🇺🇦",id:"ukr",cat:"allied"},
+   {label:"Russia",flag:"🇷🇺",id:"rus",cat:"adversary"},
+   {label:"Belarus",flag:"🇧🇾",id:"blr",cat:"adversary"},
+   {label:"Wagner / Africa Corps",flag:"⚔️",id:"wagner",cat:"nonstate"},
+   {label:"Kadyrovtsy",flag:"🇷🇺",id:"kadyrov",cat:"nonstate"},
   ],
   orgs:{
    us:{hq:"HQ USEUCOM — Stuttgart, GE · SACEUR dual-hat",flag:"🇺🇸",
@@ -588,6 +600,113 @@ const COCOMS=[
      ]},
     ],
     note:"Russian OOB heavily attrited — multiple divisions and brigades reconstituted from battalion remnants. DPRK troops deployed in Kursk oblast. Wagner successor (Africa Corps) operating separately in Africa."},
+   uk:{hq:"UK Armed Forces — Chief of Defence Staff, MoD London",flag:"🇬🇧",
+    components:[
+     {name:"British Army",type:"ARFOR",units:[
+      {u:"1st Armoured Infantry Brigade — Tidworth",subs:["Challenger 3 MBT (upgrading)","Warrior IFV (retiring → Ajax)","AS90 SPG"]},
+      {u:"3rd Division — Bulford",subs:["Adaptable Force HQ","4th, 7th, 12th Armoured Inf Bdes"]},
+      {u:"UK Contribution to NATO eFP",subs:["Enhanced FP BG — Estonia (lead nation)","~900 personnel, Challenger 2, AS90"]},
+     ]},
+     {name:"Royal Air Force",type:"AFFOR",units:[
+      {u:"1 Sqn / 6 Sqn — Lossiemouth",subs:["F-35B Lightning II (×24 delivered)"]},
+      {u:"II(AC) Sqn — RAF Marham",subs:["Typhoon FGR.4 (Tranche 3)"]},
+      {u:"RAF Akrotiri — Cyprus",subs:["Forward operating base, ISTAR tasking"]},
+     ]},
+     {name:"Royal Navy",type:"NAFOR",units:[
+      {u:"Carrier Strike Group 21",subs:["HMS Queen Elizabeth / HMS Prince of Wales","F-35B embarked air wing","Type 45 Daring-class DDG screen"]},
+      {u:"Submarine Service",subs:["Astute-class SSN (×4 operational)","Vanguard-class SSBN (nuclear deterrent)"]},
+      {u:"Standing NATO Maritime Group 1",subs:["Rotational RN frigate contribution"]},
+     ]},
+    ],
+    note:"UK doubled defence investment post-2022. Challenger 3 upgrade ongoing. UK leads NATO eFP battlegroup in Estonia. F-35B fleet expanding to ~74 total."},
+   deu:{hq:"Bundeswehr — Federal Ministry of Defence, Berlin (Gen. Carsten Breuer, CoGS)",flag:"🇩🇪",
+    components:[
+     {name:"German Army (Heer)",type:"ARFOR",units:[
+      {u:"1st Armoured Division — Oldenburg",subs:["Leopard 2A7+ MBT","Puma IFV (reliability issues)","PzH 2000 SPH"]},
+      {u:"10th Armoured Division — Veitshöchheim",subs:["Leopard 2A6","Marder IFV"]},
+      {u:"NATO eFP — Lithuania",subs:["Germany leads enhanced FP BG Lithuania","~1,600 personnel; planned permanent brigade by 2027"]},
+     ]},
+     {name:"German Air Force (Luftwaffe)",type:"AFFOR",units:[
+      {u:"Tactical Air Force Wing 31 — Nörvenich",subs:["Eurofighter Typhoon","Tornado ECR (retiring)"]},
+      {u:"Tactical Air Force Wing 71 — Wittmund",subs:["Eurofighter Typhoon"]},
+      {u:"F-35A acquisition (planned)",subs:["20× F-35A contracted (nuclear sharing role)","Replacing Tornado IDS"]},
+     ]},
+     {name:"German Navy (Deutsche Marine)",type:"NAFOR",units:[
+      {u:"1st Flotilla — Kiel",subs:["F125 Baden-Württemberg-class frigates (×4)","F124 Sachsen-class (AAW)","Type 212 submarines (×6)"]},
+     ]},
+    ],
+    note:"Bundeswehr Zeitenwende (turning point) reform ongoing. €100B special fund authorized 2022. Readiness historically low — rebuilding. Largest NATO army in Europe by 2027 target."},
+   fra:{hq:"French Armed Forces — Chief of Defence Staff, Paris (Gen. Thierry Burkhard)",flag:"🇫🇷",
+    components:[
+     {name:"French Army (Armée de Terre)",type:"ARFOR",units:[
+      {u:"1st Armoured Division — Mourmelon",subs:["Leclerc MBT (×222 in service)","VBCI IFV","CAESAR 155mm SPH"]},
+      {u:"3rd Armoured Division — Marseille",subs:["Light armoured task forces","Jaguar armoured recon vehicle"]},
+      {u:"NATO eFP — Romania",subs:["France leads NATO eFP BG Romania","~500 personnel + CAESAR battery"]},
+     ]},
+     {name:"French Air & Space Force (FASF)",type:"AFFOR",units:[
+      {u:"SPA 78 — Luxeuil-les-Bains",subs:["Rafale F3-R (nuclear/conventional)"]},
+      {u:"EC 1/4 Gascogne — Mont-de-Marsan",subs:["Rafale B/C multirole"]},
+      {u:"ASMP-A nuclear standoff",subs:["Air-launched nuclear deterrent","300km+ range, ~300kT yield"]},
+     ]},
+     {name:"French Navy (Marine Nationale)",type:"NAFOR",units:[
+      {u:"Charles de Gaulle (R91) — Toulon",subs:["Nuclear carrier; Rafale-M air wing (~24)","NATO Task Group leadership"]},
+      {u:"Submarine Force (ALFOST)",subs:["4× SSBN (Le Triomphant class) — nuclear deterrent","6× Barracuda-class SSN (replacing Rubis)"]},
+     ]},
+    ],
+    note:"France maintains independent nuclear deterrent (300 warheads est.). Sahel withdrawal complete 2023. Macron raised possibility of European nuclear umbrella 2024."},
+   pol:{hq:"Polish Armed Forces — General Staff Warsaw (Gen. Wiesław Kukuła, CoGS)",flag:"🇵🇱",
+    components:[
+     {name:"Polish Army (Wojska Lądowe)",type:"ARFOR",units:[
+      {u:"11th Armoured Cavalry Division — Żagań",subs:["K2 Black Panther MBT (×820 ordered from ROK)","Abrams M1A2 SEP v3 (×116 ordered)","Krab 155mm SPH"]},
+      {u:"18th Mechanized Division — Siedlce",subs:["NATO eFP enhanced presence, eastern flank","Bradley IFV (ordered from USA)"]},
+      {u:"16th Mechanized Division — Elbląg",subs:["Rapid deployment, Kaliningrad axis"]},
+     ]},
+     {name:"Polish Air Force",type:"AFFOR",units:[
+      {u:"1st Tactical Aviation Wing — Świdwin",subs:["F-16C/D Block 52+ Fighting Falcon (×48)"]},
+      {u:"F-35A acquisition",subs:["32× F-35A contracted","Łask AB as primary base"]},
+     ]},
+     {name:"Missile & Air Defense",type:"ADA",units:[
+      {u:"Patriot PAC-3+ (US-supplied)",subs:["Integrated with NATO IAMD"]},
+      {u:"Narew SHORAD (CAMM-ER)",subs:["UK-Polish joint program"]},
+     ]},
+    ],
+    note:"Poland has highest NATO defence spending as % GDP (4%+). Largest land force expansion in NATO — targeting 300,000 army by 2035. Eastern flank anchor state."},
+   blr:{hq:"Belarusian Armed Forces — Ministry of Defence Minsk (President Lukashenko, Supreme Cmdr)",flag:"🇧🇾",
+    components:[
+     {name:"Ground Forces",type:"ARFOR",units:[
+      {u:"65th Army Corps — Brest (SW axis)",subs:["T-72B3 MBT","BMP-2/3 IFV","2S19 Msta SPH"]},
+      {u:"6th Army Corps — Grodno (NW axis, Polish border)",subs:["Armoured and mech units","Integration with Russian Western MD forces"]},
+     ]},
+     {name:"Air Force & Air Defense",type:"AFFOR",units:[
+      {u:"61st Fighter Air Base — Baranavichy",subs:["Su-30SM (×4, from Russia)","MiG-29 (legacy)"]},
+      {u:"S-400 Triumf batteries",subs:["Russian-deployed, operated jointly"]},
+     ]},
+     {name:"Russian Forces in Belarus",type:"Joint",units:[
+      {u:"Russian tactical nuclear weapons",subs:["Iskander-M SRBM (nuclear-capable)","Deployed ~2023 per Lukashenko statement"]},
+      {u:"Deployed Russian ground forces",subs:["Rotational presence — Wagner successor / regular units","Used as northern staging axis (Kyiv 2022)"]},
+     ]},
+    ],
+    note:"Belarus effectively integrated into Russian military planning. Article 17 Union State treaty allows Russian forces on Belarusian territory. Lukashenko regime dependent on Russian security guarantee post-2020 protests."},
+   wagner:{hq:"Africa Corps (Wagner successor) — Operational HQ varies; Russian GRU / MoD oversight",flag:"⚔️",
+    components:[
+     {name:"Africa Corps Operations",type:"PMC/Proxy",units:[
+      {u:"Mali — ~1,500-2,000 personnel",subs:["FAMA support, counter-insurgency advisory","Helicopter gunship support","Gold/resource extraction operations"]},
+      {u:"Burkina Faso — ~100-500 personnel",subs:["JNIM / AQ-Sahel theatre advisory"]},
+      {u:"Niger — emerging presence",subs:["Post-ECOWAS sanctions, invited by junta"]},
+      {u:"Libya — Haftar LNA support",subs:["~1,200 personnel est.","Air defense, armour advisory, fortification"]},
+      {u:"Sudan — RSF support",subs:["Gold trafficking, advisory role","Janjaweed successor militia support"]},
+      {u:"CAR — ~2,000 personnel",subs:["Longest-standing Wagner deployment","FACA advisor role","Mining concession access"]},
+     ]},
+    ],
+    note:"Formally reorganized as 'Africa Corps' under Russian MoD control post-Prigozhin death (Aug 2023). Estimated 5,000-6,000 total deployed across Africa. Operates in exchange for mining/resource rights and political influence."},
+   kadyrov:{hq:"Chechen Akhmat Forces — Grozny (Gen. Apti Alaudinov, Cmdr)",flag:"🇷🇺",
+    components:[
+     {name:"Akhmat Special Forces",type:"Paramilitary",units:[
+      {u:"Akhmat-1 — Ukraine deployment",subs:["~5,000-10,000 personnel est. in rotation","Urban combat, checkpoint security","Heavy social media presence (IO role)"]},
+      {u:"Rosgvardiya attachment",subs:["Formally under National Guard structure","Counter-insurgency / rear security"]},
+     ]},
+    ],
+    note:"Kadyrovtsy serve political loyalty function for Chechen regime. Combat effectiveness debated. High-profile information operations. Alaudinov is prominent Russian military commentator on Telegram."},
   },
   equipment:[
    {n:"F-16AM Fighting Falcon",t:"Fighter",o:"Ukraine/NATO",flag:"🇺🇦",d:"4th-gen multirole. Ukraine receiving from BE/DK/NL/NO. AIM-120 AMRAAM capable.",l:"https://en.wikipedia.org/wiki/General_Dynamics_F-16_Fighting_Falcon"},
@@ -609,13 +728,25 @@ const COCOMS=[
    {id:13,name:"Syria (NE — OIR)",lat:36.8,lng:40.5,intensity:"MED",type:"COIN/SOF"},
    {id:14,name:"Iraq — Baghdad/Erbil",lat:33.3,lng:44.4,intensity:"MED",type:"Advise & Assist"},
    {id:15,name:"Strait of Hormuz",lat:26.5,lng:56.5,intensity:"MED",type:"Naval"},
+   {id:16,name:"Afghanistan — Kabul/East",lat:34.5,lng:69.2,intensity:"MED",type:"COIN/Terror"},
+   {id:17,name:"Pakistan — KPK/FATA",lat:34.0,lng:71.5,intensity:"MED",type:"COIN"},
   ],
-  keywords:["centcom","middle east","red sea","houthi","iran","israel","gaza","iraq","syria","gulf","hormuz","carrier","javelin","mq-9","idf","irgc","hezbollah","hamas"],
+  keywords:["centcom","middle east","red sea","houthi","iran","israel","gaza","iraq","syria","gulf","hormuz","carrier","javelin","mq-9","idf","irgc","hezbollah","hamas","afghanistan","kabul","taliban","pakistan","isis-k","ttp","haqqani"],
   orgTabs:[
-   {label:"US",flag:"🇺🇸",id:"us"},
-   {label:"IRAN / IRGC",flag:"🇮🇷",id:"iran"},
-   {label:"ISRAEL IDF",flag:"🇮🇱",id:"idf"},
-   {label:"HOUTHI",flag:"🇾🇪",id:"houthi"},
+   {label:"US",flag:"🇺🇸",id:"us",cat:"allied"},
+   {label:"Saudi Arabia",flag:"🇸🇦",id:"ksa",cat:"allied"},
+   {label:"UAE",flag:"🇦🇪",id:"uae",cat:"allied"},
+   {label:"Israel IDF",flag:"🇮🇱",id:"idf",cat:"allied"},
+   {label:"Iraq / ISF",flag:"🇮🇶",id:"iraq",cat:"allied"},
+   {label:"Iran / IRGC",flag:"🇮🇷",id:"iran",cat:"adversary"},
+   {label:"Syria (SAA)",flag:"🇸🇾",id:"saa",cat:"adversary"},
+   {label:"Houthi / Ansar Allah",flag:"🇾🇪",id:"houthi",cat:"adversary"},
+   {label:"Pakistan",flag:"🇵🇰",id:"pak",cat:"allied"},
+   {label:"Afghanistan (IEA)",flag:"⚠️",id:"taliban",cat:"adversary"},
+   {label:"Hamas",flag:"🏳️",id:"hamas",cat:"nonstate"},
+   {label:"Hezbollah",flag:"🏳️",id:"hezbollah",cat:"nonstate"},
+   {label:"PMF / Kataib",flag:"🏳️",id:"pmf",cat:"nonstate"},
+   {label:"SDF / YPG",flag:"🏳️",id:"sdf",cat:"nonstate"},
   ],
   orgs:{
    us:{hq:"HQ USCENTCOM — MacDill AFB, Tampa, FL",flag:"🇺🇸",
@@ -681,6 +812,145 @@ const COCOMS=[
      ]},
     ],
     note:"Houthi capability substantially supplied by IRGC-QF. Red Sea interdiction campaign ongoing since Nov 2023. Estimated 1,000+ missiles/drones launched against commercial and naval vessels."},
+   ksa:{hq:"Royal Saudi Armed Forces — Ministry of Defence Riyadh (Crown Prince MBS, PM & MoD)",flag:"🇸🇦",
+    components:[
+     {name:"Royal Saudi Land Forces",type:"ARFOR",units:[
+      {u:"Saudi Arabian National Guard (SANG)",subs:["Parallel force, internal security","M1A2S Abrams MBT","~100,000 personnel est."]},
+      {u:"Regular Land Forces",subs:["M1A2S Abrams (~400)","M2A2 Bradley IFV","M109 Paladin SPH"]},
+     ]},
+     {name:"Royal Saudi Air Force",type:"AFFOR",units:[
+      {u:"7th Wing — Dhahran",subs:["F-15SA Strike Eagle (~84 delivered)"]},
+      {u:"2nd Wing — Khamis Mushait",subs:["Eurofighter Typhoon (~72)"]},
+      {u:"Air Defense",subs:["Patriot PAC-3 batteries (Yemen axis)","THAAD battery (US-operated)"]},
+     ]},
+     {name:"Royal Saudi Navy",type:"NAFOR",units:[
+      {u:"Western Fleet — Jeddah (Red Sea)",subs:["Al-Riyadh-class frigates (×3, French-built)","Corvettes — Red Sea / Bab-el-Mandeb patrol"]},
+     ]},
+    ],
+    note:"Saudi Arabia primary US partner in Gulf. Yemen war (2015-present) via Arab Coalition. Vision 2030 driving indigenous defence industry. F-15SA fleet most capable in region after Israel."},
+   uae:{hq:"UAE Armed Forces — MoD Abu Dhabi (Sheikh Mohammed bin Zayed, Supreme Cmdr)",flag:"🇦🇪",
+    components:[
+     {name:"UAE Army",type:"ARFOR",units:[
+      {u:"Presidential Guard Brigade",subs:["Leclerc MBT (×388, French-built)","AH-64D Apache","Most combat-capable formation"]},
+      {u:"Joint Aviation Command",subs:["CH-47F Chinook","AH-64D Apache gunships"]},
+     ]},
+     {name:"UAE Air Force & Air Defence",type:"AFFOR",units:[
+      {u:"F-16E/F Block 60 Desert Falcon",subs:["~79 aircraft — most advanced F-16 variant","AESA radar, internal FLIR/EW"]},
+      {u:"F-35A acquisition (pending)",subs:["50× ordered — US approval conditional on Huawei exclusion"]},
+      {u:"Patriot PAC-3 + THAAD",subs:["Deployed vs Houthi ballistic missile threat"]},
+     ]},
+    ],
+    note:"UAE withdrew from Yemen coalition 2019. Most professionalized Arab military. Abraham Accords signatory (Israel normalization). F-35 deal in abeyance vs Chinese tech concerns."},
+   iraq:{hq:"Iraqi Security Forces (ISF) — Ministry of Defence Baghdad (PM Sudani, Supreme Cmdr)",flag:"🇮🇶",
+    components:[
+     {name:"Iraqi Army",type:"ARFOR",units:[
+      {u:"Counter-Terrorism Service (CTS)",subs:["Elite CT force — US-trained","HMMWV, MRAPs","Primary OIR partner force"]},
+      {u:"Iraqi Army Ground Forces",subs:["M1A1 Abrams (~140)","Multiple divisions — variable readiness","US ODA advisory teams"]},
+     ]},
+     {name:"Iraqi Air Force",type:"AFFOR",units:[
+      {u:"F-16IQ Fighting Falcon",subs:["×34 delivered, Block 52","Balad AB"]},
+      {u:"Strike aircraft",subs:["Su-25 Frogfoot (legacy, Russian)","Mi-35 gunships"]},
+     ]},
+     {name:"Popular Mobilization Forces (PMF / Hashd)",type:"Paramilitary",units:[
+      {u:"Kataib Hezbollah",subs:["~15,000 fighters","IRGC-QF armed/funded","Drone + rocket attacks vs US forces"]},
+      {u:"Badr Organization",subs:["Largest PMF faction","Political party + military wing"]},
+      {u:"Asaib Ahl al-Haq",subs:["~10,000 fighters","Designated terrorist org (US)"]},
+     ]},
+    ],
+    note:"PMF legally integrated into ISF but IRGC-QF maintains significant influence. CTS remains most capable and US-aligned. Coalition drawdown from Iraq ongoing."},
+   saa:{hq:"Syrian Arab Army (SAA) — Ministry of Defence Damascus",flag:"🇸🇾",
+    components:[
+     {name:"SAA Ground Forces",type:"ARFOR",units:[
+      {u:"Republican Guard — Damascus",subs:["Regime protection force","T-72 MBT, BMP-2","Most loyal formation"]},
+      {u:"Tiger Forces (25th Division)",subs:["Elite combined-arms formation","Russian-advised","T-90A MBTs"]},
+      {u:"4th Armoured Division — Damascus",subs:["~12,000 personnel","Commanded by Maher al-Assad (President's brother)"]},
+     ]},
+     {name:"Russian Forces (Syria)",type:"Allied",units:[
+      {u:"Khmeimim Air Base — Latakia",subs:["Su-35S, Su-34, Su-24M","S-400 Triumf battery","Strategic hub for Africa ops"]},
+      {u:"Tartus Naval Facility",subs:["Only Russian naval base in Mediterranean","Floating drydock + logistics"]},
+     ]},
+    ],
+    note:"Assad regime controls ~70% of Syrian territory. SDF controls NE Syria. HTS (Hay'at Tahrir al-Sham) controls Idlib. Ongoing Russian and Iranian support sustains regime."},
+   hamas:{hq:"Hamas Military Wing (Izz ad-Din al-Qassam Brigades) — Gaza",flag:"🏳️",
+    components:[
+     {name:"Qassam Brigades",type:"Armed Wing",units:[
+      {u:"Northern Gaza Brigade",subs:["~6,000-8,000 fighters pre-Oct 7","AK-pattern rifles, RPG-7","IED/tunnel warfare"]},
+      {u:"Rocket & Missile Force",subs:["Qassam rockets (homemade)","Fajr-5 (Iranian-supplied, 75km)","J-80 Badr-3 (100km+)"]},
+      {u:"Anti-Armor",subs:["Kornet ATGM (Russian-supplied via Iran)","Tandem warhead vs Merkava"]},
+     ]},
+    ],
+    note:"Oct 7 2023 attack launched from Gaza — ~1,200 Israeli killed, ~250 hostages taken. IDF ground operation ongoing. Hamas politburo based in Doha, QA. Significant capability degradation but not destroyed."},
+   hezbollah:{hq:"Hezbollah Military Wing (Islamic Resistance) — South Lebanon / Beqaa Valley",flag:"🏳️",
+    components:[
+     {name:"Islamic Resistance Forces",type:"Armed Wing",units:[
+      {u:"Radwan Force (elite)",subs:["Special forces / tunnel units","~2,000-3,000 personnel est.","Oct 2024 ceasefire — reduced forward presence"]},
+      {u:"Rocket & Missile Arsenal",subs:["~120,000-150,000 rockets/missiles est. pre-ceasefire","Fateh-110 (300km, precision)","Zelzal-2 (200km)","Burkan (heavy warhead)"]},
+      {u:"Drone Force",subs:["Shahed-series (Iranian-supplied)","Mohajer-6 UCAV","Arqab loitering munition"]},
+      {u:"Anti-Tank",subs:["Kornet ATGM (primary vs Merkava)","Metis-M, Fagot","~10,000 ATGMs est."]},
+     ]},
+    ],
+    note:"Most powerful non-state military actor globally. Ceasefire with Israel Nov 2024. Significantly degraded post-2024 campaign (leadership decapitated). Iran primary supplier and strategic patron."},
+   pmf:{hq:"Popular Mobilization Forces / Kataib Hezbollah — Iraq (IRGC-QF oversight)",flag:"🏳️",
+    components:[
+     {name:"Kataib Hezbollah (KH)",type:"Militia",units:[
+      {u:"Iraq-based formations",subs:["~15,000 fighters","Drone strike capability (Shahed-type)","107mm rocket batteries"]},
+      {u:"Syria forward presence",subs:["Land corridor from Iran→Iraq→Syria→Lebanon","Logistics and weapons transfer role"]},
+     ]},
+     {name:"Islamic Resistance in Iraq (IRI)",type:"Umbrella",units:[
+      {u:"Multi-faction coalition",subs:["Kataib Hezbollah + Asaib Ahl al-Haq + Badr","Coordinated attack cells vs US bases"]},
+      {u:"Jordan — Tower 22 attack Jan 2024",subs:["3 US soldiers KIA — UAS strike","Triggered US retaliatory strikes"]},
+     ]},
+    ],
+    note:"IRGC-QF (Quds Force) provides weapons, funding, targeting data. Attacks on US forces in Iraq/Syria surged Oct 2023-Jan 2024. Tactical pause after US retaliatory strikes."},
+   sdf:{hq:"Syrian Democratic Forces (SDF) — NE Syria (Mazloum Kobani, Cmdr-Gen)",flag:"🏳️",
+    components:[
+     {name:"SDF Ground Forces",type:"Armed Wing",units:[
+      {u:"YPG/YPJ (People's Defense Units)",subs:["Kurdish core — ~50,000 fighters","US-armed and advised","Controls ~30% of Syrian territory"]},
+      {u:"Deir ez-Zor Military Council",subs:["Arab component of SDF","Euphrates River valley operations"]},
+     ]},
+     {name:"Autonomous Administration of NE Syria (AANES)",type:"Governance",units:[
+      {u:"Asayish (Internal Security)",subs:["Police function","Al-Hol camp management (~50,000 ISIS-affiliated)"]},
+     ]},
+    ],
+    note:"SDF primary OIR partner force — enabled destruction of ISIS 'caliphate' (March 2019). Turkey designates YPG as terrorist (PKK link). US maintains ~900 troops in NE Syria in advisory role. SDF controls major oilfields."},
+   pak:{hq:"Pakistan Armed Forces — Joint HQ Rawalpindi (Gen. Asim Munir, COAS)",flag:"🇵🇰",
+    components:[
+     {name:"Pakistan Army (PA)",type:"ARFOR",units:[
+      {u:"Army Strategic Forces Command",subs:["Nuclear-capable Shaheen-II/III MRBM (~165 warheads est.)","Babur GLCM ground-launched cruise missile","Nasr SRBM — battlefield nuclear-capable"]},
+      {u:"I Strike Corps — Mangla",subs:["Primary offensive corps vs India (Punjab axis)","Al-Khalid MBT (×320), Al-Zarrar MBT (×1,400)","T-80UD (Ukrainian-supplied, ex-Ukrainian stocks)"]},
+      {u:"XI Corps — Peshawar (FATA/KPK)",subs:["Counter-terrorism operations vs TTP","Frontier Corps integration","Border management corridor vs Afghanistan"]},
+      {u:"Army totals",subs:["~650,000 active personnel","500,000+ reserve — largest Muslim-majority military","~4,000 tanks, 2,100+ artillery pieces"]},
+     ]},
+     {name:"Pakistan Air Force (PAF)",type:"AFFOR",units:[
+      {u:"Air HQ — Islamabad",subs:["JF-17 Thunder Block-III (×120+, China-Pakistan co-produced)","F-16C/D Block 52 (×76, AESA radar, US-supplied)","J-10CE Vigorous Dragon (×25, from China 2022)"]},
+      {u:"Kamra Air Weapons Complex",subs:["Burraq armed drone (Hellfire-class)","Shahpar-2 MALE UAS production","NESCOM cruise missile development"]},
+     ]},
+     {name:"Pakistan Navy (PN)",type:"NAFOR",units:[
+      {u:"Naval HQ Islamabad / PNS Iqbal — Karachi",subs:["Agosta-90B SSK (×3, air-independent propulsion)","F-22P Zulfiquar frigate (×4)","Hangor-class SSK (×8 ordered from China — Type 039B)"]},
+      {u:"CPEC Maritime Force",subs:["Gwadar port security task force","Chinese-assisted coastal surveillance network","Arabian Sea patrol — counter-piracy / SLOC"]},
+     ]},
+     {name:"ISI (Inter-Services Intelligence)",type:"Intelligence",units:[
+      {u:"S Directorate — Afghan Operations",subs:["Historical Taliban / Haqqani Network ties","Post-2021 relationship officially normalized","Al-Qaeda facilitation concerns per UN reports"]},
+      {u:"Joint Intelligence North",subs:["FATA/KPK tribal monitoring","TTP (Pakistani Taliban) tracking","Counter-India human intelligence"]},
+     ]},
+    ],
+    note:"Pakistan is a complex partner — MNNA status (Major Non-NATO Ally) but historically maintained Taliban/Haqqani ties. Nuclear-armed (~165 warheads). Ongoing TTP insurgency kills 1,000+/year. US-Pakistan relations strained since 2021 Afghan withdrawal; China ($62B CPEC) now primary strategic partner. Durand Line dispute with Afghanistan ongoing."},
+   taliban:{hq:"Islamic Emirate of Afghanistan (IEA) — Supreme Leader Haibatullah Akhundzada, Kandahar",flag:"⚠️",
+    components:[
+     {name:"IEA Ground Forces (MoND)",type:"ARFOR",units:[
+      {u:"Fighters / Manpower",subs:["~75,000–200,000 active fighters (varied estimates)","Inherited $7B+ US-supplied ANDSF equipment","~150 aircraft (mostly grounded — maintenance/parts)","Humvees, M2 Howitzers, HESCO stockpiles"]},
+      {u:"Haqqani Network — Interior Ministry",subs:["Sirajuddin Haqqani — Acting Minister of Interior","Designated FTO by US (still active listing)","Paktia/Khost/Paktika operational base","Historical Al-Qaeda liaison function"]},
+      {u:"Badri 313 Special Operations Battalion",subs:["IEA's elite unit — US NVGs, body armor, M4s","Former TTP/AQ-affiliated fighters","Kabul airport security and ceremonial role","International-facing PR formation"]},
+     ]},
+     {name:"ISIS-K (Internal Threat)",type:"COIN",units:[
+      {u:"GDI (General Directorate of Intelligence)",subs:["Primary CT apparatus vs ISIS-K","Raids on Nangarhar, Kunar, Kabul cells","500+ arrests 2023-24 per IEA (unverified)","UN: ISIS-K retains 4,000-6,000 fighters in Af-Pak"]},
+     ]},
+     {name:"Narco-Economy",type:"Criminal Economy",units:[
+      {u:"Opium / Heroin",subs:["IEA banned poppy cultivation April 2022","UN UNODC: 95% acreage reduction 2023","Stockpile-driven export continues 2-3yr lag","Afghanistan = 80%+ of global heroin supply historically"]},
+      {u:"Methamphetamine",subs:["Crystal meth rising as opium substitute","Ephedra plant (wild-harvested) as precursor","Regional distribution via Iran/Pakistan networks"]},
+     ]},
+    ],
+    note:"Taliban seized power Aug 15, 2021 as US withdrew under Doha Agreement. Zero countries formally recognize IEA. Haibatullah rules from Kandahar — rarely appears publicly. Women banned from education above 6th grade and most employment. Al-Qaeda presence confirmed by UN (200-400 fighters in Afghanistan). ISIS-K is primary internal security threat — 100+ attacks since 2021, including international targets."},
   },
   equipment:[
    {n:"F/A-18E/F Super Hornet",t:"Fighter",o:"USA",flag:"🇺🇸",d:"Carrier-based multi-role. Primary strike platform for NAVCENT Red Sea operations.",l:"https://en.wikipedia.org/wiki/Boeing_F/A-18E/F_Super_Hornet"},
@@ -701,12 +971,19 @@ const COCOMS=[
    {id:23,name:"East China Sea",lat:28.0,lng:126.0,intensity:"LOW",type:"Naval/Air"},
    {id:24,name:"Myanmar",lat:21.9,lng:96.1,intensity:"MED",type:"Ground"},
   ],
-  keywords:["indopacom","china","taiwan","korea","pacific","south china sea","japan","philippines","plan","pla","dprk","kim","aukus","f-22","carrier","strait"],
+  keywords:["indopacom","china","taiwan","korea","pacific","south china sea","japan","philippines","plan","pla","dprk","kim","aukus","f-22","carrier","strait","india","kashmir","loc","pakistan","siachen","lashkar"],
   orgTabs:[
-   {label:"US",flag:"🇺🇸",id:"us"},
-   {label:"PLA / PLAN",flag:"🇨🇳",id:"pla"},
-   {label:"DPRK",flag:"🇰🇵",id:"dprk"},
-   {label:"ROK / JAPAN",flag:"🇰🇷",id:"allies"},
+   {label:"US",flag:"🇺🇸",id:"us",cat:"allied"},
+   {label:"Japan (JSDF)",flag:"🇯🇵",id:"jpn",cat:"allied"},
+   {label:"South Korea (ROK)",flag:"🇰🇷",id:"rok",cat:"allied"},
+   {label:"Australia (ADF)",flag:"🇦🇺",id:"aus",cat:"allied"},
+   {label:"Taiwan (ROC)",flag:"🇹🇼",id:"twn",cat:"allied"},
+   {label:"Philippines (AFP)",flag:"🇵🇭",id:"phl",cat:"allied"},
+   {label:"India",flag:"🇮🇳",id:"ind",cat:"allied"},
+   {label:"PLA / PLAN (China)",flag:"🇨🇳",id:"pla",cat:"adversary"},
+   {label:"DPRK",flag:"🇰🇵",id:"dprk",cat:"adversary"},
+   {label:"Myanmar (Tatmadaw)",flag:"🇲🇲",id:"mmr",cat:"adversary"},
+   {label:"ARSA / Karen KNLA",flag:"⚔️",id:"arsa",cat:"nonstate"},
   ],
   orgs:{
    us:{hq:"HQ USINDOPACOM — Camp H.M. Smith, Pearl Harbor, HI",flag:"🇺🇸",
@@ -784,6 +1061,134 @@ const COCOMS=[
      ]},
     ],
     note:"US-ROK CFC is primary warfighting command on peninsula. Japan-US alliance increasingly integrated post-NATO-aligned defense budget increase. AUKUS Pillar 2 tech sharing ongoing."},
+   jpn:{hq:"Japan Self-Defense Forces (JSDF) — Joint Staff Office Tokyo (Gen. Yoshida Yoshihide)",flag:"🇯🇵",
+    components:[
+     {name:"Japan Ground Self-Defense Force (JGSDF)",type:"ARFOR",units:[
+      {u:"Northern Army — Sapporo (Hokkaido)",subs:["7th Armored Division — Type 90 MBT","Hokkaido — primary land defense axis vs Russia"]},
+      {u:"Western Army — Kumamoto",subs:["15th Brigade — Okinawa/SW Islands","HIMARS (being acquired)","Type 12 ASM coastal batteries"]},
+      {u:"Amphibious Rapid Deployment Brigade — Sasebo",subs:["~3,000 personnel (Japan's 'Marines')","AAV7 / MV-22B Osprey"]},
+     ]},
+     {name:"Japan Air Self-Defense Force (JASDF)",type:"AFFOR",units:[
+      {u:"2nd Air Wing — Chitose",subs:["F-35A Lightning II (×40+ delivered)"]},
+      {u:"8th Air Wing — Naha (Okinawa)",subs:["F-15J (upgrading)","E-2D Advanced Hawkeye AEW"]},
+      {u:"Missile Defense",subs:["Patriot PAC-3 MSE (×8 batteries)","SM-3 Block IIA (Aegis ships)"]},
+     ]},
+     {name:"Japan Maritime Self-Defense Force (JMSDF)",type:"NAFOR",units:[
+      {u:"Escort Flotillas (×4)",subs:["Maya-class DDG (Aegis BMD, ×2)","Atago-class DDG (Aegis, ×2)","Mogami-class FFM (×12 planned)"]},
+      {u:"Submarine Force",subs:["Taigei-class SS (×3, new)","Soryu-class SS (AIP, ×11)","20 submarines total — world-class"]},
+     ]},
+    ],
+    note:"Japan 2022 National Security Strategy authorizes counterstrike capability — historic shift. Defence budget doubling to 2% GDP by 2027 (from 1%). HIMARS, Tomahawk acquisition underway. AUKUS Pillar II partnership."},
+   rok:{hq:"Republic of Korea (ROK) Armed Forces — MND Seoul (Joint Chiefs Gen. Kim Myung-su)",flag:"🇰🇷",
+    components:[
+     {name:"ROK Army (ROKA)",type:"ARFOR",units:[
+      {u:"1st ROK Army (FROKA) — Wonju",subs:["Forward defense, Incheon/Uijeongbu axis","K2 Black Panther MBT (~200)","K9 Thunder 155mm SPH"]},
+      {u:"3rd ROK Army — Yongin",subs:["Operational reserve, Seoul defense","K1A2 MBT"]},
+      {u:"Combined US-ROK Forces Command",subs:["GEN Paul LaCamera (US) — CFC Cmdr","11th US Corps integrated","2nd US ID/RUCD — Camp Humphreys"]},
+     ]},
+     {name:"ROK Air Force (ROKAF)",type:"AFFOR",units:[
+      {u:"1st Fighter Wing — Gwangju",subs:["F-35A (×40 delivered, ×20 more ordered)"]},
+      {u:"10th Fighter Wing — Suwon",subs:["FA-50 Light Combat Aircraft"]},
+      {u:"Missile Defense",subs:["Patriot PAC-3 (×8 batteries)","Cheolmae-II (indigenous MSAM)","THAAD battery — Seongju"]},
+     ]},
+     {name:"ROK Navy (ROKN)",type:"NAFOR",units:[
+      {u:"Sejong the Great-class DDG (×3)",subs:["Aegis BMD capable","SM-2, SM-3 (incoming)"]},
+      {u:"Submarine Force",subs:["Dosan Ahn Chang-ho-class SS/N (×3, AIP+AIP/LIB)","Chang Bogo-class ×9"]},
+      {u:"Dokdo-class LPH (×2)",subs:["Amphibious assault ship","F-35B capable (future)"]},
+     ]},
+    ],
+    note:"ROK-US alliance cornerstone of Pacific security. OPCON transfer repeatedly delayed — ROK must demonstrate full wartime control capability first. DPRK nuclear threat drives continued Patriot/THAAD investment."},
+   aus:{hq:"Australian Defence Force (ADF) — Chief of Defence Force Canberra (ADM David Johnston)",flag:"🇦🇺",
+    components:[
+     {name:"Australian Army",type:"ARFOR",units:[
+      {u:"1st Brigade — Darwin",subs:["Remotest-deployed brigade","Hawkei PMV, M1A1 Abrams (upgrading to M1A2 SEPv3)"]},
+      {u:"3rd Brigade — Townsville",subs:["Primary ready brigade","LAND 400 Redback IFV (winning contender)"]},
+     ]},
+     {name:"Royal Australian Air Force (RAAF)",type:"AFFOR",units:[
+      {u:"No. 3 Sqn — RAAF Williamtown",subs:["F-35A Lightning II (×72 total ordered)"]},
+      {u:"No. 1 Sqn — RAAF Amberley",subs:["F/A-18F Super Hornet (transitional)","EA-18G Growler (×12 — unique in region)"]},
+     ]},
+     {name:"Royal Australian Navy",type:"NAFOR",units:[
+      {u:"Collins-class submarine (×6)",subs:["AIP-capable SSK","SSN-AUKUS replacement from ~2030s"]},
+      {u:"Hobart-class DDG (×3)",subs:["Aegis-variant air warfare destroyer","SM-2, ESSM"]},
+      {u:"AUKUS Pillar I",subs:["Virginia-class SSN rotation to HMAS Stirling from 2027","SSN-AUKUS (UK-AU design) from ~2040"]},
+     ]},
+    ],
+    note:"AUKUS (US-UK-AU) announced 2021 — transformative for Pacific balance. Virginia SSN rotation begins 2027. Australia purchasing Tomahawk, SM-6. 2% GDP defence target achieved 2024."},
+   twn:{hq:"Republic of China Armed Forces (ROC) — Ministry of National Defence Taipei",flag:"🇹🇼",
+    components:[
+     {name:"ROC Army",type:"ARFOR",units:[
+      {u:"Army Aviation & Special Forces Command",subs:["AH-64E Guardian Apache (×29)","Special Forces Group — SOCOM-trained"]},
+      {u:"Armoured Forces",subs:["M60A3 MBT (legacy, replacing)","CM-11 Brave Tiger MBT","M1A2T Abrams (×108 ordered from US)"]},
+      {u:"Coastal Defense",subs:["Hsiung Feng II/III ASCM batteries","Tien Kung III SAM (indigenous)"]},
+     ]},
+     {name:"ROC Air Force",type:"AFFOR",units:[
+      {u:"F-16V Viper (×141 upgraded)",subs:["AESA radar, AIM-120C AMRAAM","Primary air superiority platform"]},
+      {u:"Indigenous Defense Fighter (IDF)",subs:["×127 Ching-kuo IDF (upgrading)"]},
+      {u:"F-16A/B→F-16V upgrade program",subs:["66 additional new-build F-16C/D Block 70 (pending delivery)"]},
+     ]},
+     {name:"ROC Navy",type:"NAFOR",units:[
+      {u:"Keelung-class DDG (×4, ex-USN Kidd)",subs:["Primary surface combatant","SM-1MR, Hsiung Feng II"]},
+      {u:"Submarine Force",subs:["2× ex-WWII-era (non-operational)","Indigenous submarine (×1 launched 2023 — Hai Kun class)","7 more IDS planned"]},
+     ]},
+    ],
+    note:"Taiwan Strait scenario primary US-China flashpoint. US maintains 'strategic ambiguity' on direct intervention. Cross-strait military balance increasingly favors PRC. Indigenous submarine program critical for deterrence."},
+   phl:{hq:"Armed Forces of the Philippines (AFP) — Camp Aguinaldo, Quezon City (Gen. Romeo Brawner Jr.)",flag:"🇵🇭",
+    components:[
+     {name:"Philippine Army (PA)",type:"ARFOR",units:[
+      {u:"1st Scout Ranger Regiment",subs:["Elite light infantry CT/COIN","Mindanao / Abu Sayyaf operations"]},
+      {u:"Light Reaction Regiment",subs:["CT/hostage rescue (JSOC-trained)"]},
+     ]},
+     {name:"Philippine Air Force (PAF)",type:"AFFOR",units:[
+      {u:"5th Fighter Wing — Clark",subs:["FA-50PH Golden Eagle (×12)","Light combat, not optimized for PLAN threat"]},
+      {u:"Acquisition pipeline",subs:["F-16V Block 70 (under negotiation)","Brahmos ASCM (Indian-supplied, ×3 batteries)"]},
+     ]},
+     {name:"Philippine Navy (PN)",type:"NAFOR",units:[
+      {u:"BRP Jose Rizal-class FF (×2)",subs:["Hyundai-built, guided missile frigate"]},
+      {u:"South China Sea patrol",subs:["Rotating coast guard + navy presence","Ayungin Shoal (2nd Thomas Shoal) resupply missions"]},
+     ]},
+    ],
+    note:"Philippines revoked VFA (US basing agreement) 2020, restored 2023. 4 additional EDCA bases approved 2023 (2 near Taiwan Strait). Marcos Jr. era significantly pro-US vs Duterte. Brahmos acquisition signals resolve vs PLAN."},
+   ind:{hq:"Indian Armed Forces — Integrated Defence Staff HQ New Delhi (CDS Gen. Anil Chauhan)",flag:"🇮🇳",
+    components:[
+     {name:"Indian Army",type:"ARFOR",units:[
+      {u:"Northern Command — Udhampur (China/Pakistan border)",subs:["XIV Corps — Leh (Ladakh)","T-90S Bhishma MBT (~1,600)","K9 Vajra SPH (155mm)"]},
+      {u:"Strike Corps (I, II, XXI Corps)",subs:["Offensive maneuver capability","Arjun Mk.2 MBT (indigenous)"]},
+     ]},
+     {name:"Indian Air Force (IAF)",type:"AFFOR",units:[
+      {u:"Western Air Command — New Delhi",subs:["Su-30MKI (×260+) — primary multirole","Rafale (×36) — Ambala, Hasimara"]},
+      {u:"Tejas Mk.1A",subs:["83× ordered (delivery ongoing)","Indigenous LCA program"]},
+      {u:"Missile Defense",subs:["S-400 Triumf (×5 squadrons from Russia)","Barak-8 (Israeli-Indian co-developed)"]},
+     ]},
+     {name:"Indian Navy (IN)",type:"NAFOR",units:[
+      {u:"Western Fleet — Mumbai",subs:["INS Vikrant (R11) — indigenous carrier (×1)","INS Vikramaditya (ex-Gorshkov, ×1)","Kolkata-class DDG (Brahmos-armed)"]},
+      {u:"Submarine Force",subs:["Arihant-class SSBN (×2 — nuclear deterrent)","Scorpène-class SSK (×6 Kalvari-class)","Nuclear second-strike capability vs Pakistan/China"]},
+     ]},
+    ],
+    note:"India pursues strategic autonomy — member of QUAD but not treaty ally. Buys from Russia (S-400, Su-30MKI) AND US/France/Israel. LAC (China border) tensions ongoing since Galwan Valley 2020. Largest military by personnel globally."},
+   mmr:{hq:"Tatmadaw (Myanmar Military) — Min Aung Hlaing, Commander-in-Chief / Junta Chairman",flag:"🇲🇲",
+    components:[
+     {name:"Myanmar Army (Tatmadaw Kyi)",type:"ARFOR",units:[
+      {u:"Military Regions (×14)",subs:["Distributed regional commands","~350,000 personnel (pre-coup est., now ~150,000 effective)","T-72S, Type 69 MBTs"]},
+      {u:"Counter-insurgency operations",subs:["Three Brotherhood Alliance offensive (since Oct 2023)","Significant territorial losses to resistance forces"]},
+     ]},
+     {name:"Myanmar Air Force",type:"AFFOR",units:[
+      {u:"Strike assets",subs:["Yak-130 LIFT/strike (×16)","JAS-39 Gripen (×2, non-operational)","Russian helicopter gunships (Mi-35, Mi-17)"]},
+     ]},
+    ],
+    note:"Tatmadaw has lost ~50% of pre-coup territory to ethnic armed organizations (EAOs) and People's Defence Force (PDF) since Operation 1027 (Oct 2023). Significant defection rate. Regime survival in question."},
+   arsa:{hq:"Multiple EAO / Non-State Armed Groups — Myanmar and Bay of Bengal region",flag:"⚔️",
+    components:[
+     {name:"Three Brotherhood Alliance",type:"Armed Resistance",units:[
+      {u:"Myanmar National Democratic Alliance Army (MNDAA)",subs:["Kokang region (Shan State)","Heavy weapons captured from Tatmadaw"]},
+      {u:"Ta'ang National Liberation Army (TNLA)",subs:["Palaung region control","~6,000-8,000 fighters"]},
+      {u:"Arakan Army (AA)",subs:["Rakhine State control (majority)","~30,000 fighters est.","Naval interdiction on Kaladan River"]},
+     ]},
+     {name:"People's Defence Force (PDF)",type:"Armed Resistance",units:[
+      {u:"NUG-affiliated PDF units",subs:["Nationwide resistance cells","~60,000+ fighters (varied capability)","Drone bombing via commercial UAS"]},
+     ]},
+    ],
+    note:"EAOs collectively control more territory than the Tatmadaw for first time since 1948. ARSA (Arakan Rohingya Salvation Army) distinct actor — designated terrorist, Rakhine State insurgency vs both Tatmadaw and AA."},
   },
   equipment:[
    {n:"F-22A Raptor",t:"Fighter",o:"USA",flag:"🇺🇸",d:"5th-gen air superiority. Kadena/Elmendorf. Key deterrence platform in strait context.",l:"https://en.wikipedia.org/wiki/Lockheed_Martin_F-22_Raptor"},
@@ -805,10 +1210,14 @@ const COCOMS=[
   ],
   keywords:["africom","africa","sahel","somalia","sudan","mali","niger","burkina","al-shabaab","jnim","aqim","isis","ct","coin","rsa","wagner","africa corps","darfur","rsf"],
   orgTabs:[
-   {label:"US / CJTF",flag:"🇺🇸",id:"us"},
-   {label:"RSF / SAF",flag:"🇸🇩",id:"sudan"},
-   {label:"SAHEL JNIM",flag:"🌍",id:"jnim"},
-   {label:"AL-SHABAAB",flag:"🌍",id:"shabaab"},
+   {label:"US AFRICOM",flag:"🇺🇸",id:"us",cat:"allied"},
+   {label:"AU / ECOWAS",flag:"🇿🇦",id:"au",cat:"allied"},
+   {label:"Wagner / Africa Corps",flag:"⚔️",id:"wagner",cat:"adversary"},
+   {label:"Sahel Juntas",flag:"🏳️",id:"sahel",cat:"adversary"},
+   {label:"Al-Shabaab",flag:"⚔️",id:"shabaab",cat:"nonstate"},
+   {label:"JNIM / AQ-Sahel",flag:"⚔️",id:"jnim",cat:"nonstate"},
+   {label:"ISIS-Sahel (ISGS)",flag:"⚔️",id:"isgs",cat:"nonstate"},
+   {label:"Hafter LNA (Libya)",flag:"🏳️",id:"lna",cat:"nonstate"},
   ],
   orgs:{
    us:{hq:"HQ USAFRICOM — Kelley Barracks, Stuttgart, GE",flag:"🇺🇸",
@@ -859,6 +1268,54 @@ const COCOMS=[
      ]},
     ],
     note:"Al-Shabaab controls roughly 20% of Somalia. ATMIS (African Union Mission) transitioning to AUSSOM. SNA (Somali National Army) quality improving with US/Turkish/Emirati support."},
+   au:{hq:"African Union Peace & Security Council + ECOWAS — Addis Ababa / Abuja",flag:"🇿🇦",
+    components:[
+     {name:"African Standby Force (ASF)",type:"Multinational",units:[
+      {u:"ECOBRIG (ECOWAS) — West Africa",subs:["On-call force for regional crises","Deployed Niger/Mali border"]},
+      {u:"AMISOM successor (ATMIS) — Somalia",subs:["23,000-peak AU peacekeeping mission","Drawdown to Somali FSF by Dec 2024"]},
+     ]},
+     {name:"SADC Mission in Mozambique (SAMIM)",type:"COIN",units:[
+      {u:"Southern African Development Community force",subs:["Cabo Delgado province — ISIS-M (Al-Shabaab affiliate)","~2,500 troops, Rwandan bilateral"]},
+     ]},
+    ],
+    note:"AU and ECOWAS facing credibility crisis post-Sahel coups (Mali, Burkina, Niger, Gabon). ECOWAS military intervention in Niger threatened but not executed. Institutional capacity significant but political will fragmented."},
+   wagner:{hq:"Africa Corps (Wagner successor) — Russian GRU/MoD direction",flag:"⚔️",
+    components:[
+     {name:"Deployed Operations",type:"PMC/Proxy",units:[
+      {u:"Mali (~2,000 personnel)",subs:["FAMA advisor role","Helicopter strike support","Human rights violations documented by UN"]},
+      {u:"Libya — Haftar LNA support (~1,500)",subs:["Fortification, sniper, air defense training"]},
+      {u:"CAR (~1,500-2,000 personnel)",subs:["Longest presence — since 2018","FACA integration","Mining concessions (gold, diamonds)"]},
+      {u:"Sudan — RSF support",subs:["Janjaweed/RSF arms conduit","Port Sudan logistics hub"]},
+      {u:"Burkina Faso / Niger — emerging",subs:["Post-coup invitation, smaller footprint"]},
+     ]},
+    ],
+    note:"Africa Corps formalized ~2024 under Russian MoD. ~5,000-8,000 total across Africa. Resource-for-security model: gold/diamond/oil access in exchange for regime protection. Displacing French military presence."},
+   sahel:{hq:"Sahel Military Junta Coalition — informal axis (Mali, Burkina Faso, Niger)",flag:"🏳️",
+    components:[
+     {name:"Alliance of Sahel States (AES)",type:"Junta Alliance",units:[
+      {u:"Mali — CNSP Junta (Col. Goïta)",subs:["FAMa + Wagner/Africa Corps","Expelled French Barkhane (2022)","Expelled MINUSMA peacekeepers (2023)"]},
+      {u:"Burkina Faso — MPSR Junta (Capt. Traoré)",subs:["Expelled French forces 2023","~40% territory under jihadist control"]},
+      {u:"Niger — CNSP Junta (Gen. Tchiani)",subs:["Expelled US forces 2024 (Agadez drone base)","ECOWAS sanctions, AES mutual defense"]},
+     ]},
+    ],
+    note:"AES formally withdrew from ECOWAS 2024 — seismic shift for West Africa security architecture. US drone base at Agadez (key counter-ISIS ISR hub) lost. Russian/Chinese influence expanding to fill Western vacuum."},
+   isgs:{hq:"Islamic State Greater Sahara (ISGS) — Liptako-Gourma tri-border region",flag:"⚔️",
+    components:[
+     {name:"ISGS Operations",type:"Insurgent",units:[
+      {u:"Liptako-Gourma (Mali/Burkina/Niger tri-border)",subs:["~1,000-2,000 fighters","Ambushes, massacres, kidnapping","Vehicle-mounted (technical) warfare"]},
+      {u:"West Africa Province (ISWAP — Lake Chad)",subs:["Separate but linked affiliate","~3,500 fighters","Boko Haram successor"]},
+     ]},
+    ],
+    note:"ISGS competes with JNIM for territory and recruits. Both exploit local Fulani grievances. US AFRICOM drone strike campaign significantly degraded but not eliminated. Killing of ISGS founder Adnan Abu Walid al-Sahrawi (2021) limited impact."},
+   lna:{hq:"Libyan National Army (LNA / GNA) — Benghazi (Field Marshal Khalifa Haftar, Cmdr)",flag:"🏳️",
+    components:[
+     {name:"LNA Forces",type:"Armed Faction",units:[
+      {u:"9th Brigade — Cyrenaica",subs:["Armoured units (T-72, T-62 captured)","Supported by UAE air power (Panavia Tornado via UAE)","Wagner/Africa Corps embedded advisors"]},
+      {u:"Petroleum Facilities Guard (LNA-aligned)",subs:["Controls Crescent oil facilities","Leverage over oil revenue"]},
+     ]},
+     {name:"GNU (Govt of National Unity) Forces — Tripoli",type:"Armed Faction",units:[]},
+    ],
+    note:"Libya split between LNA (Haftar, East) and GNU (Tripoli, West). Ceasefire since Oct 2020 but frozen conflict. UAE, Egypt, Russia (Wagner) back LNA. Turkey backs GNU. Major migration route to Europe. Russian naval interest in Tobruk port."},
   },
   equipment:[
    {n:"MQ-9 Reaper",t:"UCAV/ISR",o:"USA",flag:"🇺🇸",d:"Primary AFRICOM CT/ISR platform. Camp Lemonnier (DJ) and Manda Bay (KE).",l:"https://en.wikipedia.org/wiki/General_Atomics_MQ-9_Reaper"},
@@ -1690,7 +2147,7 @@ const ALL_POSTS=[
  {src:"@nytimes",          handle:"nytimes",          dname:"New York Times",         verified:true,  aor:["SOUTHCOM"],                             likes:61000,rts:24000,replies:9800, time:"42m",
   text:"NYT investigation: How Colombian cocaine flows through Venezuela's military-protected corridors to reach European markets. Maduro inner circle named as direct beneficiaries."},
  {src:"@nytimes",          handle:"nytimes",          dname:"New York Times",         verified:true,  aor:["NORTHCOM"],                             likes:61000,rts:24000,replies:9800, time:"50m",
-  text:"NYT: DHS internal assessment warns fentanyl crisis has overtaken opioid crisis in lethality. 110,000 overdose deaths last year — 70% fentanyl. Border seizures up 40% but supply outpaces interdiction."},
+  text:"NYT: DHS internal assessment warns fentanyl crisis has overtaken opioid crisis of 2010s in lethality. 110,000 overdose deaths last year — 70% fentanyl. Border seizures up 40% but supply outpaces interdiction."},
  {src:"@WSJ",              handle:"WSJ",              dname:"Wall Street Journal",    verified:true,  aor:["EUCOM","CENTCOM","INDOPACOM"],           likes:38000,rts:15000,replies:5600, time:"28m",
   text:"Defense stocks surge as Congress signals bipartisan support for supplemental Ukraine aid. RTX, LMT, NOC all up 4%+ on volume. Defense ETF ITA hits 52-week high."},
  {src:"@NPR",              handle:"NPR",              dname:"NPR",                    verified:true,  aor:["CENTCOM","AFRICOM"],                    likes:29000,rts:11000,replies:4200, time:"3h",
@@ -1698,7 +2155,7 @@ const ALL_POSTS=[
  {src:"@NPR",              handle:"NPR",              dname:"NPR",                    verified:true,  aor:["SOUTHCOM"],                             likes:29000,rts:11000,replies:4200, time:"3h",
   text:"NPR: El Salvador's Bukele model being exported — Honduras and Ecuador studying CECOT-style mega-prison approach. Human rights groups warn of mass arbitrary detention risks."},
  {src:"@NPR",              handle:"NPR",              dname:"NPR",                    verified:true,  aor:["NORTHCOM"],                             likes:29000,rts:11000,replies:4200, time:"3h",
-  text:"NPR: Arctic Council activity frozen since Russia's suspension in 2022. US and Canada conducting bilateral security coordination outside Council framework. Russian Arctic militarization continues unimpeded."},
+  text:"NPR: Arctic Council activity frozen since Russia's suspension in 2022. US, Canada, Norway conducting bilateral security coordination outside Council framework. Russian Arctic militarization continues unimpeded."},
  {src:"@washingtonpost",   handle:"washingtonpost",   dname:"Washington Post",        verified:true,  aor:["EUCOM","CENTCOM","INDOPACOM"],           likes:44000,rts:17000,replies:7200, time:"42m",
   text:"Exclusive: Internal State Dept cables show significant disagreement over Gaza ceasefire strategy — at least six senior diplomats have filed dissent cables. Secretary Blinken briefed."},
  {src:"@CBSNews",          handle:"CBSNews",          dname:"CBS News",               verified:true,  aor:["EUCOM","CENTCOM"],                      likes:26000,rts:10000,replies:4100, time:"4h",
@@ -2008,6 +2465,7 @@ function wtfEsc(e){ if(e.key==='Escape') closeWTF(); }
 // SIGACTS — Significant Actions, last 90 days, open source
 // ═══════════════════════════════════════════════════════════════════
 const SIGACTS_DATA=[
+ // ── EUCOM ──
  {date:"2026-03-12",type:"Kinetic",loc:"Zaporizhzhia Oblast, Ukraine",lat:47.5,lng:35.1,cocom:"EUCOM",summary:"Russian glide bomb (FAB-500 with UMPK) strikes residential district; 4 killed, 11 injured. Ukrainian air defense partially effective.",src:"ISW / Ukrainian MoD"},
  {date:"2026-03-10",type:"Kinetic",loc:"Kursk Oblast, Russia",lat:51.7,lng:36.1,cocom:"EUCOM",summary:"Ukrainian cross-border drone swarm destroys fuel depot; secondary explosions visible 30km away. 14 Shahed-type drones used.",src:"Ukrainian GUR / OSINT"},
  {date:"2026-03-06",type:"Kinetic",loc:"Donetsk front, Ukraine",lat:48.0,lng:37.8,cocom:"EUCOM",summary:"Russian infantry-armor assault on Chasiv Yar sector; ISW assesses ~1.5km advance along T-0504 highway. Heavy casualties both sides.",src:"ISW"},
@@ -2018,6 +2476,7 @@ const SIGACTS_DATA=[
  {date:"2026-01-22",type:"Escalation",loc:"Belarus-Poland border",lat:52.1,lng:24.0,cocom:"EUCOM",summary:"Belarusian military deploys 3 BMP-2 company tactical groups to Brest Oblast; NATO monitors assess as exercises, not pre-attack.",src:"NATO SHAPE / OSINT satimagery"},
  {date:"2026-01-15",type:"Escalation",loc:"Baltic Sea / GPS corridor",lat:57.0,lng:22.0,cocom:"EUCOM",summary:"Russia jams GPS across Latvia and Lithuania; commercial aviation disrupted for 6 hours. Pattern consistent with 2024 incidents.",src:"Eurocontrol / Lithuanian CAA"},
  {date:"2026-01-08",type:"Terror",loc:"Kyiv, Ukraine",lat:50.4,lng:30.5,cocom:"EUCOM",summary:"Shahed-136 swarm attack; 9 drones penetrate air defense, strike residential Obolonskyi district. 2 killed, 14 wounded.",src:"Kyiv City Military Administration"},
+ // ── CENTCOM ──
  {date:"2026-03-11",type:"Terror",loc:"Tel Aviv, Israel",lat:32.1,lng:34.8,cocom:"CENTCOM",summary:"Car ramming at Dizengoff Square; 2 killed, 5 injured. Attacker neutralized by off-duty officer. No group claim within 24h.",src:"Israeli Police / Haaretz"},
  {date:"2026-03-09",type:"Airstrike",loc:"Hodeidah, Yemen",lat:14.8,lng:42.9,cocom:"CENTCOM",summary:"CENTCOM precision strike destroys Houthi over-the-horizon radar site used to target commercial shipping. No civilian casualties reported.",src:"CENTCOM PAO"},
  {date:"2026-03-07",type:"Maritime",loc:"Red Sea (21.2°N 38.8°E)",lat:21.2,lng:38.8,cocom:"CENTCOM",summary:"Houthi ASM (Chinese C-802 variant) intercepted by USS Laboon SM-2 at 35nm. Fourth intercept this month. Shipping diversion continues.",src:"CENTCOM / MarineTraffic"},
@@ -2027,6 +2486,12 @@ const SIGACTS_DATA=[
  {date:"2026-02-10",type:"Terror",loc:"Kabul, Afghanistan",lat:34.5,lng:69.2,cocom:"CENTCOM",summary:"ISIS-K suicide vest bombing near Ministry of Finance; 14 killed, 29 injured. Taliban intelligence claims prior knowledge but failed interdiction.",src:"Reuters / UN UNAMA"},
  {date:"2026-01-30",type:"Maritime",loc:"Strait of Hormuz",lat:26.5,lng:56.5,cocom:"CENTCOM",summary:"IRGCN patrol vessels harass Liberian-flagged tanker for 3 hours. USS Gravely responds; IRGCN withdraws. Tanker reaches port.",src:"NAVCENT / Tanker operator"},
  {date:"2026-01-18",type:"Terror",loc:"Amman, Jordan",lat:31.9,lng:35.9,cocom:"CENTCOM",summary:"Car bomb targeting GID (Jordanian intelligence) checkpoint. 2 officers killed. Attack attributed to Iraqi AQ affiliate.",src:"Jordanian Internal Security / AP"},
+ {date:"2026-03-06",type:"Terror",loc:"Kabul, Afghanistan",lat:34.5,lng:69.2,cocom:"CENTCOM",summary:"ISIS-K IED targets Taliban MoI vehicle convoy in Shar-e-Naw district; 6 killed, 12 wounded. IEA GDI launches follow-on raids netting 14 suspects in Kabul/Parwan.",src:"UN UNAMA / Tolo News"},
+ {date:"2026-02-28",type:"Terror",loc:"Nangarhar Province, Afghanistan",lat:34.2,lng:70.5,cocom:"CENTCOM",summary:"Taliban security forces conduct night raid on ISIS-K cell; 8 fighters killed, weapons cache seized including MANPADS components. UN confirms IS-K retains ~5,000 fighters in Af-Pak region.",src:"IEA MoI / UN UNAMA"},
+ {date:"2026-02-12",type:"Terror",loc:"Peshawar, Pakistan (KPK)",lat:34.0,lng:71.5,cocom:"CENTCOM",summary:"TTP (Tehrik-i-Taliban Pakistan) VBIED detonates at KPK Police Lines; 11 police killed, 28 wounded. Attack timed to shift change. Pakistan Army activates Khyber-IV operation response.",src:"ISPR / Dawn News"},
+ {date:"2026-01-24",type:"Kinetic",loc:"North Waziristan, Pakistan",lat:33.0,lng:70.1,cocom:"CENTCOM",summary:"Pakistan Air Force F-16 strike destroys TTP command node in Mir Ali district; 12 militants killed per ISPR. 2,000 civilians displaced by follow-on ground clearance.",src:"ISPR / Reuters"},
+ {date:"2026-01-10",type:"Escalation",loc:"Kabul, Afghanistan",lat:34.5,lng:69.2,cocom:"CENTCOM",summary:"IEA announces formal recognition of Pakistan Durand Line as international border — reversal of decades of Afghan policy. Triggers protests by Afghan diaspora; Tajik/Hazara factions denounce agreement.",src:"Tolo News / Khaama Press"},
+ // ── INDOPACOM ──
  {date:"2026-03-11",type:"Maritime",loc:"Second Thomas Shoal, South China Sea",lat:9.7,lng:115.8,cocom:"INDOPACOM",summary:"PLAN Coast Guard vessel fires water cannon on Philippine resupply mission to BRP Sierra Madre. 2 sailors injured. Manila summons ambassador.",src:"Philippine Coast Guard / Reuters"},
  {date:"2026-03-08",type:"Escalation",loc:"Taiwan Strait",lat:24.0,lng:120.5,cocom:"INDOPACOM",summary:"PLAN Shandong carrier group conducts 48hr exercise; 14 J-15 sorties cross median line. ROCAF scrambles. No engagement.",src:"ROC MND / CSIS AMS"},
  {date:"2026-03-01",type:"Escalation",loc:"Sea of Japan",lat:39.0,lng:133.0,cocom:"INDOPACOM",summary:"DPRK Hwasong-19 ICBM test; missile reaches ~6,800km apogee, splashdown 1,200km off Hokkaido in Japan EEZ. US-Japan-ROK hold emergency talks.",src:"ROK JCS / USFK PAO"},
@@ -2036,6 +2501,10 @@ const SIGACTS_DATA=[
  {date:"2026-01-28",type:"Escalation",loc:"Taiwan ADIZ",lat:24.5,lng:122.5,cocom:"INDOPACOM",summary:"PLAN 24-hr envelope exercise records 91 aircraft sorties (highest since Aug 2022). ROCAF on maximum alert. INDOPACOM issues NOTAM.",src:"ROC MND / CSIS AMS tracker"},
  {date:"2026-01-18",type:"Terror",loc:"Gwadar, Pakistan (Balochistan)",lat:25.1,lng:62.3,cocom:"INDOPACOM",summary:"BLA attack on CPEC security convoy; 5 FC soldiers killed, 3 wounded. China demands enhanced security for Belt & Road assets.",src:"ISPR / Dawn News"},
  {date:"2026-01-08",type:"Escalation",loc:"Yellow Sea (DPRK coastal)",lat:38.0,lng:124.5,cocom:"INDOPACOM",summary:"DPRK GPS jamming campaign disrupts South Korean commercial shipping for 72 hours. ROK military reports 400+ affected vessels.",src:"South Korea MoT / Radio Free Asia"},
+ {date:"2026-03-04",type:"Escalation",loc:"Line of Control, Kashmir (Poonch sector)",lat:33.8,lng:74.1,cocom:"INDOPACOM",summary:"Indian Army patrol engages armed infiltrators crossing LoC in Poonch; 4 militants killed, 1 soldier wounded. Pakistan ISPR denies involvement. 3rd LoC firing incident in 2026.",src:"Indian Army PIB / Dawn News"},
+ {date:"2026-02-17",type:"Escalation",loc:"Siachen Glacier / Saltoro Ridge",lat:35.4,lng:76.8,cocom:"INDOPACOM",summary:"Indian Army deploys additional Agni-P MRBM unit to Himachal Pradesh in response to Chinese PLA buildup on Aksai Chin. Pakistan characterizes deployment as 'destabilizing' and raises nuclear alert posture.",src:"Indian MOD / Reuters / SIPRI"},
+ {date:"2026-01-31",type:"Terror",loc:"Srinagar, Jammu & Kashmir",lat:34.1,lng:74.8,cocom:"INDOPACOM",summary:"Lashkar-e-Taiba cell attacks CRPF convoy in Nowgam; 2 paramilitaries killed. NIA traces cell communication to handlers in Muridke, Pakistan. India raises UNSC forum.",src:"Indian MHA / Hindustan Times"},
+ // ── AFRICOM ──
  {date:"2026-03-09",type:"Terror",loc:"Soum Province, Burkina Faso",lat:14.2,lng:-0.8,cocom:"AFRICOM",summary:"JNIM (al-Qaeda Sahel affiliate) ambush on civilian food convoy; 23+ killed. 4th mass casualty event this month in Sahel.",src:"ACLED / AFP"},
  {date:"2026-03-04",type:"Terror",loc:"Lake Chad Basin, Nigeria/Niger border",lat:13.5,lng:14.0,cocom:"AFRICOM",summary:"ISWAP attack on fishing community; 18 fishermen killed, village burned. Pattern consistent with resource denial campaign.",src:"ACLED / International Crisis Group"},
  {date:"2026-02-28",type:"Kinetic",loc:"Khartoum North, Sudan",lat:15.6,lng:32.6,cocom:"AFRICOM",summary:"RSF artillery strikes on SAF-held Bahri district; 30+ civilians killed. ICRC reports 12 hospitals non-functional in greater Khartoum.",src:"Sudan War Monitor / UN OCHA"},
@@ -2044,23 +2513,30 @@ const SIGACTS_DATA=[
  {date:"2026-02-05",type:"Kinetic",loc:"North Kivu, DRC",lat:-1.5,lng:29.2,cocom:"AFRICOM",summary:"M23/RDF advance; MONUSCO reports column 18km from Goma city center. 500,000+ additional IDPs flee North Kivu toward Rwanda border.",src:"UN MONUSCO / OCHA"},
  {date:"2026-01-25",type:"Terror",loc:"Cabo Delgado, Mozambique",lat:-12.4,lng:40.5,cocom:"AFRICOM",summary:"Ansar al-Sunna (ISIS-Mozambique) attacks 3 villages near Mocímboa da Praia; 15 civilians killed. SADC mission reports attack from two directions.",src:"ACLED / Al Jazeera"},
  {date:"2026-01-12",type:"Kinetic",loc:"Bamenda, Cameroon",lat:5.9,lng:10.1,cocom:"AFRICOM",summary:"Ambazonia separatist armed group attacks gendarmerie post; 4 security forces killed. Anglophone crisis enters 9th year.",src:"Crisis Group / Cameroon Radio Television"},
- {date:"2026-03-10",type:"Terror",loc:"Caquetá, Colombia",lat:1.5,lng:-75.5,cocom:"SOUTHCOM",summary:"FARC dissidents (Segunda Marquetalia) detonate IED on Caño Limón–Coveñas oil pipeline; 3-day spill. 4th infrastructure attack this year.",src:"Colombian MoD / Indepaz"},
+ // ── SOUTHCOM ──
+ {date:"2026-03-10",type:"Terror",loc:"Caquetá, Colombia",lat:1.5,lng:-75.5,cocom:"SOUTHCOM",summary:"FARC dissidents (FARC-EP Segunda Marquetalia) detonate IED on Caño Limón–Coveñas oil pipeline; 3-day spill. 4th infrastructure attack this year.",src:"Colombian MoD / Indepaz"},
  {date:"2026-03-05",type:"Political",loc:"Caracas, Venezuela",lat:10.5,lng:-66.9,cocom:"SOUTHCOM",summary:"Venezuelan security forces arrest Plataforma Unitaria opposition coordinator; 800+ protest, 45 detained. US considers additional OFAC designations.",src:"OHCHR / AP"},
  {date:"2026-02-25",type:"Terror",loc:"Port-au-Prince, Haiti",lat:18.5,lng:-72.3,cocom:"SOUTHCOM",summary:"Viv Ansanm gang coalition lays siege to Pétion-Ville commercial district; 3 police killed. MMAS Kenya-led mission requests reinforcements.",src:"UN BINUH / Reuters"},
  {date:"2026-02-18",type:"Maritime",loc:"Caribbean Sea (off Honduras)",lat:15.5,lng:-83.0,cocom:"SOUTHCOM",summary:"USCG cutter interdicts go-fast vessel; 1.3 metric tons cocaine seized, 3 traffickers detained. JIATF-South assessed as Sinaloa-affiliated shipment.",src:"USCG / JIATF-South"},
  {date:"2026-02-10",type:"Terror",loc:"Guayaquil, Ecuador",lat:-2.2,lng:-79.9,cocom:"SOUTHCOM",summary:"Los Choneros cartel attack on Guayas Province police station; 4 officers killed, station torched. Ecuador extends state of emergency.",src:"Ecuadorian MoI / El País"},
  {date:"2026-01-28",type:"Terror",loc:"VRAEM Valley, Peru",lat:-12.5,lng:-74.0,cocom:"SOUTHCOM",summary:"Sendero Luminoso faction ambushes VRAEM drug interdiction force; 2 police killed. Unit believed aligned with coca traffickers.",src:"Peruvian MoI / Ideele"},
  {date:"2026-01-15",type:"Kinetic",loc:"Darién Gap, Colombia/Panama",lat:8.1,lng:-77.2,cocom:"SOUTHCOM",summary:"Clan del Golfo clash with Panamanian SENAFRONT on border; 3 migrants caught in crossfire killed. 400+ migrants stranded at Lajas Blancas.",src:"IOM / Panama Border Service"},
+ // ── NORTHCOM ──
  {date:"2026-03-12",type:"Terror",loc:"Sonora State, Mexico",lat:29.0,lng:-110.3,cocom:"NORTHCOM",summary:"Sinaloa Cartel faction plants IED on federal highway 15; 3 National Guard killed, 2 wounded. Intercine cartel conflict continues post-leadership arrests.",src:"Mexican SEDENA / InSight Crime"},
  {date:"2026-03-08",type:"Escalation",loc:"Beaufort Sea ADIZ",lat:72.0,lng:-135.0,cocom:"NORTHCOM",summary:"NORAD F-22s intercept 2 Russian Tu-95MS Bear-H bombers 150nm north of Alaska coast. Standard intercept; no hostile action. 4th intercept in 2026.",src:"NORAD PAO"},
  {date:"2026-03-03",type:"Terror",loc:"Tamaulipas, Mexico",lat:26.0,lng:-98.5,cocom:"NORTHCOM",summary:"CDG-Scorpions cartel clash spills 500m into Texas; gun battle audible from Starr County. DHS raises Texas border sector threat level.",src:"Texas DPS / DEA"},
  {date:"2026-02-26",type:"Escalation",loc:"Alaska ADIZ",lat:64.5,lng:-165.0,cocom:"NORTHCOM",summary:"Russian Su-35S enters ADIZ north of Norton Sound; F-22 intercept at minimum safe distance. NORAD assesses as probing mission.",src:"NORAD / Air Force Magazine"},
- {date:"2026-02-15",type:"Terror",loc:"Jalisco, Mexico",lat:20.7,lng:-103.4,cocom:"NORTHCOM",summary:"CJNG mass casualty attack on Sinaloa safe houses; 18 killed. Escalation follows arrest of mid-level CJNG commander.",src:"Mexican SSPC / InSight Crime"},
+ {date:"2026-02-15",type:"Terror",loc:"Jalisco, Mexico",lat:20.7,lng:-103.4,cocom:"NORTHCOM",summary:"CJNG (Jalisco New Generation Cartel) mass casualty attack on Sinaloa safe houses; 18 killed. Escalation follows arrest of mid-level CJNG commander.",src:"Mexican SSPC / InSight Crime"},
  {date:"2026-02-08",type:"Cyber",loc:"US municipal water systems (multi-state)",lat:39.0,lng:-95.0,cocom:"NORTHCOM",summary:"CISA reports coordinated scanning of Schneider Electric PLCs in water treatment facilities. Attribution unclear; China-nexus IOCs identified.",src:"CISA Advisory AA26-039A"},
  {date:"2026-01-28",type:"Escalation",loc:"Nunavut ADIZ, Canada",lat:72.0,lng:-83.0,cocom:"NORTHCOM",summary:"RCAF CF-18s intercept Russian Tu-95 north of Baffin Island. NORAD dual-hat activation. Third Russian bomber incursion in Canadian ADIZ this year.",src:"NORAD / CBC News"},
  {date:"2026-01-20",type:"Terror",loc:"Sonora-Arizona border corridor",lat:31.5,lng:-111.0,cocom:"NORTHCOM",summary:"DEA and HSI disrupt Sinaloa fentanyl ring; 340kg fentanyl seized, 22 arrests across Arizona and California. Pills destined for midwest distribution.",src:"DEA PAO / DOJ"},
 ];
-const SIGACTS_TYPE_COLOR={Kinetic:'#ef4444',Airstrike:'#ef4444',Terror:'#f97316',Maritime:'#3b82f6',Cyber:'#22d3ee',Escalation:'#f59e0b',Political:'#8b5cf6'};
+
+const SIGACTS_TYPE_COLOR={
+ Kinetic:'#ef4444',Airstrike:'#ef4444',Terror:'#f97316',
+ Maritime:'#3b82f6',Cyber:'#22d3ee',Escalation:'#f59e0b',Political:'#8b5cf6'
+};
+
 let _sigItems=[];
 
 function renderSigacts(id){
@@ -2090,10 +2566,13 @@ function renderSigacts(id){
 function selectSigact(i){
  const s=_sigItems[i];
  if(!s||s.lat==null)return;
+ // highlight row
  document.querySelectorAll('.sigact').forEach(el=>el.classList.remove('active'));
  const row=document.getElementById('sigrow'+i);
  if(row)row.classList.add('active');
+ // fly map
  map.flyTo([s.lat,s.lng],7,{duration:1.0});
+ // clear old sigact markers, place new one
  sg.clearLayers();
  const col=SIGACTS_TYPE_COLOR[s.type]||'#6b7280';
  const icon=L.divIcon({className:'',html:`
@@ -2132,6 +2611,7 @@ window.addEventListener('resize',()=>map.invalidateSize());
 const mg=L.layerGroup().addTo(map), rg=L.layerGroup().addTo(map), cg=L.layerGroup().addTo(map), sg=L.layerGroup().addTo(map);
 function iCol(i){return i==='HIGH'?'#f87171':i==='MED'?'#fbbf24':'#34d399'}
 
+// ── COCOM BOUNDARY POLYGONS (approximate / open-source) ──────────────
 // NOTE: Mercator projection is undefined at ±90° — cap coords at ±85° and avoid ±180° lng
 const COCOM_POLYS={
   NORTHCOM:{color:'#38bdf8',polys:[
@@ -2386,19 +2866,19 @@ window.addEventListener('resize',renderFeed);
 // ORG TABS + RENDER
 // ═══════════════════════════════════════════════════════════════════
 function buildOrgTabs(){
- const tabs=AC.orgTabs;
- const groups={allied:[],adversary:[],nonstate:[]};
- tabs.forEach(t=>(groups[t.cat||'allied']).push(t));
- const makeOpts=(arr)=>arr.map((t,i)=>{
-  const sel=(activeOrgTab<tabs.length&&tabs[activeOrgTab].id===t.id)||(activeOrgTab===tabs.indexOf(t))?' selected':'';
-  return `<option value="${tabs.indexOf(t)}"${sel}>${t.flag||''} ${t.label}</option>`;
- }).join('');
- let html=`<select class="orgselect" onchange="switchOrgTab(+this.value)">`;
- if(groups.allied.length)    html+=`<optgroup label="── ALLIED / PARTNER ──">${makeOpts(groups.allied)}</optgroup>`;
- if(groups.adversary.length) html+=`<optgroup label="── ADVERSARY ──">${makeOpts(groups.adversary)}</optgroup>`;
- if(groups.nonstate.length)  html+=`<optgroup label="── NON-STATE / MILITIA ──">${makeOpts(groups.nonstate)}</optgroup>`;
- html+=`</select>`;
- document.getElementById('orgtabs').innerHTML=html;
+  const tabs = AC.orgTabs;
+  const groups = {allied:[], adversary:[], nonstate:[]};
+  tabs.forEach(t => (groups[t.cat||'allied']).push(t));
+  const makeOpts = (arr) => arr.map((t,i) => {
+    const sel = (activeOrgTab < tabs.length && tabs[activeOrgTab].id === t.id) || (activeOrgTab === tabs.indexOf(t)) ? ' selected' : '';
+    return `<option value="${tabs.indexOf(t)}"${sel}>${t.flag||''} ${t.label}</option>`;
+  }).join('');
+  let html = `<select class="orgselect" onchange="switchOrgTab(+this.value)">`;
+  if(groups.allied.length)   html += `<optgroup label="── ALLIED / PARTNER ──">${makeOpts(groups.allied)}</optgroup>`;
+  if(groups.adversary.length) html += `<optgroup label="── ADVERSARY ──">${makeOpts(groups.adversary)}</optgroup>`;
+  if(groups.nonstate.length)  html += `<optgroup label="── NON-STATE / MILITIA ──">${makeOpts(groups.nonstate)}</optgroup>`;
+  html += `</select>`;
+  document.getElementById('orgtabs').innerHTML = html;
 }
 
 function switchOrgTab(i){activeOrgTab=i;buildOrgTabs();renderOrg();}
@@ -2727,11 +3207,6 @@ async function loadSports(){
     const d=await r.json();
     const games=d.games||[];
     const el=document.getElementById('sporttrack');
-    if(!el) return;
-    if(!games.length){
-      el.textContent='NO SCORES AVAILABLE';
-      return;
-    }
     if(!el) return;
     if(!games.length){
       el.textContent='NO SCORES AVAILABLE';
