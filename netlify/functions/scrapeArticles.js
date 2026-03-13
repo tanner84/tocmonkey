@@ -7,58 +7,73 @@ const { classifyByCOCOM } = require('../../src/utils/cocomClassifier');
 
 const COCOMS = ['EUCOM', 'CENTCOM', 'INDOPACOM', 'AFRICOM', 'SOUTHCOM', 'NORTHCOM'];
 const SOURCES = [
-  // MAJOR THINK TANKS
-  { name: 'War on the Rocks', url: 'https://warontherocks.com/feed/' },
-  { name: 'CSIS', url: 'https://www.csis.org/rss-feeds' },
-  { name: 'RAND', url: 'https://www.rand.org/topics/military-affairs.xml' },
-  { name: 'ISW', url: 'https://www.understandingwar.org/rss.xml' },
-  { name: 'Carnegie Endowment', url: 'https://carnegieendowment.org/rss/region/all' },
-  { name: 'Atlantic Council', url: 'https://www.atlanticcouncil.org/feed/' },
-  { name: 'Brookings', url: 'https://www.brookings.edu/feed/' },
-  { name: 'CFR', url: 'https://www.cfr.org/rss.xml' },
-  { name: 'RUSI', url: 'https://rusi.org/rss.xml' },
-  { name: 'CNAS', url: 'https://www.cnas.org/press/rss' },
-  { name: 'Hudson Institute', url: 'https://www.hudson.org/feed' },
-  { name: 'AEI', url: 'https://www.aei.org/feed/' },
-  { name: 'Stimson Center', url: 'https://www.stimson.org/feed/' },
-  { name: 'Wilson Center', url: 'https://www.wilsoncenter.org/rss.xml' },
-  // MILITARY JOURNALS & PUBLICATIONS
-  { name: 'Small Wars Journal', url: 'https://smallwarsjournal.com/rss.xml' },
-  { name: 'Military Review', url: 'https://www.armyupress.army.mil/Portals/7/military-review/rss.xml' },
-  { name: 'Joint Force Quarterly', url: 'https://ndupress.ndu.edu/DesktopModules/ArticleCS/RSS.ashx?ContentType=1&Site=1050&max=10' },
-  { name: 'Parameters', url: 'https://press.armywarcollege.edu/parameters/recent.rss' },
+  // ── MAJOR THINK TANKS ──────────────────────────────────────────────────────
+  { name: 'War on the Rocks',         url: 'https://warontherocks.com/feed/' },
+  { name: 'CSIS',                     url: 'https://www.csis.org/rss.xml' },
+  { name: 'RAND',                     url: 'https://www.rand.org/topics/military-affairs.xml' },
+  { name: 'ISW',                      url: 'https://www.understandingwar.org/rss.xml' },
+  { name: 'Carnegie Endowment',       url: 'https://carnegieendowment.org/rss/solr/articles' },
+  { name: 'Atlantic Council',         url: 'https://www.atlanticcouncil.org/feed/' },
+  { name: 'Brookings',                url: 'https://www.brookings.edu/feed/' },
+  { name: 'CFR',                      url: 'https://www.cfr.org/rss.xml' },
+  { name: 'RUSI',                     url: 'https://rusi.org/rss.xml' },
+  { name: 'CNAS',                     url: 'https://www.cnas.org/press/rss' },
+  { name: 'Hudson Institute',         url: 'https://www.hudson.org/feed' },
+  { name: 'Stimson Center',           url: 'https://www.stimson.org/feed/' },
+  { name: 'Wilson Center',            url: 'https://www.wilsoncenter.org/rss.xml' },
+  { name: 'Lawfare',                  url: 'https://www.lawfaremedia.org/feed' },
+  { name: 'Bellingcat',               url: 'https://www.bellingcat.com/feed/' },
+  { name: 'Crisis Group',             url: 'https://www.crisisgroup.org/rss.xml' },
+  { name: 'Texas Natl Security Review',url:'https://tnsr.org/feed/' },
+  { name: 'Irregular Warfare Init.',  url: 'https://irregularwarfare.org/feed/' },
+  // ── DIVERSE / ALTERNATIVE PERSPECTIVES ────────────────────────────────────
+  { name: 'Quincy Institute',         url: 'https://quincyinst.org/feed/' },
+  { name: 'Responsible Statecraft',   url: 'https://responsiblestatecraft.org/feed/' },
+  { name: 'Inkstick Media',           url: 'https://inkstickmedia.com/feed/' },
+  { name: 'The Intercept',            url: 'https://theintercept.com/feed/?rss' },
+  { name: 'Just Security',            url: 'https://www.justsecurity.org/feed/' },
+  { name: 'NACLA',                    url: 'https://nacla.org/rss.xml' },
+  { name: 'ProPublica',               url: 'https://www.propublica.org/feeds/propublica/main' },
+  // ── MILITARY JOURNALS & PUBLICATIONS ──────────────────────────────────────
+  { name: 'Small Wars Journal',       url: 'https://smallwarsjournal.com/rss.xml' },
+  { name: 'Modern War Institute',     url: 'https://mwi.westpoint.edu/feed/' },
+  { name: 'Military Review',          url: 'https://www.armyupress.army.mil/Portals/7/military-review/rss.xml' },
+  { name: 'Parameters',               url: 'https://press.armywarcollege.edu/parameters/recent.rss' },
   { name: 'Naval War College Review', url: 'https://digital-commons.usnwc.edu/nwc-review/recent.rss' },
-  { name: 'Air & Space Power Journal', url: 'https://www.airuniversity.af.edu/Portals/10/ASPJ/rss.xml' },
-  { name: 'Marine Corps Gazette', url: 'https://mca-marines.org/wp-content/uploads/magazine_rss.xml' },
-  { name: 'Proceedings (USNI)', url: 'https://www.usni.org/magazines/proceedings/rss' },
-  { name: 'Defense News', url: 'https://www.defensenews.com/arc/outboundfeeds/rss/' },
-  { name: 'The Warfighter', url: 'https://mwi.usma.edu/feed/' },
-  // REGIONAL SPECIALISTS
-  { name: 'ECFR', url: 'https://ecfr.eu/feed/' },
-  { name: 'Middle East Institute', url: 'https://www.mei.edu/rss.xml' },
-  { name: 'Carnegie Middle East Center', url: 'https://carnegie-mec.org/rss/region/all' },
-  { name: 'Asia Maritime Transparency Initiative', url: 'https://amti.csis.org/feed/' },
-  { name: 'Lowy Institute', url: 'https://www.lowyinstitute.org/the-interpreter/feed' },
-  { name: 'Carnegie India', url: 'https://carnegieindia.org/rss/region/all' },
-  { name: 'Africa Center for Strategic Studies', url: 'https://africacenter.org/feed/' },
-  { name: 'ISS Africa', url: 'https://issafrica.org/rss' },
+  { name: 'Air & Space Power Journal',url: 'https://www.airuniversity.af.edu/Portals/10/ASPJ/rss.xml' },
+  { name: 'Proceedings (USNI)',       url: 'https://www.usni.org/magazines/proceedings/rss' },
+  { name: 'Joint Force Quarterly',    url: 'https://ndupress.ndu.edu/DesktopModules/ArticleCS/RSS.ashx?ContentType=1&Site=1050&max=10' },
+  // ── REGIONAL SPECIALISTS ───────────────────────────────────────────────────
+  { name: 'ECFR',                     url: 'https://ecfr.eu/feed/' },
+  { name: 'Middle East Institute',    url: 'https://www.mei.edu/rss.xml' },
+  { name: 'Middle East Eye',          url: 'https://www.middleeasteye.net/rss' },
+  { name: 'Carnegie Middle East',     url: 'https://carnegie-mec.org/rss/region/all' },
+  { name: 'Asia Maritime (AMTI)',     url: 'https://amti.csis.org/feed/' },
+  { name: 'Lowy Institute',           url: 'https://www.lowyinstitute.org/the-interpreter/feed' },
+  { name: 'ASPI',                     url: 'https://www.aspi.org.au/rss.xml' },
+  { name: 'Carnegie India',           url: 'https://carnegieindia.org/rss/region/all' },
+  { name: 'Africa Center Strat. Studies', url: 'https://africacenter.org/feed/' },
+  { name: 'ISS Africa',               url: 'https://issafrica.org/rss' },
   { name: 'Wilson Center Latin America', url: 'https://www.wilsoncenter.org/program/latin-american-program/rss.xml' },
-  { name: 'InSight Crime', url: 'https://insightcrime.org/feed/' },
-  // DEFENSE JOURNALISM
-  { name: 'USNI News', url: 'https://news.usni.org/feed' },
-  { name: 'The War Zone', url: 'https://www.thedrive.com/the-war-zone/rss' },
-  { name: 'Defense One', url: 'https://www.defenseone.com/rss/' },
-  { name: 'Breaking Defense', url: 'https://breakingdefense.com/feed/' },
-  { name: 'Military Times', url: 'https://www.militarytimes.com/arc/outboundfeeds/rss/' },
-  { name: 'Stars and Stripes', url: 'https://www.stripes.com/rss.xml' },
-  { name: 'Task & Purpose', url: 'https://taskandpurpose.com/feed/' },
-  { name: 'Janes Defence', url: 'https://www.janes.com/defence-news/rss' },
-  { name: 'C4ISRNET', url: 'https://www.c4isrnet.com/arc/outboundfeeds/rss/' },
-  { name: 'Defense News', url: 'https://www.defensenews.com/arc/outboundfeeds/rss/' },
-  // OFFICIAL SOURCES (where available)
-  { name: 'DOD News', url: 'https://www.defense.gov/Newsroom/News/Transcripts/Feed/' },
-  { name: 'State Department', url: 'https://www.state.gov/rss-feed/' },
-  { name: 'GAO', url: 'https://www.gao.gov/rss/news.xml' },
+  { name: 'InSight Crime',            url: 'https://insightcrime.org/feed/' },
+  { name: 'Migration Policy Institute', url: 'https://www.migrationpolicy.org/rss.xml' },
+  { name: 'CTC Sentinel',             url: 'https://ctc.westpoint.edu/feed/' },
+  { name: 'IISS',                     url: 'https://www.iiss.org/rss' },
+  { name: 'ACLED',                    url: 'https://acleddata.com/feed/' },
+  // ── DEFENSE JOURNALISM ────────────────────────────────────────────────────
+  { name: 'USNI News',                url: 'https://news.usni.org/feed' },
+  { name: 'The War Zone',             url: 'https://www.thedrive.com/the-war-zone/rss' },
+  { name: 'Defense One',              url: 'https://www.defenseone.com/rss/' },
+  { name: 'Breaking Defense',         url: 'https://breakingdefense.com/feed/' },
+  { name: 'Military Times',           url: 'https://www.militarytimes.com/arc/outboundfeeds/rss/' },
+  { name: 'Stars and Stripes',        url: 'https://www.stripes.com/rss.xml' },
+  { name: 'Task & Purpose',           url: 'https://taskandpurpose.com/feed/' },
+  { name: 'C4ISRNET',                 url: 'https://www.c4isrnet.com/arc/outboundfeeds/rss/' },
+  // ── OFFICIAL SOURCES ───────────────────────────────────────────────────────
+  { name: 'DOD News',                 url: 'https://www.defense.gov/DesktopModules/ArticleCS/RSS.ashx?ContentType=1&Site=945&max=10' },
+  { name: 'State Department',         url: 'https://www.state.gov/rss-feed/' },
+  { name: 'GAO',                      url: 'https://www.gao.gov/rss/reports.xml' },
+  { name: 'CRS Reports',              url: 'https://crsreports.congress.gov/rss/new_reports.xml' },
 ];
 
 // List of known paywalled domains to skip
@@ -66,7 +81,8 @@ const PAYWALLED_DOMAINS = [
   'wsj.com', 'nytimes.com', 'ft.com', 'economist.com', 'bloomberg.com',
   'thetimes.co.uk', 'washingtonpost.com', 'latimes.com', 'theatlantic.com',
   'newyorker.com', 'foreignpolicy.com', 'nationalreview.com', 'telegraph.co.uk',
-  'lemonde.fr', 'handelsblatt.com', 'nikkei.com', 'haaretz.com', 'stratfor.com'
+  'lemonde.fr', 'handelsblatt.com', 'nikkei.com', 'haaretz.com', 'stratfor.com',
+  'foreignaffairs.com', 'politico.com', 'axios.com'
 ];
 
 function isPaywalled(url) {
@@ -74,8 +90,6 @@ function isPaywalled(url) {
 }
 
 exports.handler = async function() {
-  // Netlify Scheduled Function: run daily at 06:00 UTC
-  exports.schedule = "0 6 * * *";
   const parser = new Parser();
   const store = getStore('tocmonkey');
   let allArticles = [];

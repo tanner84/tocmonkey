@@ -5,6 +5,9 @@
 [functions]
   node_bundler = "esbuild"
 
+[functions."scrapeArticles"]
+  schedule = "0 6 * * *"
+
 # Protect the admin page — redirects /admin to admin.html
 [[redirects]]
   from = "/admin"
