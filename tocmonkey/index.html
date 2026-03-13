@@ -133,7 +133,8 @@ html,body{height:100%;background:var(--bg);color:var(--hi);font-family:var(--mon
 .ocomp{margin-bottom:10px}
 .ocompname{font-size:10px;color:var(--g2);font-weight:bold;margin-bottom:3px;display:flex;align-items:baseline;gap:6px}
 .otype{font-size:8px;color:var(--fade);font-weight:normal}
-.ounit{font-size:9px;color:var(--hi);padding:2px 0 2px 12px;border-left:1px solid var(--blt);margin-left:5px;line-height:1.5}
+.ounit{font-size:9px;color:var(--hi);padding:2px 0 2px 12px;border-left:1px solid var(--blt);margin-left:5px;line-height:1.5;cursor:pointer;transition:color .12s,border-color .12s}
+.ounit:hover{color:var(--g1);border-left-color:var(--g1)}
 .osub{font-size:8px;color:var(--mid);padding:2px 0 2px 22px;border-left:1px dashed var(--blt);margin-left:5px;line-height:1.5}
 .onote{font-size:8px;color:var(--fade);margin-top:10px;padding-top:6px;border-top:1px solid var(--blt);line-height:1.6;font-style:italic}
 .ocountry{display:inline-block;font-size:8px;padding:1px 6px;border-radius:2px;margin-bottom:8px;font-weight:bold}
@@ -422,7 +423,7 @@ html,body{height:100%;background:var(--bg);color:var(--hi);font-family:var(--mon
     </div><!-- /mappnl -->
 
     <!-- 2x2 QUAD GRID — right 56% -->
-    <div id="quadgrid"><div id="mobiletabs" style="display:none"><button class="mtab on" onclick="mobPanel(0)">OSINT/RSS</button><button class="mtab" onclick="mobPanel(1)">EQUIPMENT</button><button class="mtab" onclick="mobPanel(2)">SIGACTS</button><button class="mtab" onclick="mobPanel(3)">TOC MONKEY</button></div>
+    <div id="quadgrid"><div id="mobiletabs" style="display:none"><button class="mtab on" onclick="mobPanel(0)">OSINT/RSS</button><button class="mtab" onclick="mobPanel(1)">TASK ORG</button><button class="mtab" onclick="mobPanel(2)">SIGACTS</button><button class="mtab" onclick="mobPanel(3)">TOC MONKEY</button></div>
       <!-- TOP LEFT: OSINT/RSS FEED -->
       <div class="pnl" id="feedpnl">
         <div class="ph"><span class="pht">OSINT / RSS</span><span class="phs" id="feedsub">AOR FEED</span></div>
@@ -431,13 +432,11 @@ html,body{height:100%;background:var(--bg);color:var(--hi);font-family:var(--mon
           <div class="ftrack" id="ftrack"></div>
         </div>
       </div>
-      <!-- TOP RIGHT: EQUIPMENT -->
+      <!-- TOP RIGHT: TASK ORGANIZATION -->
       <div class="pnl qr" id="eqpnl">
-        <div class="ph"><span class="pht">EQUIPMENT INDEX</span><span class="phs" id="eqsub">AOR SYSTEMS</span></div>
-        <div class="eqwrap">
-          <div class="fgtop"></div><div class="fgbot"></div>
-          <div class="eqtrack" id="eqtrack"></div>
-        </div>
+        <div class="ph"><span class="pht">TASK ORGANIZATION</span><span class="phs" id="eqsub">OPEN SOURCE ONLY</span></div>
+        <div class="orgtabs" id="orgtabs"></div>
+        <div id="orgscroll"></div>
       </div>
       <!-- BOTTOM LEFT: SIGACTS -->
       <div class="pnl qb" id="orgpnl">
@@ -1782,7 +1781,7 @@ function renderSigacts(id){
 function switchCocom(id){
  AC=COCOMS.find(c=>c.id===id);
  selZone=null; activeOrgTab=0;
- buildTabs(); updateMap(); updateFeed(); startEqRotator(); resetSrcBar(); renderArticles(); renderSigacts(id);
+ buildTabs(); updateMap(); updateFeed(); buildOrgTabs(); renderOrg(); resetSrcBar(); renderArticles(); renderSigacts(id);
  loadRSS(id); loadTelegram(id);
  setTimeout(()=>{ try{map.invalidateSize();}catch(e){} }, 150);
  closeSitrep();
@@ -2010,13 +2009,73 @@ window.addEventListener('resize',renderFeed);
 // ═══════════════════════════════════════════════════════════════════
 function buildOrgTabs(){
  const tabs=AC.orgTabs;
- // orgtabs element removed; Task Org data retained for future unit popup feature
+ const groups={allied:[],adversary:[],nonstate:[]};
+ tabs.forEach(t=>(groups[t.cat||'allied']).push(t));
+ const makeOpts=(arr)=>arr.map((t,i)=>{
+  const sel=(activeOrgTab<tabs.length&&tabs[activeOrgTab].id===t.id)||(activeOrgTab===tabs.indexOf(t))?' selected':'';
+  return `<option value="${tabs.indexOf(t)}"${sel}>${t.flag||''} ${t.label}</option>`;
+ }).join('');
+ let html=`<select class="orgselect" onchange="switchOrgTab(+this.value)">`;
+ if(groups.allied.length)    html+=`<optgroup label="── ALLIED / PARTNER ──">${makeOpts(groups.allied)}</optgroup>`;
+ if(groups.adversary.length) html+=`<optgroup label="── ADVERSARY ──">${makeOpts(groups.adversary)}</optgroup>`;
+ if(groups.nonstate.length)  html+=`<optgroup label="── NON-STATE / MILITIA ──">${makeOpts(groups.nonstate)}</optgroup>`;
+ html+=`</select>`;
+ document.getElementById('orgtabs').innerHTML=html;
 }
 
-function switchOrgTab(i){activeOrgTab=i;}
+function switchOrgTab(i){activeOrgTab=i;buildOrgTabs();renderOrg();}
 
 function renderOrg(){
- // Task Org panel replaced by SIGACTS — function retained for unit popup feature
+ const tab=AC.orgTabs[activeOrgTab];
+ const org=AC.orgs[tab.id];
+ if(!org){document.getElementById('orgscroll').innerHTML='<div style="padding:14px;color:var(--fade);font-size:10px">No data.</div>';return;}
+ document.getElementById('orgscroll').innerHTML=`
+  <div class="ohq">${org.flag} ${org.hq}</div>
+  ${org.components.map(c=>`
+   <div class="ocomp">
+    <div class="ocompname">${c.name} <span class="otype">[${c.type}]</span></div>
+    ${c.units.map(u=>{
+     const enc=encodeURIComponent(JSON.stringify({u:u.u,subs:u.subs||[]}));
+     return `<div class="ounit" onclick="openUnitModal(decodeURIComponent('${enc}'))">— ${u.u}</div>
+      ${(u.subs||[]).map(s=>`<div class="osub">· ${s}</div>`).join('')}`;
+    }).join('')}
+   </div>
+  `).join('')}
+  <div class="onote">⚠ ${org.note}</div>
+ `;
+}
+buildOrgTabs();
+renderOrg();
+
+function openUnitModal(enc){
+ const d=JSON.parse(enc);
+ const allEq=COCOMS.flatMap(c=>c.equipment||[]).reduce((acc,e)=>{if(!acc.find(x=>x.n===e.n))acc.push(e);return acc;},[]);
+ const unitText=[d.u,...(d.subs||[])].join(' ').toLowerCase();
+ const matched=allEq.filter(e=>{
+  const kw=e.n.toLowerCase().split(/[\s\-\/\(\)]+/).filter(w=>w.length>3);
+  return kw.some(w=>unitText.includes(w));
+ });
+ const subsHtml=(d.subs||[]).map(s=>{
+  const sLow=s.toLowerCase();
+  const eq=allEq.find(e=>{const kw=e.n.toLowerCase().split(/[\s\-\/\(\)]+/).filter(w=>w.length>3);return kw.some(w=>sLow.includes(w));});
+  const safe=s.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  if(eq)return `<div class="msc"><a href="${eq.l}" target="_blank" rel="noopener" style="color:var(--g2);text-decoration:none">· ${safe} <span style="font-size:8px;color:var(--g1)">↗ WIKI</span></a></div>`;
+  return `<div class="msc"><div class="msv" style="color:var(--mid)">· ${safe}</div></div>`;
+ }).join('');
+ const eqHtml=matched.length?`
+  <div style="margin:10px 0 4px;font-size:8px;letter-spacing:2px;color:var(--g1);border-bottom:1px solid var(--border);padding-bottom:4px">EQUIPMENT REFERENCE</div>
+  ${matched.map(e=>`<a href="${e.l}" target="_blank" rel="noopener" style="display:flex;gap:8px;padding:5px 0;border-bottom:1px solid var(--blt);text-decoration:none;color:inherit;align-items:center">
+   <span style="font-size:14px;flex-shrink:0">${e.flag}</span>
+   <span style="flex:1;min-width:0"><div style="color:var(--hi);font-size:10px;font-weight:bold">${e.n}</div><div style="color:var(--fade);font-size:9px">${e.t} · ${e.o}</div></span>
+   <span style="color:var(--g2);font-size:8px;flex-shrink:0">WIKI ↗</span>
+  </a>`).join('')}`
+  :`<div style="padding:6px 0;color:var(--fade);font-size:9px">No equipment data linked to this unit.</div>`;
+ openModal(`
+  <div class="mtag" style="color:var(--g2)">TASK ORG · ${AC.id}</div>
+  <div class="mtitle">${d.u.replace(/</g,'&lt;')}</div>
+  ${d.subs&&d.subs.length?`<div class="msg">${subsHtml}</div>`:''}
+  ${eqHtml}
+ `);
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -2061,8 +2120,7 @@ function slideEq(){
  track.style.transform=`translateY(-${rh}px)`;
  setTimeout(()=>{eqOffset=(eqOffset+1)%Math.max((AC.equipment||[]).length,1);track.style.transition='none';track.style.transform='translateY(0)';renderEq();},420);
 }
-startEqRotator();
-window.addEventListener('resize',renderEq);
+window.addEventListener('resize',renderOrg);
 
 // ═══════════════════════════════════════════════════════════════════
 // ARTICLES
@@ -2346,7 +2404,8 @@ async function loadSports(){
 function boot(){
  buildTabs();
  updateMap();
- startEqRotator();
+ buildOrgTabs();
+ renderOrg();
  resetSrcBar();
  renderArticles();
  renderSigacts(AC.id);
