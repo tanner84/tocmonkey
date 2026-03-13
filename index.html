@@ -98,7 +98,7 @@ html,body{height:100%;background:var(--bg);color:var(--hi);font-family:var(--mon
 .ftrack{transition:transform .4s cubic-bezier(.4,0,.2,1)}
 
 /* Tweet card */
-.twcard{padding:14px 16px;border-bottom:1px solid var(--blt);cursor:pointer;transition:background .12s;display:flex;flex-direction:column;gap:0}
+.twcard{padding:9px 13px;border-bottom:1px solid var(--blt);cursor:pointer;transition:background .12s;display:flex;flex-direction:column;gap:0}
 .twcard:hover{background:var(--hover)}
 .twhdr{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px}
 .twavatar{width:36px;height:36px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:bold;font-family:var(--sans);color:#fff;margin-top:2px}
@@ -107,7 +107,7 @@ html,body{height:100%;background:var(--bg);color:var(--hi);font-family:var(--mon
 .twhandle{font-size:11px;color:var(--mute);font-family:var(--sans);white-space:nowrap}
 .twverified{color:var(--blue);font-size:11px;flex-shrink:0}
 .twtime{font-size:10px;color:var(--fade);flex-shrink:0;white-space:nowrap;margin-left:auto;padding-top:2px}
-.twbody{color:var(--hi);margin:4px 0 10px;overflow-wrap:break-word;word-break:break-word;white-space:pre-wrap}
+.twbody{color:var(--hi);margin:3px 0 6px;overflow-wrap:break-word;word-break:break-word;white-space:pre-wrap}
 /* Responsive tweet font size/line height */
 @media (max-width: 600px) {
   .twbody{font-size:13px;line-height:1.65}
@@ -2284,7 +2284,7 @@ function updateFeed(){
  feedItems=getFeedItems();feedOffset=0;
  document.getElementById('feedsub').textContent=AC.id+' AOR · '+feedItems.length+' ITEMS';
  if(feedTimer)clearInterval(feedTimer);
- renderFeed();feedTimer=setInterval(slideFeed,7000);
+ renderFeed();feedTimer=setInterval(slideFeed,4500);
 }
 
 const FSHOW=2;
@@ -2322,9 +2322,9 @@ function slideFeed(){
  const firstCard=track.firstElementChild;
  const rh=firstCard?firstCard.offsetHeight:0;
  if(!rh)return;
- track.style.transition='transform .45s cubic-bezier(.4,0,.2,1)';
+ track.style.transition='transform .3s cubic-bezier(.4,0,.2,1)';
  track.style.transform=`translateY(-${rh}px)`;
- setTimeout(()=>{feedOffset=(feedOffset+1)%Math.max(feedItems.length,1);track.style.transition='none';track.style.transform='translateY(0)';renderFeed();},460);
+ setTimeout(()=>{feedOffset=(feedOffset+1)%Math.max(feedItems.length,1);track.style.transition='none';track.style.transform='translateY(0)';renderFeed();},310);
 }
 updateFeed();
 window.addEventListener('resize',renderFeed);
@@ -2458,22 +2458,7 @@ async function renderArticles(){
   const sub = document.getElementById('tocphs');
   if(sub) sub.textContent = cocomId + ' · Chiefs Picks + Live';
   if(!allArticles.length){el.innerHTML='<div style="padding:12px;color:var(--fade);font-size:9px;text-align:center">No articles yet.</div>';return;}
-  // Asynchronously check link reachability and render only confirmed links
-  const checkUrl = async url => {
-    try {
-      const res = await fetch(url, { method: 'HEAD', mode: 'no-cors' });
-      return res && (res.ok || res.type === 'opaque');
-    } catch { return false; }
-  };
-  const filtered = [];
-  for (const a of allArticles) {
-    const safeUrl = (a.url||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;');
-    if (safeUrl && safeUrl.startsWith('http')) {
-      // Only add if reachable
-      if (await checkUrl(safeUrl)) filtered.push(a);
-    }
-  }
-  el.innerHTML = filtered.map((a,i)=>{
+  el.innerHTML = allArticles.map((a)=>{
     const safeUrl = (a.url||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;');
     return `
      <a class="art" href="${safeUrl}" target="_blank" rel="noopener noreferrer" style="display:block;text-decoration:none;color:inherit">
