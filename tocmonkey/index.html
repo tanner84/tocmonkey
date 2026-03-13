@@ -2010,33 +2010,14 @@ window.addEventListener('resize',renderFeed);
 // ═══════════════════════════════════════════════════════════════════
 function buildOrgTabs(){
  const tabs=AC.orgTabs;
- document.getElementById('orgtabs').innerHTML=tabs.map((t,i)=>
-  `<button class="otab${i===activeOrgTab?' on':''}" onclick="switchOrgTab(${i})">${t.flag} ${t.label}</button>`
- ).join('');
+ // orgtabs element removed; Task Org data retained for future unit popup feature
 }
-buildOrgTabs();
 
-function switchOrgTab(i){activeOrgTab=i;buildOrgTabs();renderOrg();}
+function switchOrgTab(i){activeOrgTab=i;}
 
 function renderOrg(){
- const tab=AC.orgTabs[activeOrgTab];
- const org=AC.orgs[tab.id];
- if(!org){document.getElementById('orgscroll').innerHTML='<div style="padding:14px;color:var(--fade);font-size:10px">No data.</div>';return;}
- document.getElementById('orgscroll').innerHTML=`
-  <div class="ohq">${org.flag} ${org.hq}</div>
-  ${org.components.map(c=>`
-   <div class="ocomp">
-    <div class="ocompname">${c.name} <span class="otype">[${c.type}]</span></div>
-    ${c.units.map(u=>`
-     <div class="ounit">— ${u.u}</div>
-     ${(u.subs||[]).map(s=>`<div class="osub">· ${s}</div>`).join('')}
-    `).join('')}
-   </div>
-  `).join('')}
-  <div class="onote">⚠ ${org.note}</div>
- `;
+ // Task Org panel replaced by SIGACTS — function retained for unit popup feature
 }
-renderOrg();
 
 // ═══════════════════════════════════════════════════════════════════
 // EQUIPMENT ROTATOR
