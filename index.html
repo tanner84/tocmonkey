@@ -420,6 +420,7 @@ html,body{height:100%;background:var(--bg);color:var(--hi);font-family:var(--mon
         <div><span class="pht" id="maptitle">MAP</span><span class="phs" id="mapsub"></span></div>
         <button class="phb on" id="ringsbtn" onclick="toggleRings()">◎ RINGS</button>
         <button class="phb" id="boundsbtn" onclick="toggleBounds()">◻ AOR</button>
+        <button class="phb on" id="frontbtn" onclick="toggleFront()" style="display:none">⚔ FRONT</button>
       </div>
       <div id="map"></div>
       <!-- SITREP OVERLAY -->
@@ -2970,7 +2971,7 @@ setTimeout(()=>map.invalidateSize(),50);
 setTimeout(()=>map.invalidateSize(),300);
 setTimeout(()=>map.invalidateSize(),1000);
 window.addEventListener('resize',()=>map.invalidateSize());
-const mg=L.layerGroup().addTo(map), rg=L.layerGroup().addTo(map), cg=L.layerGroup().addTo(map), sg=L.layerGroup().addTo(map), nkRg=L.layerGroup().addTo(map);
+const mg=L.layerGroup().addTo(map), rg=L.layerGroup().addTo(map), cg=L.layerGroup().addTo(map), sg=L.layerGroup().addTo(map), nkRg=L.layerGroup().addTo(map), ukFl=L.layerGroup().addTo(map);
 function iCol(i){return i==='HIGH'?'#f87171':i==='MED'?'#fbbf24':'#34d399'}
 
 // ── COCOM BOUNDARY POLYGONS (approximate / open-source) ──────────────
@@ -3019,6 +3020,108 @@ function toggleBounds(){
   drawCocomBounds();
 }
 
+// ── Ukraine Front Line & Control Areas (auto-show on EUCOM) ──────────────────
+let ukFrontOn=true;
+
+// Front line polyline — line of contact, S→N
+// Source: ISW / DeepState · Approx. as of 2026-03-14
+const UK_FRONT=[
+ [46.55,33.60],[46.72,33.95],[46.90,34.42],[47.05,34.85],
+ [47.22,35.28],[47.40,35.65],[47.52,36.12],[47.68,36.58],
+ [47.82,37.02],[47.95,37.22],[48.05,37.38],[48.20,37.15],
+ [48.38,37.05],[48.50,37.42],[48.62,37.74],[48.75,37.96],
+ [48.88,38.14],[49.02,37.90],[49.12,38.22],[49.25,38.58],
+ [49.43,38.74],[49.60,38.92],[49.78,39.32],
+];
+
+// Russian-controlled territory polygon
+// (Front line on W, Russia border on E, Azov coast on S, Kherson east bank)
+const RU_POLY=[
+ // Front line (S→N)
+ [46.55,33.60],[46.72,33.95],[46.90,34.42],[47.05,34.85],
+ [47.22,35.28],[47.40,35.65],[47.52,36.12],[47.68,36.58],
+ [47.82,37.02],[47.95,37.22],[48.05,37.38],[48.20,37.15],
+ [48.38,37.05],[48.50,37.42],[48.62,37.74],[48.75,37.96],
+ [48.88,38.14],[49.02,37.90],[49.12,38.22],[49.25,38.58],
+ [49.43,38.74],[49.60,38.92],[49.78,39.32],
+ // Russia border (N→S, eastern edge)
+ [50.05,40.10],[49.50,40.10],[48.80,40.00],[47.90,39.80],
+ // Azov Sea coast (E→W) and Kherson east bank
+ [47.12,38.15],[46.95,37.50],[46.83,36.78],[46.68,36.18],
+ [46.55,35.58],[46.44,34.98],[46.38,34.40],[46.42,33.90],
+ [46.55,33.60], // close
+];
+
+// Crimea — occupied since 2014 (separate polygon, lighter shade)
+const CRIMEA_POLY=[
+ [46.18,32.50],[45.95,32.55],[45.50,32.60],[45.12,33.00],
+ [44.48,33.30],[44.38,33.95],[44.45,34.85],[44.72,35.50],
+ [45.00,36.05],[45.38,36.60],[45.80,36.38],[46.12,35.62],
+ [46.22,34.82],[46.18,33.60],[46.20,32.90],[46.18,32.50],
+];
+
+function drawUkraineFront(){
+ ukFl.clearLayers();
+ const btn=document.getElementById('frontbtn');
+ if(AC.id!=='EUCOM'){btn.style.display='none';return;}
+ btn.style.display='';
+ btn.classList.toggle('on',ukFrontOn);
+ if(!ukFrontOn)return;
+
+ // Russian-controlled fill
+ L.polygon(RU_POLY,{
+  color:'#ef4444',fillColor:'#ef4444',
+  fillOpacity:.18,weight:0,interactive:false
+ }).addTo(ukFl);
+
+ // Crimea fill (slightly different shade — longer occupation)
+ L.polygon(CRIMEA_POLY,{
+  color:'#dc2626',fillColor:'#b91c1c',
+  fillOpacity:.22,weight:0,interactive:false
+ }).addTo(ukFl);
+
+ // Front line
+ L.polyline(UK_FRONT,{
+  color:'#f97316',weight:2.5,opacity:.9,
+  dashArray:'6,4',interactive:false
+ }).addTo(ukFl);
+
+ // Pulsing front line glow (thicker, transparent)
+ L.polyline(UK_FRONT,{
+  color:'#f97316',weight:7,opacity:.12,interactive:false
+ }).addTo(ukFl);
+
+ // "RUSSIAN CONTROL" label — placed in occupied Donetsk
+ const ruIcon=L.divIcon({className:'',html:
+  `<div style="font-family:monospace;font-size:9px;font-weight:bold;color:#fca5a5;background:rgba(10,10,10,.75);padding:2px 6px;border-left:3px solid #ef4444;letter-spacing:1px;white-space:nowrap">RUSSIAN CONTROL</div>`,
+  iconAnchor:[0,8]
+ });
+ L.marker([48.4,38.8],{icon:ruIcon,interactive:false,keyboard:false}).addTo(ukFl);
+
+ // "CRIMEA (OCCUPIED 2014)" label
+ const crIcon=L.divIcon({className:'',html:
+  `<div style="font-family:monospace;font-size:8px;color:#fca5a5;background:rgba(10,10,10,.75);padding:2px 5px;border-left:2px solid #b91c1c;letter-spacing:.8px;white-space:nowrap">CRIMEA · OCCUPIED 2014</div>`,
+  iconAnchor:[0,8]
+ });
+ L.marker([45.0,34.2],{icon:crIcon,interactive:false,keyboard:false}).addTo(ukFl);
+
+ // "UKRAINIAN CONTROL" label — placed in western Ukraine
+ const uaIcon=L.divIcon({className:'',html:
+  `<div style="font-family:monospace;font-size:9px;font-weight:bold;color:#fde68a;background:rgba(10,10,10,.75);padding:2px 6px;border-left:3px solid #fbbf24;letter-spacing:1px;white-space:nowrap">UKRAINIAN CONTROL</div>`,
+  iconAnchor:[0,8]
+ });
+ L.marker([49.5,31.5],{icon:uaIcon,interactive:false,keyboard:false}).addTo(ukFl);
+
+ // Data source / date label (bottom of front line area)
+ const srcIcon=L.divIcon({className:'',html:
+  `<div style="font-family:monospace;font-size:7px;color:#6b7280;background:rgba(10,10,10,.7);padding:1px 5px;letter-spacing:.5px;white-space:nowrap">SRC: ISW / DeepState · ${new Date().toISOString().slice(0,10)}</div>`,
+  iconAnchor:[0,8]
+ });
+ L.marker([46.2,35.5],{icon:srcIcon,interactive:false,keyboard:false}).addTo(ukFl);
+}
+
+function toggleFront(){ukFrontOn=!ukFrontOn;drawUkraineFront();}
+
 // ── DPRK Missile Range Rings (auto-show on INDOPACOM) ────────────────────────
 const NK_ORIGIN=[39.02,125.75]; // Pyongyang
 const NK_RINGS=[
@@ -3061,6 +3164,7 @@ function updateMap(){
  map.flyTo(AC.center,AC.zoom,{duration:1.0});
  drawCocomBounds();
  drawNKRings();
+ drawUkraineFront();
  AC.zones.forEach(z=>{
   const col=iCol(z.intensity);
   const icon=L.divIcon({className:'',html:`<div style="width:12px;height:12px;border-radius:50%;background:${col};box-shadow:0 0 9px ${col}"></div>`,iconSize:[12,12],iconAnchor:[6,6]});
