@@ -418,10 +418,12 @@ html,body{height:100%;background:var(--bg);color:var(--hi);font-family:var(--mon
     <div id="mappnl">
       <div class="ph">
         <div><span class="pht" id="maptitle">MAP</span><span class="phs" id="mapsub"></span></div>
-        <button class="phb on" id="ringsbtn" onclick="toggleRings()">◎ RINGS</button>
-        <button class="phb" id="boundsbtn" onclick="toggleBounds()">◻ AOR</button>
-        <button class="phb on" id="frontbtn" onclick="toggleFront()" style="display:none">⚔ FRONT</button>
-        <button class="phb on" id="ctrlbtn" onclick="toggleCtrl()" style="display:none">◈ CTRL ZONES</button>
+        <div style="display:flex;gap:4px;align-items:center">
+          <button class="phb on" id="ringsbtn" onclick="toggleRings()">◎ RINGS</button>
+          <button class="phb" id="boundsbtn" onclick="toggleBounds()">◻ AOR</button>
+          <button class="phb on" id="frontbtn" onclick="toggleFront()" style="display:none">⚔ FRONT</button>
+          <button class="phb on" id="ctrlbtn" onclick="toggleCtrl()" style="display:none">◈ CTRL</button>
+        </div>
       </div>
       <div id="map"></div>
       <!-- SITREP OVERLAY -->
@@ -2972,7 +2974,7 @@ setTimeout(()=>map.invalidateSize(),50);
 setTimeout(()=>map.invalidateSize(),300);
 setTimeout(()=>map.invalidateSize(),1000);
 window.addEventListener('resize',()=>map.invalidateSize());
-const mg=L.layerGroup().addTo(map), rg=L.layerGroup().addTo(map), cg=L.layerGroup().addTo(map), sg=L.layerGroup().addTo(map), nkRg=L.layerGroup().addTo(map), ukFl=L.layerGroup().addTo(map);
+const mg=L.layerGroup().addTo(map), rg=L.layerGroup().addTo(map), cg=L.layerGroup().addTo(map), sg=L.layerGroup().addTo(map), nkRg=L.layerGroup().addTo(map), ukFl=L.layerGroup().addTo(map), conflLg=L.layerGroup().addTo(map);
 function iCol(i){return i==='HIGH'?'#f87171':i==='MED'?'#fbbf24':'#34d399'}
 
 // ── COCOM BOUNDARY POLYGONS (approximate / open-source) ──────────────
@@ -3125,7 +3127,6 @@ function toggleFront(){ukFrontOn=!ukFrontOn;drawUkraineFront();}
 
 // ── Syria & Sudan Areas of Control ───────────────────────────────────────────
 let ctrlOn=true;
-const conflLg=L.layerGroup().addTo(map);
 
 // ── SYRIA ── (post-Assad fall Dec 2024; as of 2026-03-14)
 // HTS / New Syrian Transitional Government — controls most of country
