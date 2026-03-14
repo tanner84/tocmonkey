@@ -3753,7 +3753,8 @@ async function loadTicker(){
   const data=await r.json();
   // Rebuild ticker with live data
   const d=[...data,...data];
-  document.getElementById('tkinner').innerHTML=d.map(t=>{
+  const label='<span style="display:inline-flex;align-items:center;margin-right:28px;font-size:9px;letter-spacing:2px;color:var(--mute);border:1px solid var(--border);padding:1px 6px;border-radius:2px">UPDATED EVERY 8H</span>';
+  document.getElementById('tkinner').innerHTML=label+d.map(t=>{
    const u=t.change>=0;
    const liveTag=t.live?'':'<span style="color:var(--fade);font-size:8px;margin-left:2px">·</span>';
    return `<span class="ti"><span class="ts">${t.symbol}</span><span class="tp ${u?'up':'dn'}">${Number(t.price).toFixed(2)}</span><span class="tc ${u?'up':'dn'}">${u?'▲':'▼'}${Math.abs(t.change||0).toFixed(2)}</span>${t.unit?`<span class="tu">${t.unit}</span>`:''}${liveTag}</span>`;
@@ -3889,8 +3890,8 @@ if(document.readyState==='loading'){
  requestAnimationFrame(boot);
 }
 
-// Refresh intervals — ticker every 15min, OSINT every 5min, ACLED every 6h
-setInterval(loadTicker, 15 * 60 * 1000);
+// Refresh intervals — ticker every 8h, OSINT every 5min, ACLED every 6h
+setInterval(loadTicker, 8 * 60 * 60 * 1000);
 setInterval(loadSports,  5 * 60 * 1000);
 setInterval(loadOSINT,   5 * 60 * 1000);
 setInterval(loadACLED,   6 * 60 * 60 * 1000);

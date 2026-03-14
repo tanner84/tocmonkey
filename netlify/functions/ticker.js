@@ -5,11 +5,11 @@
 //   Metals + FX:     metals-api.com free tier (env: METALS_API_KEY)
 //   Defense ETF:     Alpha Vantage free tier (env: ALPHAVANTAGE_KEY)
 //   Natural Gas:     EIA.gov
-// Cached 15 minutes — free tier rate limits
+// Cached 8 hours — 3x daily refresh
 // ─────────────────────────────────────────────────────────────────────────────
 
 let cache = null, cacheTime = 0;
-const TTL = 15 * 60 * 1000;
+const TTL = 8 * 60 * 60 * 1000;
 
 // EIA series IDs
 const EIA_SERIES = {
@@ -80,7 +80,7 @@ const FALLBACK = [
 
 exports.handler = async function() {
   if (cache && Date.now() - cacheTime < TTL) {
-    return { statusCode:200, headers:{"Content-Type":"application/json","Cache-Control":"public,max-age=900"}, body:JSON.stringify(cache) };
+    return { statusCode:200, headers:{"Content-Type":"application/json","Cache-Control":"public,max-age=28800"}, body:JSON.stringify(cache) };
   }
 
   const result = [...FALLBACK.map(f => ({ ...f }))]; // start with fallback, patch with live
@@ -176,7 +176,7 @@ exports.handler = async function() {
 
   return {
     statusCode: 200,
-    headers: { "Content-Type":"application/json", "Cache-Control":"public,max-age=900" },
+    headers: { "Content-Type":"application/json", "Cache-Control":"public,max-age=28800" },
     body: JSON.stringify(result),
   };
 };
