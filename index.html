@@ -2949,7 +2949,7 @@ setTimeout(()=>map.invalidateSize(),50);
 setTimeout(()=>map.invalidateSize(),300);
 setTimeout(()=>map.invalidateSize(),1000);
 window.addEventListener('resize',()=>map.invalidateSize());
-const mg=L.layerGroup().addTo(map), rg=L.layerGroup().addTo(map), cg=L.layerGroup().addTo(map), sg=L.layerGroup().addTo(map);
+const mg=L.layerGroup().addTo(map), rg=L.layerGroup().addTo(map), cg=L.layerGroup().addTo(map), sg=L.layerGroup().addTo(map), nkRg=L.layerGroup().addTo(map);
 function iCol(i){return i==='HIGH'?'#f87171':i==='MED'?'#fbbf24':'#34d399'}
 
 // ── COCOM BOUNDARY POLYGONS (approximate / open-source) ──────────────
@@ -2998,12 +2998,48 @@ function toggleBounds(){
   drawCocomBounds();
 }
 
+// ── DPRK Missile Range Rings (auto-show on INDOPACOM) ────────────────────────
+const NK_ORIGIN=[39.02,125.75]; // Pyongyang
+const NK_RINGS=[
+ {km:500,  label:"SRBM · KN-23 / Hwasong-6",  color:"#fbbf24", dash:"8,6"},
+ {km:1300, label:"MRBM · Hwasong-7 / KN-15",  color:"#fb923c", dash:"8,6"},
+ {km:3500, label:"IRBM · Hwasong-12 (Guam)",  color:"#f87171", dash:"8,6"},
+ {km:13000,label:"ICBM · Hwasong-17/18 (CONUS reach)", color:"#c084fc", dash:"4,6"},
+];
+function drawNKRings(){
+ nkRg.clearLayers();
+ if(AC.id!=='indopacom')return;
+ NK_RINGS.forEach(r=>{
+  L.circle(NK_ORIGIN,{
+   radius:r.km*1000,
+   color:r.color,fillOpacity:.03,
+   weight:1.2,dashArray:r.dash,
+   opacity:.65,interactive:false
+  }).addTo(nkRg);
+  // label marker at top of ring
+  const labelLat=NK_ORIGIN[0]+(r.km/111);
+  const labelIcon=L.divIcon({className:'',html:
+   `<div style="white-space:nowrap;font-family:monospace;font-size:8px;color:${r.color};background:rgba(10,18,10,.75);padding:1px 4px;border-left:2px solid ${r.color};letter-spacing:.5px">${r.label}</div>`,
+   iconAnchor:[0,8]
+  });
+  L.marker([Math.min(labelLat,78),NK_ORIGIN[1]+0.5],{icon:labelIcon,interactive:false,keyboard:false}).addTo(nkRg);
+ });
+ // Origin dot — Pyongyang
+ const orig=L.divIcon({className:'',html:
+  `<div style="width:8px;height:8px;border-radius:50%;background:#c084fc;box-shadow:0 0 10px #c084fc;border:1px solid #fff"></div>`,
+  iconSize:[8,8],iconAnchor:[4,4]
+ });
+ L.marker(NK_ORIGIN,{icon:orig,interactive:false}).addTo(nkRg)
+  .bindTooltip('<b style="color:#c084fc">DPRK · Pyongyang</b><br><span style="color:#9ab89a;font-size:9px">Missile launch origin</span>',{permanent:false,direction:'right'});
+}
+
 function updateMap(){
  mg.clearLayers();rg.clearLayers();
  document.getElementById('maptitle').textContent=AC.id+' — '+AC.full;
  document.getElementById('mapsub').textContent=AC.zones.length+' ZONES';
  map.flyTo(AC.center,AC.zoom,{duration:1.0});
  drawCocomBounds();
+ drawNKRings();
  AC.zones.forEach(z=>{
   const col=iCol(z.intensity);
   const icon=L.divIcon({className:'',html:`<div style="width:12px;height:12px;border-radius:50%;background:${col};box-shadow:0 0 9px ${col}"></div>`,iconSize:[12,12],iconAnchor:[6,6]});
