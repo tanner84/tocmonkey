@@ -2527,6 +2527,141 @@ function wtfEsc(e){ if(e.key==='Escape') closeWTF(); }
 // ═══════════════════════════════════════════════════════════════════
 // SIGACTS — Significant Actions, last 90 days, open source
 // ═══════════════════════════════════════════════════════════════════
+
+// Source name → canonical URL mapping for hyperlinked src fields
+const SIGACT_SRC_URLS={
+ "ISW":                   "https://www.understandingwar.org/backgrounders/ukraine-conflict-updates",
+ "DeepState":             "https://deepstatemap.live",
+ "Bellingcat":            "https://www.bellingcat.com",
+ "OCCRP":                 "https://occrp.org/en/investigations",
+ "InSight Crime":         "https://insightcrime.org/news/",
+ "ACLED":                 "https://acleddata.com/curated-data-files/",
+ "Long War Journal":      "https://www.longwarjournal.org",
+ "38 North":              "https://www.38north.org",
+ "AMTI CSIS":             "https://amti.csis.org/incident-tracker/",
+ "CSIS AMS":              "https://amti.csis.org/incident-tracker/",
+ "USNI News":             "https://news.usni.org",
+ "Crisis Group":          "https://www.crisisgroup.org/latest-updates",
+ "International Crisis Group": "https://www.crisisgroup.org/latest-updates",
+ "HRW":                   "https://www.hrw.org/news",
+ "Human Rights Watch":    "https://www.hrw.org/news",
+ "Reuters":               "https://www.reuters.com/world/",
+ "AP":                    "https://apnews.com",
+ "AFP":                   "https://www.afp.com/en/news-hub",
+ "Al Jazeera":            "https://www.aljazeera.com/news/",
+ "BBC":                   "https://www.bbc.com/news/world",
+ "Le Monde":              "https://www.lemonde.fr/en/",
+ "El País":               "https://english.elpais.com",
+ "Radio Free Asia":       "https://www.rfa.org",
+ "Kyiv Independent":      "https://kyivindependent.com",
+ "Tolo News":             "https://tolonews.com",
+ "Khaama Press":          "https://www.khaama.com",
+ "Myanmar Now":           "https://myanmar-now.org/en/news/",
+ "Sudan War Monitor":     "https://sudanwarmonitor.com",
+ "IAEA":                  "https://www.iaea.org/newscenter/news",
+ "Europol":               "https://www.europol.europa.eu/newsroom/news",
+ "CERT-EU":               "https://cert.europa.eu/publications/threat-intelligence",
+ "CERT Polska":           "https://cert.pl/en/posts/",
+ "Recorded Future":       "https://www.recordedfuture.com/research",
+ "EPPO":                  "https://www.eppo.europa.eu/en/media/press-releases",
+ "OLAF":                  "https://anti-fraud.ec.europa.eu/media-corner/news_en",
+ "FATF":                  "https://www.fatf-gafi.org/en/publications.html",
+ "ECB":                   "https://www.ecb.europa.eu/press/govcdec/mopo/html/index.en.html",
+ "UK NCA":                "https://www.nationalcrimeagency.gov.uk/news",
+ "OFSI":                  "https://www.gov.uk/government/organisations/office-of-financial-sanctions-implementation",
+ "DIICOT Romania":        "https://www.diicot.ro",
+ "Dutch FIOD":            "https://www.fiod.nl/press-releases/",
+ "FinCEN":                "https://www.fincen.gov/news",
+ "CENTCOM PAO":           "https://www.centcom.mil/MEDIA/NEWS-ARTICLES/",
+ "CENTCOM":               "https://www.centcom.mil/MEDIA/NEWS-ARTICLES/",
+ "NAVCENT":               "https://www.navcent.navy.mil/News/",
+ "OIR":                   "https://www.inherentresolve.mil/News/",
+ "AFRICOM PAO":           "https://www.africom.mil/media-room/press-release",
+ "AFRICOM":               "https://www.africom.mil/media-room/press-release",
+ "INDOPACOM":             "https://www.pacom.mil/Media/News/",
+ "USINDOPACOM PAO":       "https://www.pacom.mil/Media/News/",
+ "USAF PACAF":            "https://www.pacaf.af.mil/News/",
+ "NORAD PAO":             "https://www.norad.mil/Newsroom/Press-Releases/",
+ "NORAD":                 "https://www.norad.mil/Newsroom/Press-Releases/",
+ "Space Force":           "https://www.spaceforce.mil/News/",
+ "NORTHCOM":              "https://www.northcom.mil/Newsroom/News-Articles/",
+ "NATO SHAPE":            "https://shape.nato.int/news-and-articles",
+ "NATO MARCOM":           "https://mc.nato.int/media-centre/news",
+ "IDF":                   "https://www.idf.il/en/mini-sites/wars-and-operations/",
+ "IDF Spokesperson":      "https://www.idf.il/en/mini-sites/wars-and-operations/",
+ "ISPR":                  "https://ispr.gov.pk/front/main.asp",
+ "USCG":                  "https://www.news.uscg.mil/Press-Releases/",
+ "JIATF-South":           "https://www.jiatfs.southcom.mil",
+ "CBP":                   "https://www.cbp.gov/newsroom",
+ "DEA":                   "https://www.dea.gov/press-releases",
+ "FBI":                   "https://www.fbi.gov/news/press-releases",
+ "CISA":                  "https://www.cisa.gov/news-events/alerts",
+ "DoD PAO":               "https://www.defense.gov/News/Releases/",
+ "RCMP":                  "https://www.rcmp-grc.gc.ca/en/news",
+ "ROK JCS":               "https://www.jcs.mil.kr/mbshome/mbs/eng/index.do",
+ "USFK PAO":              "https://www.usfk.mil/Media/Press-Releases/",
+ "UN OCHA":               "https://www.unocha.org/news",
+ "UN UNAMA":              "https://unama.unmissions.org/",
+ "UN UNMISS":             "https://unmiss.unmissions.org/",
+ "UN MONUSCO":            "https://monusco.unmissions.org/en/news",
+ "OHCHR":                 "https://www.ohchr.org/en/news",
+ "UN BINUH":              "https://binuh.unmissions.org/en/news",
+ "WFP":                   "https://www.wfp.org/news",
+ "IOM":                   "https://www.iom.int/news",
+ "UNRWA":                 "https://www.unrwa.org/newsroom",
+ "MarineTraffic":         "https://www.marinetraffic.com/blog/",
+ "IMB":                   "https://www.icc-ccs.org/piracy-reporting-centre",
+ "Haaretz":               "https://www.haaretz.com",
+ "Dawn News":             "https://www.dawn.com",
+ "Hindustan Times":       "https://www.hindustantimes.com",
+ "Times of India":        "https://timesofindia.indiatimes.com",
+ "The Hindu":             "https://www.thehindu.com",
+ "Radio Tamazuj":         "https://radiotamazuj.org",
+ "Ethiopia Insight":      "https://www.ethiopiainsight.com",
+ "EurActiv":              "https://www.euractiv.com",
+ "Balkan Insight":        "https://balkaninsight.com/investigations/",
+ "Politico EU":           "https://www.politico.eu",
+ "EUobserver":            "https://euobserver.com",
+ "Defense One":           "https://www.defenseone.com",
+ "Breaking Defense":      "https://breakingdefense.com",
+ "Aviation Week":         "https://aviationweek.com/defense-space",
+ "IISS":                  "https://www.iiss.org/publications",
+ "Jane's":                "https://www.janes.com",
+ "CBC":                   "https://www.cbc.ca/news",
+ "Air Force Magazine":    "https://www.airforcemag.com",
+ "Philippine Star":       "https://www.philstar.com/headlines/nation",
+ "Kyodo News":            "https://english.kyodonews.net",
+ "Arab News":             "https://www.arabnews.com",
+ "Kurdistan 24":          "https://www.kurdistan24.net/en",
+ "InSight Crime":         "https://insightcrime.org/news/",
+ "Colombia Reports":      "https://colombiareports.com",
+ "Milenio":               "https://www.milenio.com",
+ "El Colombiano":         "https://www.elcolombiano.com",
+ "El Universo":           "https://www.eluniverso.com",
+ "Biobío Chile":          "https://www.biobiochile.cl",
+ "Planet Labs":           "https://www.planet.com/pulse/",
+ "Chainalysis":           "https://www.chainalysis.com/blog/",
+ "Microsoft MSTIC":       "https://www.microsoft.com/en-us/security/blog/",
+};
+
+// Convert a src string like "ISW / Ukrainian MoD / Bellingcat" into linked HTML
+function linkSrc(src,dark){
+ if(!src)return '';
+ const bg=dark?'rgba(0,0,0,0)':'';
+ return src.split(' / ').map(token=>{
+  const trimmed=token.trim();
+  // find best match: prefer longest key that is substring of token
+  let best=null,bestLen=0;
+  for(const key of Object.keys(SIGACT_SRC_URLS)){
+   if(trimmed.toLowerCase().includes(key.toLowerCase())&&key.length>bestLen){best=key;bestLen=key.length;}
+  }
+  if(best){
+   return `<a href="${SIGACT_SRC_URLS[best]}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:#4ade80;text-decoration:underline;text-underline-offset:2px">${trimmed}</a>`;
+  }
+  return `<span>${trimmed}</span>`;
+ }).join(' <span style="opacity:.5">/</span> ');
+}
+
 const SIGACTS_DATA=[
  // ── EUCOM ──
  {date:"2026-03-12",type:"Kinetic",loc:"Zaporizhzhia Oblast, Ukraine",lat:47.5,lng:35.1,cocom:"EUCOM",summary:"Russian glide bomb (FAB-500 with UMPK) strikes residential district; 4 killed, 11 injured. Ukrainian air defense partially effective.",src:"ISW / Ukrainian MoD"},
@@ -2762,7 +2897,7 @@ function renderSigacts(id){
     <div class="sigmeta"><span class="sigdate">${s.date}</span><span class="sigtype" style="background:${col}22;color:${col}">${s.type.toUpperCase()}</span></div>
     <div class="sigloc">${s.loc}</div>
     <div class="sigsummary">${s.summary}</div>
-    ${s.src?`<div class="sigsrc">SRC: ${s.src}</div>`:''}
+    ${s.src?`<div class="sigsrc">SRC: ${linkSrc(s.src)}</div>`:''}
    </div>
   </div>`;
  }).join('');
@@ -2791,8 +2926,8 @@ function selectSigact(i){
   <div style="color:${col};font-size:9px;font-weight:bold;letter-spacing:1px;margin-bottom:4px">${s.type.toUpperCase()} &nbsp;·&nbsp; ${s.date}</div>
   <div style="font-size:11px;font-weight:bold;color:#e2f0e2;margin-bottom:5px">${s.loc}</div>
   <div style="font-size:9px;color:#9ab89a;line-height:1.6">${s.summary}</div>
-  ${s.src?`<div style="font-size:8px;color:#5a7a5a;margin-top:5px;letter-spacing:.5px">SRC: ${s.src}</div>`:''}
- </div>`,{maxWidth:280}).openPopup();
+  ${s.src?`<div style="font-size:8px;color:#5a7a5a;margin-top:5px;letter-spacing:.5px">SRC: ${linkSrc(s.src)}</div>`:''}
+ </div>`,{maxWidth:300}).openPopup();
 }
 
 function switchCocom(id){
