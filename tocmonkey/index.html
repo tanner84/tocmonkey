@@ -2726,11 +2726,28 @@ const SIGACTS_TYPE_COLOR={
 };
 
 let _sigItems=[];
+let _sigScrollTimer=null;
+
+function startSigScroll(){
+ const el=document.getElementById('sigactslist');
+ if(!el)return;
+ if(_sigScrollTimer)clearInterval(_sigScrollTimer);
+ el.scrollTop=0;
+ let paused=false;
+ el.onmouseenter=()=>paused=true;
+ el.onmouseleave=()=>paused=false;
+ _sigScrollTimer=setInterval(()=>{
+  if(paused)return;
+  el.scrollTop+=1;
+  if(el.scrollTop+el.clientHeight>=el.scrollHeight-2)el.scrollTop=0;
+ },40);
+}
 
 function renderSigacts(id){
  const el=document.getElementById('sigactslist');
  if(!el)return;
  sg.clearLayers();
+ if(_sigScrollTimer){clearInterval(_sigScrollTimer);_sigScrollTimer=null;}
  const cutoff=new Date(Date.now()-90*24*60*60*1000);
  _sigItems=SIGACTS_DATA.filter(s=>(s.cocom===id||s.cocom==='ALL')&&new Date(s.date)>=cutoff)
   .sort((a,b)=>new Date(b.date)-new Date(a.date));
@@ -2749,6 +2766,7 @@ function renderSigacts(id){
    </div>
   </div>`;
  }).join('');
+ startSigScroll();
 }
 
 function selectSigact(i){
