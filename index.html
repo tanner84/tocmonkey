@@ -3215,35 +3215,46 @@ const SY_SNA=[
 ];
 
 // ── SUDAN ── (SAF vs RSF civil war; as of 2026-03-14)
-// RSF — Darfur (all 5 states), N Kordofan, most of Khartoum/Gezira
+// Sudan bounding: N=22°N (Egypt/Libya), S≈10-11°N (South Sudan border),
+//                W=22°E (Chad/Libya), E=38.5°E (Eritrea/Red Sea)
+//
+// RSF — Darfur (all 5 states) + N.Kordofan + most of Khartoum/Gezira
 const SD_RSF=[
- // North border (Libya/Chad/Egypt) W→E to RSF eastern limit
- [22.0,22.0],[22.0,24.0],[22.0,26.0],[22.0,28.0],[22.0,30.0],
- // Eastern RSF limit going south (roughly)
- [20.5,30.2],[19.0,30.5],[17.5,31.2],[16.0,31.5],
- [15.0,32.2],[14.0,32.5],[13.0,32.2],[12.0,31.8],
- [11.0,31.0],[10.2,30.0],[9.5,29.0],[9.0,28.0],
- [8.5,27.0],[8.5,25.5],[8.5,24.0],[9.0,23.0],
- [10.5,22.5],[12.0,22.2],[14.0,22.0],[16.0,22.0],
- [18.0,22.0],[20.0,22.0],[22.0,22.0],
+ // Libya/Egypt border W→E (north edge)
+ [22.0,22.0],[22.0,23.5],[22.0,25.0],[22.0,27.0],[22.0,29.5],
+ // Eastern RSF limit — runs S through N.Kordofan toward Khartoum
+ [20.0,30.0],[18.5,30.2],[17.0,30.8],[16.0,31.2],[15.2,31.8],
+ [14.8,32.0],[14.2,32.3],
+ // Khartoum/Gezira RSF limit (hand-off to contested)
+ [13.5,32.0],[12.8,31.6],[12.0,31.2],[11.2,30.5],[10.8,29.8],
+ // Sudan-South Sudan border W (clipped at ~10.5°N)
+ [10.5,28.5],[10.2,27.0],[10.3,25.5],[10.5,24.0],[10.5,22.5],
+ // West border (Chad) going N
+ [11.5,22.2],[13.0,22.0],[15.0,22.0],[17.0,22.0],[19.0,22.0],[22.0,22.0],
 ];
-// SAF — east Sudan (Red Sea, Kassala, Gedaref, River Nile, Northern state)
+// SAF — east Sudan: Red Sea state, Kassala, Gedaref, River Nile, Northern
 const SD_SAF=[
- // From RSF eastern limit → Red Sea coast
- [22.0,30.5],[22.0,32.0],[22.0,34.0],[22.0,36.0],[22.0,38.5],
- // Red Sea/Ethiopia border S
- [20.0,38.5],[18.0,38.5],[16.0,38.0],[14.5,37.5],
- [13.0,36.5],[12.0,36.0],[11.5,35.5],[11.5,34.5],
- [12.0,33.8],[13.0,33.2],[14.0,33.0],[15.0,32.5],
- [16.0,32.0],[17.5,31.5],[19.0,31.0],[20.5,30.5],[22.0,30.5],
+ // Egypt/Red Sea border top-right (north edge)
+ [22.0,30.0],[22.0,32.0],[22.0,34.5],[22.0,36.5],[22.0,38.5],
+ // Red Sea coast going S → Eritrea border
+ [20.5,38.5],[18.5,38.2],[17.0,38.0],
+ // Ethiopia border going SW (clipped at Sudan-Ethiopia boundary ~14-16°N)
+ [15.5,37.5],[14.0,36.8],[12.8,36.0],[12.0,35.2],
+ // Sudan-South Sudan border E (clipped at ~11-12°N)
+ [11.5,34.5],[11.2,33.5],[11.5,33.0],[12.0,33.0],
+ // SAF/contested boundary going N through Gedaref/Kassala
+ [12.5,33.2],[13.5,33.0],[14.2,32.8],[14.8,32.5],[15.5,32.2],
+ [16.5,31.8],[18.0,31.2],[19.5,30.8],[21.0,30.2],[22.0,30.0],
 ];
-// Contested — Khartoum state, Gezira, White Nile
+// Contested — Khartoum state, Gezira, White Nile corridor (~15°N down to 11°N)
 const SD_CONT=[
- [15.0,32.2],[14.0,32.5],[13.0,32.2],[12.0,31.8],
- [11.0,31.0],[10.2,30.0],[9.5,29.0],[9.0,28.0],
- [9.0,29.5],[9.5,30.5],[10.5,31.2],[11.5,32.0],
- [11.5,33.5],[12.0,33.8],[13.0,33.2],[14.0,33.0],
- [15.0,32.5],[15.0,32.2],
+ // North: Omdurman/Khartoum (~15.7°N)
+ [15.7,32.0],[15.2,31.8],[14.8,32.0],[14.2,32.3],[13.5,32.0],
+ // South along White Nile to South Sudan border
+ [12.8,31.6],[12.0,31.2],[11.2,30.5],[10.8,29.8],[10.5,28.5],
+ // Back up east side
+ [11.2,33.5],[11.5,33.0],[12.0,33.0],[12.5,33.2],[13.5,33.0],
+ [14.2,32.8],[14.8,32.5],[15.5,32.2],[15.7,32.0],
 ];
 
 function mkLabel(html,lat,lng){
