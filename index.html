@@ -3319,10 +3319,10 @@ function toggleCtrl(){ctrlOn=!ctrlOn;drawConflictZones();}
 // ── DPRK Missile Range Rings (auto-show on INDOPACOM) ────────────────────────
 const NK_ORIGIN=[39.02,125.75]; // Pyongyang
 const NK_RINGS=[
- {km:500,  label:"SRBM · KN-23 / Hwasong-6",  color:"#fbbf24", dash:"8,6"},
- {km:1300, label:"MRBM · Hwasong-7 / KN-15",  color:"#fb923c", dash:"8,6"},
- {km:3500, label:"IRBM · Hwasong-12 (Guam)",  color:"#f87171", dash:"8,6"},
- {km:13000,label:"ICBM · Hwasong-17/18 (CONUS reach)", color:"#c084fc", dash:"4,6"},
+ {km:500,  label:"SRBM",  systems:[{name:"KN-23",url:"https://en.wikipedia.org/wiki/KN-23"},{name:"Hwasong-6",url:"https://en.wikipedia.org/wiki/Hwasong-6"}],  color:"#fbbf24", dash:"8,6"},
+ {km:1300, label:"MRBM",  systems:[{name:"Hwasong-7",url:"https://en.wikipedia.org/wiki/Hwasong-7"},{name:"KN-15",url:"https://en.wikipedia.org/wiki/Pukguksong-2"}],  color:"#fb923c", dash:"8,6"},
+ {km:3500, label:"IRBM",  systems:[{name:"Hwasong-12",url:"https://en.wikipedia.org/wiki/Hwasong-12"}],  suffix:"(Guam)",  color:"#f87171", dash:"8,6"},
+ {km:13000,label:"ICBM",  systems:[{name:"Hwasong-17",url:"https://en.wikipedia.org/wiki/Hwasong-17"},{name:"Hwasong-18",url:"https://en.wikipedia.org/wiki/Hwasong-18"}],  suffix:"(CONUS reach)",  color:"#c084fc", dash:"4,6"},
 ];
 function drawNKRings(){
  nkRg.clearLayers();
@@ -3334,13 +3334,15 @@ function drawNKRings(){
    weight:1.2,dashArray:r.dash,
    opacity:.65,interactive:false
   }).addTo(nkRg);
-  // label marker at top of ring
+  // label marker at top of ring — clickable Wikipedia links
+  const sysLinks=r.systems.map(s=>`<a href="${s.url}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:${r.color};text-decoration:underline;text-underline-offset:2px">${s.name}</a>`).join('<span style="opacity:.5"> / </span>');
+  const suffix=r.suffix?`<span style="opacity:.65"> ${r.suffix}</span>`:'';
   const labelLat=NK_ORIGIN[0]+(r.km/111);
   const labelIcon=L.divIcon({className:'',html:
-   `<div style="white-space:nowrap;font-family:monospace;font-size:8px;color:${r.color};background:rgba(10,18,10,.75);padding:1px 4px;border-left:2px solid ${r.color};letter-spacing:.5px">${r.label}</div>`,
+   `<div style="white-space:nowrap;font-family:monospace;font-size:8px;color:${r.color};background:rgba(10,18,10,.75);padding:1px 4px;border-left:2px solid ${r.color};letter-spacing:.5px;pointer-events:auto"><span style="opacity:.75">${r.label} · </span>${sysLinks}${suffix}</div>`,
    iconAnchor:[0,8]
   });
-  L.marker([Math.min(labelLat,78),NK_ORIGIN[1]+0.5],{icon:labelIcon,interactive:false,keyboard:false}).addTo(nkRg);
+  L.marker([Math.min(labelLat,78),NK_ORIGIN[1]+0.5],{icon:labelIcon,interactive:true,keyboard:false}).addTo(nkRg);
  });
  // Origin dot — Pyongyang
  const orig=L.divIcon({className:'',html:
