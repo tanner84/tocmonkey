@@ -3105,56 +3105,32 @@ function drawUkraineFront(){
  btn.classList.toggle('on',ukFrontOn);
  if(!ukFrontOn)return;
 
- // Russian-controlled fill
- L.polygon(RU_POLY,{
-  color:'#ef4444',fillColor:'#ef4444',
-  fillOpacity:.18,weight:0,interactive:false
- }).addTo(ukFl);
-
- // Crimea fill (slightly different shade — longer occupation)
- L.polygon(CRIMEA_POLY,{
-  color:'#dc2626',fillColor:'#b91c1c',
-  fillOpacity:.22,weight:0,interactive:false
- }).addTo(ukFl);
-
- // Front line
+ // Front line (no polygon fills — labels carry zone info)
  L.polyline(UK_FRONT,{
   color:'#f97316',weight:2.5,opacity:.9,
   dashArray:'6,4',interactive:false
  }).addTo(ukFl);
 
- // Pulsing front line glow (thicker, transparent)
+ // Pulsing front line glow
  L.polyline(UK_FRONT,{
   color:'#f97316',weight:7,opacity:.12,interactive:false
  }).addTo(ukFl);
 
- // "RUSSIAN CONTROL" label — placed in occupied Donetsk
- const ruIcon=L.divIcon({className:'',html:
-  `<div style="font-family:monospace;font-size:9px;font-weight:bold;color:#fca5a5;background:rgba(10,10,10,.75);padding:2px 6px;border-left:3px solid #ef4444;letter-spacing:1px;white-space:nowrap">RUSSIAN CONTROL</div>`,
-  iconAnchor:[0,8]
- });
- L.marker([48.4,38.8],{icon:ruIcon,interactive:false,keyboard:false}).addTo(ukFl);
-
- // "CRIMEA (OCCUPIED 2014)" label
- const crIcon=L.divIcon({className:'',html:
-  `<div style="font-family:monospace;font-size:8px;color:#fca5a5;background:rgba(10,10,10,.75);padding:2px 5px;border-left:2px solid #b91c1c;letter-spacing:.8px;white-space:nowrap">CRIMEA · OCCUPIED 2014</div>`,
-  iconAnchor:[0,8]
- });
- L.marker([45.0,34.2],{icon:crIcon,interactive:false,keyboard:false}).addTo(ukFl);
-
- // "UKRAINIAN CONTROL" label — placed in western Ukraine
- const uaIcon=L.divIcon({className:'',html:
-  `<div style="font-family:monospace;font-size:9px;font-weight:bold;color:#fde68a;background:rgba(10,10,10,.75);padding:2px 6px;border-left:3px solid #fbbf24;letter-spacing:1px;white-space:nowrap">UKRAINIAN CONTROL</div>`,
-  iconAnchor:[0,8]
- });
- L.marker([49.5,31.5],{icon:uaIcon,interactive:false,keyboard:false}).addTo(ukFl);
-
- // Data source / date label (bottom of front line area)
- const srcIcon=L.divIcon({className:'',html:
-  `<div style="font-family:monospace;font-size:7px;color:#6b7280;background:rgba(10,10,10,.7);padding:1px 5px;letter-spacing:.5px;white-space:nowrap">SRC: ISW / DeepState · ${new Date().toISOString().slice(0,10)}</div>`,
-  iconAnchor:[0,8]
- });
- L.marker([46.2,35.5],{icon:srcIcon,interactive:false,keyboard:false}).addTo(ukFl);
+ // Faction cards
+ mkLabel(`<div style="font-family:monospace;background:rgba(10,10,10,.88);border-left:3px solid #ef4444;padding:3px 7px;white-space:nowrap">
+  <div style="font-size:9px;font-weight:bold;color:#fca5a5;letter-spacing:1px">RUSSIAN CONTROL</div>
+  <div style="font-size:7px;color:#6b7280;margin-top:1px;letter-spacing:.5px">Donetsk · Luhansk · Zaporizhzhia (partial) · Kherson (partial)</div>
+  <div style="font-size:7px;color:#6b7280;letter-spacing:.5px">~18% of Ukraine pre-2022 territory</div>
+ </div>`,48.4,37.8).addTo(ukFl);
+ mkLabel(`<div style="font-family:monospace;background:rgba(10,10,10,.88);border-left:3px solid #b91c1c;padding:3px 7px;white-space:nowrap">
+  <div style="font-size:9px;font-weight:bold;color:#fca5a5;letter-spacing:1px">CRIMEA · OCCUPIED 2014</div>
+  <div style="font-size:7px;color:#6b7280;margin-top:1px;letter-spacing:.5px">Annexed Feb 2014 · Sevastopol — Black Sea Fleet HQ</div>
+ </div>`,45.0,33.5).addTo(ukFl);
+ mkLabel(`<div style="font-family:monospace;background:rgba(10,10,10,.88);border-left:3px solid #fbbf24;padding:3px 7px;white-space:nowrap">
+  <div style="font-size:9px;font-weight:bold;color:#fde68a;letter-spacing:1px">UKRAINIAN CONTROL</div>
+  <div style="font-size:7px;color:#6b7280;margin-top:1px;letter-spacing:.5px">Kyiv · Odesa · Kharkiv · ~82% of pre-2022 territory</div>
+ </div>`,50.0,30.5).addTo(ukFl);
+ mkLabel(`<div style="font-family:monospace;font-size:7px;color:#6b7280;background:rgba(10,10,10,.7);padding:1px 5px;letter-spacing:.5px;white-space:nowrap">SRC: ISW / DeepState · ${new Date().toISOString().slice(0,10)}</div>`,46.2,35.5).addTo(ukFl);
 }
 
 function toggleFront(){ukFrontOn=!ukFrontOn;drawUkraineFront();}
@@ -3278,32 +3254,32 @@ function drawConflictZones(){
  if(!ctrlOn)return;
 
  if(AC.id==='CENTCOM'){
-  // Syria fills
-  L.polygon(SY_HTS,{fillColor:'#4d7c0f',fillOpacity:.22,weight:0,interactive:false}).addTo(conflLg);
-  L.polygon(SY_SDF,{fillColor:'#b45309',fillOpacity:.25,weight:0,interactive:false}).addTo(conflLg);
-  L.polygon(SY_SNA,{fillColor:'#0e7490',fillOpacity:.28,weight:0,interactive:false}).addTo(conflLg);
-  // Syria front line (HTS/SDF boundary along Euphrates)
+  // Syria front lines (no fills — labels carry the zone info)
   L.polyline([[37.2,38.5],[36.5,38.4],[36.2,38.8],[35.8,39.2],[35.0,40.0],[34.0,40.5],[33.8,41.0]],
    {color:'#f59e0b',weight:1.8,opacity:.7,dashArray:'5,4',interactive:false}).addTo(conflLg);
-  // HTS/SNA boundary
   L.polyline([[37.2,36.0],[36.8,36.0],[36.5,36.2],[36.4,36.8],[36.6,37.2],[36.6,38.0],[36.8,38.5],[37.2,38.5]],
    {color:'#22d3ee',weight:1.5,opacity:.6,dashArray:'4,4',interactive:false}).addTo(conflLg);
-  // Labels
-  mkLabel(`<div style="font-family:monospace;font-size:8px;font-weight:bold;color:#86efac;background:rgba(10,10,10,.8);padding:2px 5px;border-left:3px solid #4d7c0f;letter-spacing:.8px;white-space:nowrap">HTS / NEW SYRIAN GOV</div>`,35.0,36.8).addTo(conflLg);
-  mkLabel(`<div style="font-family:monospace;font-size:8px;font-weight:bold;color:#fcd34d;background:rgba(10,10,10,.8);padding:2px 5px;border-left:3px solid #b45309;letter-spacing:.8px;white-space:nowrap">SDF / AANES (KURDS)</div>`,36.4,40.2).addTo(conflLg);
-  mkLabel(`<div style="font-family:monospace;font-size:8px;color:#67e8f9;background:rgba(10,10,10,.8);padding:2px 5px;border-left:2px solid #0e7490;letter-spacing:.7px;white-space:nowrap">SNA / TURKISH-BACKED</div>`,36.9,37.0).addTo(conflLg);
+  // Syria faction cards
+  mkLabel(`<div style="font-family:monospace;background:rgba(10,10,10,.88);border-left:3px solid #4d7c0f;padding:3px 7px;white-space:nowrap">
+   <div style="font-size:9px;font-weight:bold;color:#86efac;letter-spacing:1px">HTS / NEW SYRIAN GOVERNMENT</div>
+   <div style="font-size:7px;color:#6b7280;margin-top:1px;letter-spacing:.5px">NW Syria · Damascus · Aleppo · ~65% territory</div>
+  </div>`,35.2,36.0).addTo(conflLg);
+  mkLabel(`<div style="font-family:monospace;background:rgba(10,10,10,.88);border-left:3px solid #b45309;padding:3px 7px;white-space:nowrap">
+   <div style="font-size:9px;font-weight:bold;color:#fcd34d;letter-spacing:1px">SDF / AANES (KURDS)</div>
+   <div style="font-size:7px;color:#6b7280;margin-top:1px;letter-spacing:.5px">NE Syria · Hasakah · Deir ez-Zor · ~25% territory</div>
+  </div>`,36.5,40.0).addTo(conflLg);
+  mkLabel(`<div style="font-family:monospace;background:rgba(10,10,10,.88);border-left:3px solid #0e7490;padding:3px 7px;white-space:nowrap">
+   <div style="font-size:9px;font-weight:bold;color:#67e8f9;letter-spacing:1px">SNA / TURKISH-BACKED</div>
+   <div style="font-size:7px;color:#6b7280;margin-top:1px;letter-spacing:.5px">N.Syria border strip · Afrin · Ras al-Ayn</div>
+  </div>`,36.9,36.8).addTo(conflLg);
   mkLabel(`<div style="font-family:monospace;font-size:7px;color:#6b7280;background:rgba(10,10,10,.7);padding:1px 4px;letter-spacing:.5px;white-space:nowrap">SRC: SOHR / ISW / ACLED · ${new Date().toISOString().slice(0,10)}</div>`,32.5,36.5).addTo(conflLg);
  }
 
  if(AC.id==='AFRICOM'){
-  // Sudan fills
-  L.polygon(SD_RSF,{fillColor:'#b91c1c',fillOpacity:.22,weight:0,interactive:false}).addTo(conflLg);
-  L.polygon(SD_SAF,{fillColor:'#1d4ed8',fillOpacity:.22,weight:0,interactive:false}).addTo(conflLg);
-  L.polygon(SD_CONT,{fillColor:'#d97706',fillOpacity:.22,weight:0,interactive:false}).addTo(conflLg);
-  // Rough SAF/RSF front line
+  // SAF/RSF front line (no fills — labels carry the zone info)
   L.polyline([[22.0,30.5],[19.0,30.5],[16.0,31.5],[14.5,32.5],[12.5,31.5],[11.0,29.5],[9.0,27.5]],
    {color:'#f97316',weight:2,opacity:.75,dashArray:'6,4',interactive:false}).addTo(conflLg);
-  // El Fasher — besieged SAF/civilian enclave inside RSF territory
+  // El Fasher — besieged enclave
   const elFasherIcon=L.divIcon({className:'',html:
    `<div style="position:relative;width:14px;height:14px">
     <div style="position:absolute;inset:0;border-radius:50%;background:#fbbf24;opacity:.3;animation:sigpulse 1.2s ease-in-out infinite"></div>
@@ -3312,11 +3288,23 @@ function drawConflictZones(){
   L.marker([13.63,25.35],{icon:elFasherIcon})
    .bindTooltip('<b style="color:#fbbf24">EL FASHER — BESIEGED</b><br><span style="font-size:9px;color:#d1d5db">Last SAF-held city in Darfur.<br>Civilian pop: ~1.8M. RSF siege ongoing since May 2024.<br>UN: genocide risk zone.</span>',{direction:'right',offset:[8,0]})
    .addTo(conflLg);
-  // Labels
-  mkLabel(`<div style="font-family:monospace;font-size:8px;font-weight:bold;color:#fca5a5;background:rgba(10,10,10,.8);padding:2px 5px;border-left:3px solid #b91c1c;letter-spacing:.8px;white-space:nowrap">RSF CONTROL</div>`,17.0,25.5).addTo(conflLg);
-  mkLabel(`<div style="font-family:monospace;font-size:8px;font-weight:bold;color:#93c5fd;background:rgba(10,10,10,.8);padding:2px 5px;border-left:3px solid #1d4ed8;letter-spacing:.8px;white-space:nowrap">SAF CONTROL</div>`,18.5,34.5).addTo(conflLg);
-  mkLabel(`<div style="font-family:monospace;font-size:8px;color:#fde68a;background:rgba(10,10,10,.8);padding:2px 5px;border-left:2px solid #d97706;letter-spacing:.7px;white-space:nowrap">CONTESTED</div>`,12.5,30.5).addTo(conflLg);
-  mkLabel(`<div style="font-family:monospace;font-size:7px;color:#6b7280;background:rgba(10,10,10,.7);padding:1px 4px;letter-spacing:.5px;white-space:nowrap">SRC: ACLED / Sudan War Monitor · ${new Date().toISOString().slice(0,10)}</div>`,8.0,30.0).addTo(conflLg);
+  // Sudan faction cards
+  mkLabel(`<div style="font-family:monospace;background:rgba(10,10,10,.88);border-left:3px solid #b91c1c;padding:3px 7px;white-space:nowrap">
+   <div style="font-size:9px;font-weight:bold;color:#fca5a5;letter-spacing:1px">RSF CONTROL</div>
+   <div style="font-size:7px;color:#6b7280;margin-top:1px;letter-spacing:.5px">Darfur (all 5 states) · N.Kordofan · W.Khartoum</div>
+   <div style="font-size:7px;color:#6b7280;letter-spacing:.5px">~75% of Sudan landmass</div>
+  </div>`,17.0,23.5).addTo(conflLg);
+  mkLabel(`<div style="font-family:monospace;background:rgba(10,10,10,.88);border-left:3px solid #1d4ed8;padding:3px 7px;white-space:nowrap">
+   <div style="font-size:9px;font-weight:bold;color:#93c5fd;letter-spacing:1px">SAF CONTROL</div>
+   <div style="font-size:7px;color:#6b7280;margin-top:1px;letter-spacing:.5px">Red Sea State · River Nile · Kassala · Gedaref</div>
+   <div style="font-size:7px;color:#6b7280;letter-spacing:.5px">Port Sudan — wartime capital</div>
+  </div>`,19.5,33.5).addTo(conflLg);
+  mkLabel(`<div style="font-family:monospace;background:rgba(10,10,10,.88);border-left:3px solid #d97706;padding:3px 7px;white-space:nowrap">
+   <div style="font-size:9px;font-weight:bold;color:#fde68a;letter-spacing:1px">CONTESTED</div>
+   <div style="font-size:7px;color:#6b7280;margin-top:1px;letter-spacing:.5px">Khartoum · Omdurman · Gezira · White Nile</div>
+   <div style="font-size:7px;color:#6b7280;letter-spacing:.5px">Active urban combat — population ~10M</div>
+  </div>`,14.8,31.0).addTo(conflLg);
+  mkLabel(`<div style="font-family:monospace;font-size:7px;color:#6b7280;background:rgba(10,10,10,.7);padding:1px 4px;letter-spacing:.5px;white-space:nowrap">SRC: ACLED / Sudan War Monitor · ${new Date().toISOString().slice(0,10)}</div>`,9.5,30.5).addTo(conflLg);
  }
 }
 function toggleCtrl(){ctrlOn=!ctrlOn;drawConflictZones();}
