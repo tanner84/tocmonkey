@@ -3272,7 +3272,61 @@ function drawConflictZones(){
    <div style="font-size:9px;font-weight:bold;color:#67e8f9;letter-spacing:1px">SNA / TURKISH-BACKED</div>
    <div style="font-size:7px;color:#6b7280;margin-top:1px;letter-spacing:.5px">N.Syria border strip · Afrin · Ras al-Ayn</div>
   </div>`,36.9,36.8).addTo(conflLg);
-  mkLabel(`<div style="font-family:monospace;font-size:7px;color:#6b7280;background:rgba(10,10,10,.7);padding:1px 4px;letter-spacing:.5px;white-space:nowrap">SRC: SOHR / ISW / ACLED · ${new Date().toISOString().slice(0,10)}</div>`,32.5,36.5).addTo(conflLg);
+  // ── Gaza Strip ──
+  // Gaza perimeter outline
+  L.polyline([
+   [31.608,34.491],[31.600,34.557],[31.550,34.558],[31.480,34.556],
+   [31.420,34.554],[31.360,34.552],[31.300,34.543],[31.282,34.527],
+   [31.282,34.265],[31.300,34.225],[31.380,34.215],[31.460,34.212],
+   [31.530,34.218],[31.590,34.235],[31.608,34.491],
+  ],{color:'#f87171',weight:1.5,opacity:.85,dashArray:'4,3',interactive:false}).addTo(conflLg);
+  // Netzarim Corridor — IDF E-W cut dividing N.Gaza from S.Gaza
+  L.polyline([
+   [31.500,34.270],[31.498,34.360],[31.496,34.450],[31.495,34.556],
+  ],{color:'#ef4444',weight:2.2,opacity:.9,dashArray:'3,3',interactive:false}).addTo(conflLg);
+  // Gaza faction cards
+  mkLabel(`<div style="font-family:monospace;background:rgba(10,10,10,.88);border-left:3px solid #ef4444;padding:3px 7px;white-space:nowrap">
+   <div style="font-size:9px;font-weight:bold;color:#fca5a5;letter-spacing:1px">IDF — N.GAZA OPERATIONAL CONTROL</div>
+   <div style="font-size:7px;color:#6b7280;margin-top:1px;letter-spacing:.5px">Beit Lahiya · Jabalia · Gaza City — depopulated</div>
+   <div style="font-size:7px;color:#6b7280;letter-spacing:.5px">Netzarim Corridor divides N from S Gaza</div>
+  </div>`,31.55,34.28).addTo(conflLg);
+  mkLabel(`<div style="font-family:monospace;background:rgba(10,10,10,.88);border-left:3px solid #f97316;padding:3px 7px;white-space:nowrap">
+   <div style="font-size:9px;font-weight:bold;color:#fdba74;letter-spacing:1px">IDF OPERATIONS — S.GAZA / RAFAH</div>
+   <div style="font-size:7px;color:#6b7280;margin-top:1px;letter-spacing:.5px">Khan Younis · Rafah · Philadelphi Corridor</div>
+   <div style="font-size:7px;color:#6b7280;letter-spacing:.5px">Hamas tunnel network — active IDF clearing ops</div>
+  </div>`,31.30,34.10).addTo(conflLg);
+  // Key crossing markers
+  const crossingIcon=L.divIcon({className:'',html:`<div style="width:7px;height:7px;border-radius:50%;background:#94a3b8;border:1px solid #fff"></div>`,iconSize:[7,7],iconAnchor:[3,3]});
+  L.marker([31.608,34.491],{icon:crossingIcon}).bindTooltip('<b style="color:#94a3b8">EREZ/KEREM SHALOM CROSSING</b><br><span style="font-size:9px;color:#d1d5db">Primary N.Gaza entry point. IDF-controlled since Oct 2023.<br>Limited humanitarian access — highly restricted.</span>',{direction:'right'}).addTo(conflLg);
+  L.marker([31.282,34.265],{icon:crossingIcon}).bindTooltip('<b style="color:#94a3b8">RAFAH CROSSING</b><br><span style="font-size:9px;color:#d1d5db">Gaza–Egypt border. IDF seized Rafah crossing May 2024.<br>Philadelphi Corridor along Egyptian border — IDF held.</span>',{direction:'right'}).addTo(conflLg);
+
+  // ── Lebanon / Hezbollah ──
+  // Blue Line (UN-established Israel-Lebanon boundary)
+  L.polyline([
+   [33.075,35.104],[33.092,35.175],[33.120,35.270],[33.162,35.352],
+   [33.198,35.440],[33.242,35.520],[33.283,35.580],
+  ],{color:'#60a5fa',weight:1.8,opacity:.75,dashArray:'6,3',interactive:false}).addTo(conflLg);
+  // Litani River (Hezbollah's historical northern operating limit)
+  L.polyline([
+   [33.270,35.115],[33.330,35.230],[33.390,35.365],[33.452,35.498],[33.520,35.645],
+  ],{color:'#f59e0b',weight:1,opacity:.45,dashArray:'8,5',interactive:false}).addTo(conflLg);
+  // Lebanon faction cards
+  mkLabel(`<div style="font-family:monospace;background:rgba(10,10,10,.88);border-left:3px solid #f87171;padding:3px 7px;white-space:nowrap">
+   <div style="font-size:9px;font-weight:bold;color:#fca5a5;letter-spacing:1px">HEZBOLLAH — S.LEBANON</div>
+   <div style="font-size:7px;color:#6b7280;margin-top:1px;letter-spacing:.5px">Ceasefire Nov 2024 · Reconstituting after heavy losses</div>
+   <div style="font-size:7px;color:#6b7280;letter-spacing:.5px">Nasrallah killed Sep 2024 · Leadership degraded</div>
+  </div>`,33.50,35.20).addTo(conflLg);
+  mkLabel(`<div style="font-family:monospace;background:rgba(10,10,10,.88);border-left:3px solid #60a5fa;padding:3px 7px;white-space:nowrap">
+   <div style="font-size:9px;font-weight:bold;color:#93c5fd;letter-spacing:1px">BLUE LINE — UN BOUNDARY</div>
+   <div style="font-size:7px;color:#6b7280;margin-top:1px;letter-spacing:.5px">Israel–Lebanon ceasefire line · UNIFIL presence</div>
+   <div style="font-size:7px;color:#6b7280;letter-spacing:.5px">IDF residual buffer zone in S.Lebanon</div>
+  </div>`,33.12,35.62).addTo(conflLg);
+  // Bint Jbeil — Hezbollah stronghold
+  const hzbIcon=L.divIcon({className:'',html:`<div style="width:7px;height:7px;border-radius:50%;background:#f87171;border:1px solid #fff"></div>`,iconSize:[7,7],iconAnchor:[3,3]});
+  L.marker([33.12,35.43],{icon:hzbIcon}).bindTooltip('<b style="color:#f87171">BINT JBEIL</b><br><span style="font-size:9px;color:#d1d5db">Hezbollah stronghold. Site of intense IDF-Hezbollah combat 2006.<br>Heavily targeted in 2024 campaign.</span>',{direction:'right'}).addTo(conflLg);
+  L.marker([33.55,35.90],{icon:hzbIcon}).bindTooltip('<b style="color:#f87171">BAALBEK</b><br><span style="font-size:9px;color:#d1d5db">Hezbollah political and military heartland — Bekaa Valley.<br>Major weapons depot and command infrastructure. Struck repeatedly 2024.</span>',{direction:'left'}).addTo(conflLg);
+
+  mkLabel(`<div style="font-family:monospace;font-size:7px;color:#6b7280;background:rgba(10,10,10,.7);padding:1px 4px;letter-spacing:.5px;white-space:nowrap">SRC: SOHR / ISW / ACLED / IDF / OCHA · ${new Date().toISOString().slice(0,10)}</div>`,32.5,36.5).addTo(conflLg);
  }
 
  if(AC.id==='AFRICOM'){
