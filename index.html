@@ -423,6 +423,7 @@ html,body{height:100%;background:var(--bg);color:var(--hi);font-family:var(--mon
           <button class="phb" id="boundsbtn" onclick="toggleBounds()">◻ AOR</button>
           <button class="phb on" id="frontbtn" onclick="toggleFront()" style="display:none">⚔ FRONT</button>
           <button class="phb on" id="ctrlbtn" onclick="toggleCtrl()" style="display:none">◈ CTRL</button>
+          <button class="phb on" id="hormuzbn" onclick="toggleHormuz()" style="display:none">⚓ HORMUZ</button>
         </div>
       </div>
       <div id="map"></div>
@@ -2974,7 +2975,7 @@ setTimeout(()=>map.invalidateSize(),50);
 setTimeout(()=>map.invalidateSize(),300);
 setTimeout(()=>map.invalidateSize(),1000);
 window.addEventListener('resize',()=>map.invalidateSize());
-const mg=L.layerGroup().addTo(map), rg=L.layerGroup().addTo(map), cg=L.layerGroup().addTo(map), sg=L.layerGroup().addTo(map), nkRg=L.layerGroup().addTo(map), ukFl=L.layerGroup().addTo(map), conflLg=L.layerGroup().addTo(map);
+const mg=L.layerGroup().addTo(map), rg=L.layerGroup().addTo(map), cg=L.layerGroup().addTo(map), sg=L.layerGroup().addTo(map), nkRg=L.layerGroup().addTo(map), ukFl=L.layerGroup().addTo(map), conflLg=L.layerGroup().addTo(map), hormuzLg=L.layerGroup().addTo(map);
 function iCol(i){return i==='HIGH'?'#f87171':i==='MED'?'#fbbf24':'#34d399'}
 
 // ── COCOM BOUNDARY POLYGONS (approximate / open-source) ──────────────
@@ -3316,6 +3317,91 @@ function drawConflictZones(){
 }
 function toggleCtrl(){ctrlOn=!ctrlOn;drawConflictZones();}
 
+// ── Strait of Hormuz Situational Layer (CENTCOM) ─────────────────────────────
+let hormuzOn=true;
+
+// TSS Traffic Separation Scheme — actual lane alignment through the strait
+// Inbound lane (south / Oman side): NE→NW, vessels entering Persian Gulf
+const HZ_TSS_IN=[
+ [24.15,58.30],[24.50,57.80],[24.90,57.30],[25.30,56.90],[25.72,56.55],[26.07,56.18],
+];
+// Separation zone centerline
+const HZ_TSS_SEP=[
+ [24.35,58.30],[24.70,57.80],[25.10,57.30],[25.50,56.90],[25.90,56.55],[26.25,56.18],
+];
+// Outbound lane (north / Iran side): NW→NE, vessels exiting Persian Gulf
+const HZ_TSS_OUT=[
+ [24.55,58.30],[24.90,57.80],[25.30,57.30],[25.70,56.90],[26.08,56.55],[26.43,56.18],
+];
+
+// Disputed islands — Iranian-controlled since 1971 seizure
+const HZ_ISLANDS=[
+ {pos:[25.87,55.03], name:"ABU MUSA",      color:"#c084fc",
+  tip:"<b style='color:#c084fc'>Abu Musa Island</b><br><span style='font-size:9px;color:#d1d5db'>Claimed by Iran · UAE (Sharjah) sovereignty dispute.<br>IRGC garrison + airstrip. Pop. ~3,000 Iranian settlers.<br>Seized Oct 1971; UAE claim unresolved.</span>"},
+ {pos:[26.26,55.32], name:"GREATER TUNB",  color:"#c084fc",
+  tip:"<b style='color:#c084fc'>Greater Tunb (Jazireh-ye Tonb-e Bozorg)</b><br><span style='font-size:9px;color:#d1d5db'>Claimed by Iran · UAE (Ras al-Khaimah).<br>IRGC garrison. Uninhabited except military.<br>Seized 30 Nov 1971, hours before UAE independence.</span>"},
+ {pos:[26.23,55.15], name:"LESSER TUNB",   color:"#c084fc",
+  tip:"<b style='color:#c084fc'>Lesser Tunb (Jazireh-ye Tonb-e Kuchek)</b><br><span style='font-size:9px;color:#d1d5db'>Claimed by Iran · UAE (Ras al-Khaimah).<br>Uninhabited. Navigational light only. IRGC periodic patrol.<br>Seized simultaneously with Greater Tunb, Nov 1971.</span>"},
+];
+
+// Key strategic population/base markers
+const HZ_POIS=[
+ {pos:[27.18,56.27], name:"BANDAR ABBAS",  size:10, color:"#f87171",
+  tip:"<b style='color:#f87171'>Bandar Abbas</b><br><span style='font-size:9px;color:#d1d5db'>IRGC Navy (IRGC-N) primary HQ &amp; fleet base.<br>Shahid Bahonar Naval Base. ~500k pop.<br>Iran's main chokepoint control node for the strait.</span>"},
+ {pos:[26.78,55.93], name:"QESHM ISLAND", size:8, color:"#fb923c",
+  tip:"<b style='color:#fb923c'>Qeshm Island</b><br><span style='font-size:9px;color:#d1d5db'>IRGC-N forward operating base &amp; speedboat staging.<br>Largest island in Persian Gulf. Dual civilian/military port.<br>Key fast-boat swarm launch point for strait harassment ops.</span>"},
+ {pos:[26.19,56.24], name:"KHASAB",        size:7, color:"#34d399",
+  tip:"<b style='color:#34d399'>Khasab — Musandam, Oman</b><br><span style='font-size:9px;color:#d1d5db'>Royal Navy of Oman (RNO) base. Musandam exclave.<br>NATO/US port access. Controls southern TSS lane approaches.<br>Critical chokepoint for outbound traffic monitoring.</span>"},
+];
+
+function drawHormuz(){
+ hormuzLg.clearLayers();
+ const btn=document.getElementById('hormuzbn');
+ if(AC.id!=='CENTCOM'){btn.style.display='none';return;}
+ btn.style.display='';
+ btn.classList.toggle('on',hormuzOn);
+ if(!hormuzOn)return;
+
+ // ── TSS Lanes ──
+ L.polyline(HZ_TSS_IN, {color:'#e5e7eb',weight:1.5,opacity:.35,dashArray:'6,3',interactive:false}).addTo(hormuzLg);
+ L.polyline(HZ_TSS_SEP,{color:'#6b7280',weight:1,  opacity:.30,dashArray:'3,4',interactive:false}).addTo(hormuzLg);
+ L.polyline(HZ_TSS_OUT,{color:'#e5e7eb',weight:1.5,opacity:.35,dashArray:'6,3',interactive:false}).addTo(hormuzLg);
+ // TSS lane labels
+ mkLabel(`<div style="font-family:monospace;font-size:7px;color:#9ca3af;background:rgba(10,10,10,.75);padding:1px 4px;letter-spacing:.6px;white-space:nowrap">▶ TSS INBOUND</div>`,24.35,58.40).addTo(hormuzLg);
+ mkLabel(`<div style="font-family:monospace;font-size:7px;color:#9ca3af;background:rgba(10,10,10,.75);padding:1px 4px;letter-spacing:.6px;white-space:nowrap">◀ TSS OUTBOUND</div>`,24.65,58.40).addTo(hormuzLg);
+
+ // ── IRGC-N Patrol Zones ──
+ L.circle([27.18,56.27],{radius:130000,color:'#f87171',fillColor:'#f87171',fillOpacity:.06,weight:1,dashArray:'6,5',opacity:.55,interactive:false}).addTo(hormuzLg);
+ L.circle([26.78,55.93],{radius:85000, color:'#fb923c',fillColor:'#fb923c',fillOpacity:.07,weight:1,dashArray:'6,5',opacity:.50,interactive:false}).addTo(hormuzLg);
+ mkLabel(`<div style="font-family:monospace;font-size:7px;color:#fca5a5;background:rgba(10,10,10,.8);padding:1px 4px;border-left:2px solid #f87171;letter-spacing:.6px;white-space:nowrap">IRGC-N PATROL ZONE · BANDAR ABBAS</div>`,28.12,57.20).addTo(hormuzLg);
+ mkLabel(`<div style="font-family:monospace;font-size:7px;color:#fed7aa;background:rgba(10,10,10,.8);padding:1px 4px;border-left:2px solid #fb923c;letter-spacing:.6px;white-space:nowrap">IRGC-N FWD BASE · QESHM</div>`,27.50,55.30).addTo(hormuzLg);
+
+ // ── Houthi Anti-Ship Missile Reach Arc (~800km from Hudaydah) ──
+ L.circle([14.80,42.95],{radius:800000,color:'#f59e0b',fillOpacity:0,weight:1.2,dashArray:'8,6',opacity:.55,interactive:false}).addTo(hormuzLg);
+ mkLabel(`<div style="font-family:monospace;font-size:7px;color:#fcd34d;background:rgba(10,10,10,.8);padding:1px 4px;border-left:2px solid #f59e0b;letter-spacing:.6px;white-space:nowrap">HOUTHI ASCM REACH ~800KM · HUDAYDAH</div>`,21.50,50.50).addTo(hormuzLg);
+
+ // ── Disputed Islands ──
+ HZ_ISLANDS.forEach(isl=>{
+  const icon=L.divIcon({className:'',html:
+   `<div style="width:10px;height:10px;border-radius:50%;background:${isl.color};opacity:.85;border:1px solid #fff;box-shadow:0 0 8px ${isl.color}"></div>`,
+   iconSize:[10,10],iconAnchor:[5,5]});
+  L.marker(isl.pos,{icon}).bindTooltip(isl.tip,{direction:'top',offset:[0,-8],maxWidth:260}).addTo(hormuzLg);
+  mkLabel(`<div style="font-family:monospace;font-size:7px;color:#e9d5ff;background:rgba(10,10,10,.8);padding:1px 4px;border-left:2px solid ${isl.color};letter-spacing:.5px;white-space:nowrap">${isl.name}</div>`,isl.pos[0]-0.15,isl.pos[1]+0.08).addTo(hormuzLg);
+ });
+
+ // ── Strategic POI Markers ──
+ HZ_POIS.forEach(p=>{
+  const icon=L.divIcon({className:'',html:
+   `<div style="width:${p.size}px;height:${p.size}px;border-radius:50%;background:${p.color};box-shadow:0 0 10px ${p.color};border:1px solid #fff"></div>`,
+   iconSize:[p.size,p.size],iconAnchor:[p.size/2,p.size/2]});
+  L.marker(p.pos,{icon}).bindTooltip(p.tip,{direction:'top',offset:[0,-(p.size/2+4)],maxWidth:280}).addTo(hormuzLg);
+ });
+
+ // Source stamp
+ mkLabel(`<div style="font-family:monospace;font-size:7px;color:#6b7280;background:rgba(10,10,10,.7);padding:1px 4px;letter-spacing:.5px;white-space:nowrap">SRC: IMO TSS · UKMTO · ACLED · ${new Date().toISOString().slice(0,10)}</div>`,23.20,57.50).addTo(hormuzLg);
+}
+function toggleHormuz(){hormuzOn=!hormuzOn;drawHormuz();}
+
 // ── DPRK Missile Range Rings (auto-show on INDOPACOM) ────────────────────────
 const NK_ORIGIN=[39.02,125.75]; // Pyongyang
 const NK_RINGS=[
@@ -3362,6 +3448,7 @@ function updateMap(){
  drawNKRings();
  drawUkraineFront();
  drawConflictZones();
+ drawHormuz();
  AC.zones.forEach(z=>{
   const col=iCol(z.intensity);
   const icon=L.divIcon({className:'',html:`<div style="width:12px;height:12px;border-radius:50%;background:${col};box-shadow:0 0 9px ${col}"></div>`,iconSize:[12,12],iconAnchor:[6,6]});
