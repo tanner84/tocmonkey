@@ -380,6 +380,24 @@ html,body{height:100%;background:var(--bg);color:var(--hi);font-family:var(--mon
   .mtab{padding:7px 10px;font-size:8px}
   #mappnl{min-height:180px}
 }
+
+/* ── MONOCHROME THEME ─────────────────────────────────────────────────── */
+body.theme-mono{
+  --bg:#111111;--panel:#1a1a1a;--deep:#0d0d0d;--hover:#222222;--sel:#2a2a2a;
+  --border:#888888;--blt:#333333;
+  --g1:#e8e8e8;--g2:#cccccc;--g3:#aaaaaa;--g4:#888888;
+  --hi:#f0f0f0;--mid:#cccccc;--mute:#999999;--fade:#777777;
+  --red:#ff6b6b;--amber:#ffcc44;--lo:#cccccc;--blue:#88aaff;
+}
+body.theme-mono .leaflet-tile{filter:grayscale(100%) brightness(0.7)!important}
+body.theme-mono .leaflet-tile-pane{filter:grayscale(100%) brightness(0.7)!important}
+body.theme-mono .pdot{background:#e8e8e8;box-shadow:0 0 8px #aaaaaa}
+body.theme-mono .wtf-btn{border-color:#888888;color:#e8e8e8;background:rgba(232,232,232,0.08)}
+body.theme-mono .wtf-btn:hover{background:rgba(232,232,232,0.15);box-shadow:0 0 12px rgba(232,232,232,0.4)}
+body.theme-mono .phb{border-color:#888888!important;color:#e8e8e8!important}
+body.theme-mono .phb.on{background:rgba(232,232,232,0.12)!important;color:#f0f0f0!important}
+body.theme-mono .phb:hover{background:rgba(232,232,232,0.18)!important}
+body.theme-mono .logo-img{filter:grayscale(100%) brightness(1.2)}
 </style>
 </head>
 <body>
@@ -394,6 +412,7 @@ html,body{height:100%;background:var(--bg);color:var(--hi);font-family:var(--mon
       <span class="bsep">|</span>
       <span class="bsub">WHAT'S CHIEF TRACKING?</span>
       <button class="wtf-btn" onclick="openWTF()" title="WTF is this?">WTF IS THIS?</button>
+      <button class="wtf-btn" onclick="document.getElementById('colorwayModal').style.display='flex'" title="Display settings" style="animation:none;margin-left:4px">⚙ DISPLAY</button>
     </div>
     <div id="tkwrap"><div id="tkinner"></div></div>
   <div class="hright">
@@ -4632,9 +4651,50 @@ window.addEventListener('resize', initMob);
 // Wait for DOM + CSS to settle before init
 setTimeout(initMob, 100);
 
+// ── COLORWAY MODAL ────────────────────────────────────────────────────────────
+function applyColorway(choice){
+ localStorage.setItem('tocmonkey_colorway', choice);
+ if(choice==='monochrome'){
+  document.body.classList.add('theme-mono');
+ } else {
+  document.body.classList.remove('theme-mono');
+ }
+ const m=document.getElementById('colorwayModal');
+ if(m) m.style.display='none';
+}
+(function initColorway(){
+ const saved=localStorage.getItem('tocmonkey_colorway');
+ if(saved){
+  applyColorway(saved);
+ } else {
+  const m=document.getElementById('colorwayModal');
+  if(m){m.style.display='flex';}
+ }
+})();
+
 </script>
 
 
+
+<!-- COLORWAY MODAL -->
+<div id="colorwayModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.92);z-index:10000;align-items:center;justify-content:center;">
+  <div style="background:#1a1d1a;border:1px solid #4ade80;border-radius:4px;padding:32px 36px;max-width:440px;width:92%;font-family:'Courier New',monospace;">
+    <div style="font-size:11px;letter-spacing:3px;color:#4ade80;margin-bottom:18px;text-align:center;border-bottom:1px solid #3a4d3a;padding-bottom:12px">── DISPLAY SETTINGS ──</div>
+    <p style="font-size:10px;color:#b8cdb8;line-height:1.7;margin-bottom:6px;letter-spacing:.5px">This site uses a dark green color scheme.</p>
+    <p style="font-size:10px;color:#b8cdb8;line-height:1.7;margin-bottom:22px;letter-spacing:.5px">Some users find green difficult to read.</p>
+    <p style="font-size:9px;color:#7a9e7a;letter-spacing:1.5px;margin-bottom:16px">SELECT A DISPLAY MODE:</p>
+    <div style="display:flex;gap:14px;justify-content:center;">
+      <button onclick="applyColorway('standard')" style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1.5px;padding:10px 18px;background:rgba(74,222,128,0.08);border:1px solid #4ade80;color:#4ade80;cursor:pointer;border-radius:2px;flex:1;text-align:left;line-height:1.6">
+        <div style="font-weight:bold;margin-bottom:3px">[ STANDARD ]</div>
+        <div style="color:#7a9e7a;font-size:8px">Dark green / black (default)</div>
+      </button>
+      <button onclick="applyColorway('monochrome')" style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1.5px;padding:10px 18px;background:rgba(232,232,232,0.06);border:1px solid #888888;color:#e8e8e8;cursor:pointer;border-radius:2px;flex:1;text-align:left;line-height:1.6">
+        <div style="font-weight:bold;margin-bottom:3px">[ HIGH CONTRAST ]</div>
+        <div style="color:#999999;font-size:8px">White / black (monochrome)</div>
+      </button>
+    </div>
+  </div>
+</div>
 
 <!-- WTF MODAL -->
 <div id="wtfmodal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:9999;align-items:center;justify-content:center;" onclick="if(event.target===this)closeWTF()">
