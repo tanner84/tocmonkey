@@ -426,6 +426,7 @@ html,body{height:100%;background:var(--bg);color:var(--hi);font-family:var(--mon
           <button class="phb on" id="frontbtn" onclick="toggleFront()" style="display:none">⚔ FRONT</button>
           <button class="phb on" id="ctrlbtn" onclick="toggleCtrl()" style="display:none">◈ CTRL</button>
           <button class="phb on" id="hormuzbn" onclick="toggleHormuz()" style="display:none">⚓ HORMUZ</button>
+          <button class="phb on" id="terrainbn" onclick="toggleTerrain()" style="display:none">⛰ TERRAIN</button>
         </div>
       </div>
       <div id="map"></div>
@@ -2977,7 +2978,7 @@ setTimeout(()=>map.invalidateSize(),50);
 setTimeout(()=>map.invalidateSize(),300);
 setTimeout(()=>map.invalidateSize(),1000);
 window.addEventListener('resize',()=>map.invalidateSize());
-const mg=L.layerGroup().addTo(map), rg=L.layerGroup().addTo(map), cg=L.layerGroup().addTo(map), sg=L.layerGroup().addTo(map), nkRg=L.layerGroup().addTo(map), ukFl=L.layerGroup().addTo(map), conflLg=L.layerGroup().addTo(map), hormuzLg=L.layerGroup().addTo(map);
+const mg=L.layerGroup().addTo(map), rg=L.layerGroup().addTo(map), cg=L.layerGroup().addTo(map), sg=L.layerGroup().addTo(map), nkRg=L.layerGroup().addTo(map), ukFl=L.layerGroup().addTo(map), conflLg=L.layerGroup().addTo(map), hormuzLg=L.layerGroup().addTo(map), terrainLg=L.layerGroup().addTo(map);
 function iCol(i){return i==='HIGH'?'#f87171':i==='MED'?'#fbbf24':'#34d399'}
 
 // ── COCOM BOUNDARY POLYGONS (approximate / open-source) ──────────────
@@ -3441,6 +3442,91 @@ function drawNKRings(){
   .bindTooltip('<b style="color:#c084fc">DPRK · Pyongyang</b><br><span style="color:#9ab89a;font-size:9px">Missile launch origin</span>',{permanent:false,direction:'right'});
 }
 
+// ── Terrain Photo Markers ─────────────────────────────────────────────────────
+// Images via Wikimedia Commons Special:FilePath — stable redirect regardless of file moves
+let terrainOn=true;
+const TERRAIN_SPOTS=[
+ // ── CENTCOM ──
+ {cocom:'CENTCOM', lat:34.09, lng:71.08, name:"KHYBER PASS",
+  note:"Primary land corridor between Afghanistan and Pakistan. Every regional power projection effort — from Alexander to the British Raj to Soviet/US forces — has been shaped by this pass.",
+  img:"https://commons.wikimedia.org/wiki/Special:FilePath/Khyber_Pass_1.jpg?width=480"},
+ {cocom:'CENTCOM', lat:35.80, lng:71.50, name:"HINDU KUSH",
+  note:"Runs 800km across Afghanistan. Elevations exceed 7,700m. Controls all N–S movement; cave complexes used for insurgent sanctuary throughout the Soviet and post-2001 wars.",
+  img:"https://commons.wikimedia.org/wiki/Special:FilePath/Hindu_Kush_mountains.jpg?width=480"},
+ {cocom:'CENTCOM', lat:33.50, lng:47.00, name:"ZAGROS MOUNTAINS",
+  note:"Iran–Iraq border range up to 4,500m. Restricts armored maneuver to northern and southern corridor approaches; historically defined the operational limits of every Gulf War axis.",
+  img:"https://commons.wikimedia.org/wiki/Special:FilePath/ZagrosMountains.jpg?width=480"},
+ {cocom:'CENTCOM', lat:34.00, lng:70.50, name:"TORA BORA",
+  note:"White Mountains cave complex, Nangarhar. Elevation ~4,000m. Al-Qaeda's last redoubt Dec 2001; bin Laden escaped through these passes into Pakistan.",
+  img:"https://commons.wikimedia.org/wiki/Special:FilePath/Tora_Bora.jpg?width=480"},
+ // ── EUCOM ──
+ {cocom:'EUCOM', lat:43.35, lng:42.44, name:"MT. ELBRUS — CAUCASUS",
+  note:"Highest peak in Europe at 5,642m. The Greater Caucasus range forms the natural barrier between Russia and the South Caucasus states — the strategic rationale for every Georgian and Armenian conflict.",
+  img:"https://commons.wikimedia.org/wiki/Special:FilePath/Mount_Elbrus_South_face.JPG?width=480"},
+ {cocom:'EUCOM', lat:48.40, lng:24.00, name:"CARPATHIAN MOUNTAINS",
+  note:"Ukraine's western terrain anchor. Limits armored approach from the west; key terrain for any NATO reinforcement or Ukrainian defensive depth scenario.",
+  img:"https://commons.wikimedia.org/wiki/Special:FilePath/Carpathians_Ukraine.jpg?width=480"},
+ {cocom:'EUCOM', lat:43.05, lng:41.60, name:"KODORI GORGE — GEORGIA",
+  note:"Upper Abkhazia. Contested gorge between Georgian government and Russian-backed Abkhaz forces. Last Georgian-held position in Abkhazia before 2008 war.",
+  img:"https://commons.wikimedia.org/wiki/Special:FilePath/Kodori_gorge.jpg?width=480"},
+ // ── INDOPACOM ──
+ {cocom:'INDOPACOM', lat:37.95, lng:126.68, name:"KOREAN DMZ",
+  note:"4km demilitarized zone along the 38th parallel — the most heavily fortified border on Earth. Seoul lies within range of ~15,000 DPRK artillery pieces deployed in the mountains to the north.",
+  img:"https://commons.wikimedia.org/wiki/Special:FilePath/Panmunjeom_from_north_side.jpg?width=480"},
+ {cocom:'INDOPACOM', lat:35.88, lng:76.51, name:"KARAKORAM — K2",
+  note:"Pakistan–China border. Siachen Glacier (5,400m) is the world's highest active battlefield — Indian and Pakistani forces have held positions there since 1984.",
+  img:"https://commons.wikimedia.org/wiki/Special:FilePath/K2_2006b.jpg?width=480"},
+ {cocom:'INDOPACOM', lat:27.98, lng:86.92, name:"HIMALAYAS — MOUNT EVEREST REGION",
+  note:"China–Nepal–India border massif. Galwan Valley clash (2020) demonstrated PLA willingness to contest high-altitude terrain. India has accelerated infrastructure build-up to 14,000+ ft.",
+  img:"https://commons.wikimedia.org/wiki/Special:FilePath/Everest_North_Face_toward_Base_Camp_Tibet_Luca_Galuzzi_2006.jpg?width=480"},
+ // ── AFRICOM ──
+ {cocom:'AFRICOM', lat:31.06, lng:-7.91, name:"HIGH ATLAS — MOROCCO",
+  note:"Reaches 4,167m (Jbel Toubkal). Barrier between coastal North Africa and the Sahara. Traditional insurgent transit corridor between Maghreb states and Sahel.",
+  img:"https://commons.wikimedia.org/wiki/Special:FilePath/High_Atlas_mountains.jpg?width=480"},
+ {cocom:'AFRICOM', lat:9.50, lng:39.50, name:"ETHIOPIAN HIGHLANDS",
+  note:"Average elevation ~2,500m — dominant terrain mass of the Horn of Africa. Controls Blue Nile headwaters (Grand Ethiopian Renaissance Dam). Tigray conflict was fought across these ridgelines.",
+  img:"https://commons.wikimedia.org/wiki/Special:FilePath/Ethiopian_highlands.jpg?width=480"},
+ {cocom:'AFRICOM', lat:16.80, lng:7.99, name:"AIR MASSIF — NIGER",
+  note:"Isolated mountain range in northern Niger rising to 2,022m. Persistent Tuareg insurgent sanctuary and JNIM/ISIS-GS operating area; key terrain in the Sahel corridor.",
+  img:"https://commons.wikimedia.org/wiki/Special:FilePath/Air_massif_Niger.jpg?width=480"},
+ // ── NORTHCOM ──
+ {cocom:'NORTHCOM', lat:27.00, lng:-107.50, name:"SIERRA MADRE OCCIDENTAL",
+  note:"Mexico's western backbone. Deep barrancas and remote terrain make this a near-impenetrable cartel stronghold — Sinaloa heartland, Culiacán supply routes, and clandestine lab networks.",
+  img:"https://commons.wikimedia.org/wiki/Special:FilePath/Sierra_Madre_Occidental.jpg?width=480"},
+ // ── SOUTHCOM ──
+ {cocom:'SOUTHCOM', lat:8.10, lng:-77.35, name:"DARIÉN GAP",
+  note:"160km of impenetrable jungle-swamp on the Colombia–Panama border. The only break in the Pan-American Highway. FARC dissident and criminal cartel primary trafficking corridor. No road will ever be built here.",
+  img:"https://commons.wikimedia.org/wiki/Special:FilePath/Darien_gap.jpg?width=480"},
+ {cocom:'SOUTHCOM', lat:-32.65, lng:-70.01, name:"ANDES — PASO LOS LIBERTADORES",
+  note:"Primary Andes crossing between Argentina and Chile (~3,200m). Cocaine transit route from Andean producing regions to Atlantic ports. Historically decisive terrain in Southern Cone military planning.",
+  img:"https://commons.wikimedia.org/wiki/Special:FilePath/Aconcagua_desde_el_norte.JPG?width=480"},
+];
+
+function drawTerrain(){
+ terrainLg.clearLayers();
+ const btn=document.getElementById('terrainbn');
+ const spots=TERRAIN_SPOTS.filter(t=>t.cocom===AC.id);
+ if(!spots.length){btn.style.display='none';return;}
+ btn.style.display='';
+ btn.classList.toggle('on',terrainOn);
+ if(!terrainOn)return;
+ spots.forEach(t=>{
+  const icon=L.divIcon({className:'',html:
+   `<div style="font-size:14px;line-height:1;filter:drop-shadow(0 1px 3px rgba(0,0,0,.9));cursor:pointer;user-select:none">⛰</div>`,
+   iconAnchor:[8,14]});
+  const popup=`<div style="font-family:monospace;width:268px">
+   <div style="font-size:9px;letter-spacing:1.5px;color:#4ade80;margin-bottom:5px;font-weight:bold">${t.name}</div>
+   <img src="${t.img}" alt="${t.name}"
+    style="width:100%;max-height:148px;object-fit:cover;border:1px solid #3a4d3a;border-radius:2px;display:block;background:#1a1d1a"
+    onerror="this.outerHTML='<div style=\\'width:100%;height:60px;border:1px solid #3a4d3a;border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:8px;color:#6b7280;letter-spacing:1px\\'>IMAGE UNAVAILABLE</div>'">
+   <div style="font-size:9px;color:#b8cdb8;margin-top:7px;line-height:1.55">${t.note}</div>
+   <div style="font-size:7px;color:#4a6a4a;margin-top:5px;letter-spacing:.5px">SRC: WIKIMEDIA COMMONS</div>
+  </div>`;
+  L.marker([t.lat,t.lng],{icon}).bindPopup(popup,{maxWidth:290,minWidth:290,className:''}).addTo(terrainLg);
+ });
+}
+function toggleTerrain(){terrainOn=!terrainOn;drawTerrain();}
+
 function updateMap(){
  mg.clearLayers();rg.clearLayers();
  document.getElementById('maptitle').textContent=AC.id+' — '+AC.full;
@@ -3451,6 +3537,7 @@ function updateMap(){
  drawUkraineFront();
  drawConflictZones();
  drawHormuz();
+ drawTerrain();
  AC.zones.forEach(z=>{
   const col=iCol(z.intensity);
   const icon=L.divIcon({className:'',html:`<div style="width:12px;height:12px;border-radius:50%;background:${col};box-shadow:0 0 9px ${col}"></div>`,iconSize:[12,12],iconAnchor:[6,6]});
