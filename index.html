@@ -428,6 +428,7 @@ html,body{height:100%;background:var(--bg);color:var(--hi);font-family:var(--mon
           <button class="phb on" id="hormuzbn" onclick="toggleHormuz()" style="display:none">⚓ HORMUZ</button>
           <button class="phb on" id="terrainbn" onclick="toggleTerrain()" style="display:none">⛰ TERRAIN</button>
           <button class="phb on" id="oilbn" onclick="toggleOilPorts()" style="display:none">🛢 OIL/PORTS</button>
+          <button class="phb on" id="twbn" onclick="toggleTaiwan()" style="display:none">⚡ TW STRAIT</button>
         </div>
       </div>
       <div id="map"></div>
@@ -2979,7 +2980,7 @@ setTimeout(()=>map.invalidateSize(),50);
 setTimeout(()=>map.invalidateSize(),300);
 setTimeout(()=>map.invalidateSize(),1000);
 window.addEventListener('resize',()=>map.invalidateSize());
-const mg=L.layerGroup().addTo(map), rg=L.layerGroup().addTo(map), cg=L.layerGroup().addTo(map), sg=L.layerGroup().addTo(map), nkRg=L.layerGroup().addTo(map), ukFl=L.layerGroup().addTo(map), conflLg=L.layerGroup().addTo(map), hormuzLg=L.layerGroup().addTo(map), terrainLg=L.layerGroup().addTo(map), oilLg=L.layerGroup().addTo(map);
+const mg=L.layerGroup().addTo(map), rg=L.layerGroup().addTo(map), cg=L.layerGroup().addTo(map), sg=L.layerGroup().addTo(map), nkRg=L.layerGroup().addTo(map), ukFl=L.layerGroup().addTo(map), conflLg=L.layerGroup().addTo(map), hormuzLg=L.layerGroup().addTo(map), terrainLg=L.layerGroup().addTo(map), oilLg=L.layerGroup().addTo(map), twLg=L.layerGroup().addTo(map);
 function iCol(i){return i==='HIGH'?'#f87171':i==='MED'?'#fbbf24':'#34d399'}
 
 // ── COCOM BOUNDARY POLYGONS (approximate / open-source) ──────────────
@@ -3705,6 +3706,144 @@ function drawOilPorts(){
 }
 function toggleOilPorts(){oilOn=!oilOn;drawOilPorts();}
 
+// ── Taiwan Strait / INDOPACOM A2AD Layer ─────────────────────────────────────
+let twOn=true;
+
+// Taiwan ADIZ (approximate official boundary)
+const TW_ADIZ=[
+ [32.0,117.5],[32.0,127.5],[27.5,128.8],
+ [22.0,126.5],[22.0,122.0],[24.5,118.5],[28.0,117.5],[32.0,117.5],
+];
+
+// First Island Chain — Kyushu → Ryukyu → Taiwan → Philippines → Borneo
+const FIRST_ISLAND_CHAIN=[
+ [30.5,130.5],[29.0,129.5],[27.0,128.5],[25.5,127.0],
+ [24.5,125.5],[22.5,122.0],[21.0,121.0],[18.5,120.5],
+ [15.0,120.0],[12.0,121.5],[10.0,123.0],[7.0,124.0],
+ [4.5,118.0],[2.0,115.0],
+];
+
+// Taiwan Strait median line (de facto boundary since 1954)
+const TW_MEDIAN=[
+ [27.0,121.5],[26.0,121.2],[25.0,121.0],[24.0,120.8],[23.0,120.5],
+];
+
+// Strategic ports and bases — Wikipedia photo on click
+const TW_PORTS=[
+ // ── ROC / Taiwan ──
+ {lat:22.62,lng:120.27,name:"KAOHSIUNG — ROC MAIN PORT & NAVAL BASE",type:"port",color:"#fbbf24",
+  note:"Taiwan's largest container port and primary ROC Navy fleet base (Zuoying). In any blockade/invasion scenario, Kaohsiung is first PLAN naval interdiction priority. ROC destroyer and submarine tender forces based here.",
+  wiki:"Port_of_Kaohsiung"},
+ {lat:25.13,lng:121.74,name:"KEELUNG — ROC NORTHERN PORT & NAVAL",type:"port",color:"#fbbf24",
+  note:"Northern Taiwan's primary commercial and ROC Navy base. Closest major port to PLAN East Sea Fleet. Key logistics node for any US reinforcement entering Taiwan from the north. ROC frigate and submarine support.",
+  wiki:"Keelung"},
+ // ── PLAN bases ──
+ {lat:29.99,lng:122.21,name:"ZHOUSHAN — PLAN EAST SEA FLEET HQ",type:"base",color:"#f87171",
+  note:"PLA Navy East Sea Fleet headquarters. Primary surface combatant and submarine base for Taiwan Strait operations. PLAN mine warfare and amphibious training units. Carrier Shandong (CV-17) operates from this theater.",
+  wiki:"Zhoushan"},
+ {lat:24.48,lng:118.09,name:"XIAMEN — PLAN AMPHIBIOUS STAGING",type:"base",color:"#f87171",
+  note:"Sits directly opposite Taiwan's Kinmen islands. Primary PLAN amphibious assault staging area. PLA has massively expanded port roll-on/roll-off capacity here since 2015. First-wave assault forces would likely embark here.",
+  wiki:"Xiamen"},
+ {lat:26.07,lng:119.31,name:"FUZHOU — PLAN STAGING / FUJIAN COAST",type:"base",color:"#f87171",
+  note:"Fujian coast staging port opposite northern Taiwan. Closest major PLA naval installation to Taiwan's main island. PLAN surface combatants and coast defense missile units positioned along this coastline.",
+  wiki:"Fuzhou"},
+ {lat:18.25,lng:109.51,name:"SANYA — PLAN NUCLEAR SUBMARINE BASE",type:"base",color:"#f87171",
+  note:"Yulin Naval Base, Hainan Island. China's primary SSBN base — Jin-class submarines (JL-2/JL-3 SLBMs) home-ported in underground pens. Most strategically sensitive PLAN installation. South Sea Fleet HQ.",
+  wiki:"Yulin_Naval_Base"},
+ // ── US / Allied ──
+ {lat:13.44,lng:144.65,name:"APRA HARBOR — GUAM / USN BASE",type:"base",color:"#34d399",
+  note:"Primary USN logistics and strike hub in western Pacific. Within DF-26 range from China. Assessed as PLAN Day-1 strike priority in a Taiwan scenario. Anderson AFB (B-2/B-52 capable) co-located. US accelerating base hardening.",
+  wiki:"Apra_Harbor"},
+ {lat:35.28,lng:139.67,name:"YOKOSUKA — 7TH FLEET FWD HQ",type:"base",color:"#34d399",
+  note:"Home port of USS George Washington (CVN-73). USN 7th Fleet flagship. Loss would eliminate US carrier strike group presence in the western Pacific. Within DF-21D anti-ship range from Chinese mainland.",
+  wiki:"Yokosuka_Naval_Base"},
+ {lat:26.35,lng:127.77,name:"KADENA AB — USAF INDOPACOM HUB",type:"base",color:"#34d399",
+  note:"Largest USAF base in Asia, Okinawa. Primary F-15/ISR hub for Taiwan contingency. Assessed as PLAN Day-1 ballistic missile strike target alongside Guam. Japan's most critical US air installation.",
+  wiki:"Kadena_Air_Base"},
+];
+
+// PLA A2AD missile range rings (centered on Fujian coast)
+const PLA_CTR=[25.0,119.5];
+
+function drawTaiwanStrait(){
+ twLg.clearLayers();
+ const btn=document.getElementById('twbn');
+ if(AC.id!=='INDOPACOM'){btn.style.display='none';return;}
+ btn.style.display='';
+ btn.classList.toggle('on',twOn);
+ if(!twOn)return;
+
+ // ── Taiwan ADIZ ──
+ L.polygon(TW_ADIZ,{fillOpacity:0,color:'#fbbf24',weight:1.2,opacity:.5,dashArray:'8,5',interactive:false}).addTo(twLg);
+ mkLabel(`<div style="font-family:monospace;font-size:7px;color:#fcd34d;background:rgba(10,10,10,.8);padding:1px 5px;border-left:2px solid #fbbf24;letter-spacing:.7px;white-space:nowrap">TAIWAN ADIZ</div>`,32.2,120.0).addTo(twLg);
+
+ // ── First Island Chain ──
+ L.polyline(FIRST_ISLAND_CHAIN,{color:'#60a5fa',weight:1.2,opacity:.4,dashArray:'10,6',interactive:false}).addTo(twLg);
+ mkLabel(`<div style="font-family:monospace;font-size:7px;color:#93c5fd;background:rgba(10,10,10,.8);padding:1px 5px;border-left:2px solid #60a5fa;letter-spacing:.7px;white-space:nowrap">1ST ISLAND CHAIN</div>`,10.0,120.8).addTo(twLg);
+
+ // ── Taiwan Strait median line ──
+ L.polyline(TW_MEDIAN,{color:'#fbbf24',weight:1.3,opacity:.6,dashArray:'5,4',interactive:false}).addTo(twLg);
+ mkLabel(`<div style="font-family:monospace;font-size:7px;color:#fcd34d;background:rgba(10,10,10,.8);padding:1px 4px;letter-spacing:.6px;white-space:nowrap">STRAIT MEDIAN LINE</div>`,25.8,121.8).addTo(twLg);
+
+ // ── PLA A2AD rings ──
+ // J-20 unrefueled combat radius ~1,100km
+ L.circle(PLA_CTR,{radius:1100000,color:'#fb923c',fillOpacity:0,weight:1,dashArray:'4,5',opacity:.5,interactive:false}).addTo(twLg);
+ mkLabel(`<div style="font-family:monospace;font-size:7px;color:#fed7aa;background:rgba(10,10,10,.8);padding:1px 5px;border-left:2px solid #fb923c;letter-spacing:.6px;white-space:nowrap">J-20 COMBAT RADIUS · 1,100KM</div>`,35.5,130.0).addTo(twLg);
+ // DF-21D / DF-17 carrier killer ~1,500km
+ L.circle(PLA_CTR,{radius:1500000,color:'#f87171',fillOpacity:0,weight:1.2,dashArray:'6,5',opacity:.6,interactive:false}).addTo(twLg);
+ mkLabel(`<div style="font-family:monospace;font-size:7px;color:#fca5a5;background:rgba(10,10,10,.8);padding:1px 5px;border-left:2px solid #f87171;letter-spacing:.6px;white-space:nowrap">DF-21D / DF-17 · 1,500KM · CARRIER KILLER</div>`,38.0,133.0).addTo(twLg);
+ // DF-26 IRBM "Guam killer" ~4,000km
+ L.circle(PLA_CTR,{radius:4000000,color:'#c084fc',fillOpacity:0,weight:1,dashArray:'5,6',opacity:.45,interactive:false}).addTo(twLg);
+ mkLabel(`<div style="font-family:monospace;font-size:7px;color:#e9d5ff;background:rgba(10,10,10,.8);padding:1px 5px;border-left:2px solid #c084fc;letter-spacing:.6px;white-space:nowrap">DF-26 IRBM · 4,000KM · GUAM REACH</div>`,52.0,128.0).addTo(twLg);
+
+ // ── Strategic context cards ──
+ mkLabel(`<div style="font-family:monospace;background:rgba(10,10,10,.88);border-left:3px solid #f87171;padding:3px 7px;white-space:nowrap">
+  <div style="font-size:9px;font-weight:bold;color:#fca5a5;letter-spacing:1px">PLAN — EAST SEA FLEET</div>
+  <div style="font-size:7px;color:#6b7280;margin-top:1px;letter-spacing:.5px">Primary Taiwan Strait assault force · Zhoushan HQ</div>
+  <div style="font-size:7px;color:#6b7280;letter-spacing:.5px">CV Shandong + ~50 surface combatants + subs</div>
+ </div>`,29.5,123.0).addTo(twLg);
+ mkLabel(`<div style="font-family:monospace;background:rgba(10,10,10,.88);border-left:3px solid #fbbf24;padding:3px 7px;white-space:nowrap">
+  <div style="font-size:9px;font-weight:bold;color:#fde68a;letter-spacing:1px">ROC TAIWAN — DEFENDED STRAIT</div>
+  <div style="font-size:7px;color:#6b7280;margin-top:1px;letter-spacing:.5px">PLA crossed median line 3,000+ times since 2020</div>
+  <div style="font-size:7px;color:#6b7280;letter-spacing:.5px">ROC armed forces: 170k active · 2.3M reserve</div>
+ </div>`,23.0,122.8).addTo(twLg);
+
+ // ── Port / base markers with Wikipedia photos ──
+ TW_PORTS.forEach(p=>{
+  const icon=L.divIcon({className:'',html:
+   `<div style="font-size:12px;line-height:1;filter:drop-shadow(0 1px 3px rgba(0,0,0,.9));cursor:pointer;user-select:none">${p.type==='base'?'⚓':'🚢'}</div>`,
+   iconAnchor:[6,12]});
+  const imgId='tw-'+Math.random().toString(36).slice(2,8);
+  const popupHtml=`<div style="font-family:monospace;width:268px">
+   <div style="font-size:8px;letter-spacing:1px;color:${p.color};margin-bottom:2px;opacity:.8">${p.type==='base'?'NAVAL / AIR BASE':'STRATEGIC PORT'}</div>
+   <div style="font-size:9px;letter-spacing:1.5px;color:#f0f4f0;margin-bottom:5px;font-weight:bold">${p.name}</div>
+   <div id="${imgId}" style="width:100%;height:80px;border:1px solid #3a4d3a;border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:8px;color:#6b7280;letter-spacing:1px;background:#1a1d1a">LOADING IMAGE…</div>
+   <div style="font-size:9px;color:#b8cdb8;margin-top:7px;line-height:1.55">${p.note}</div>
+   <div style="font-size:7px;color:#4a6a4a;margin-top:5px;letter-spacing:.5px">SRC: WIKIPEDIA / WIKIMEDIA COMMONS</div>
+  </div>`;
+  const marker=L.marker([p.lat,p.lng],{icon});
+  marker.bindPopup(popupHtml,{maxWidth:290,minWidth:290,className:''});
+  marker.on('popupopen',()=>{
+   fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(p.wiki)}`)
+    .then(r=>r.json())
+    .then(d=>{
+     const el=document.getElementById(imgId);
+     if(!el)return;
+     if(d.thumbnail&&d.thumbnail.source){
+      el.outerHTML=`<img src="${d.thumbnail.source}" alt="${p.name}" style="width:100%;max-height:148px;object-fit:cover;border:1px solid #3a4d3a;border-radius:2px;display:block">`;
+     } else {
+      el.textContent='NO IMAGE AVAILABLE';
+     }
+    })
+    .catch(()=>{const el=document.getElementById(imgId);if(el)el.textContent='IMAGE UNAVAILABLE';});
+  });
+  marker.addTo(twLg);
+ });
+
+ mkLabel(`<div style="font-family:monospace;font-size:7px;color:#6b7280;background:rgba(10,10,10,.7);padding:1px 4px;letter-spacing:.5px;white-space:nowrap">SRC: CSIS / DoD China Military Power Report / IISS · ${new Date().toISOString().slice(0,10)}</div>`,8.0,130.0).addTo(twLg);
+}
+function toggleTaiwan(){twOn=!twOn;drawTaiwanStrait();}
+
 function updateMap(){
  mg.clearLayers();rg.clearLayers();
  document.getElementById('maptitle').textContent=AC.id+' — '+AC.full;
@@ -3716,6 +3855,7 @@ function updateMap(){
  drawConflictZones();
  drawHormuz();
  drawOilPorts();
+ drawTaiwanStrait();
  drawTerrain();
  AC.zones.forEach(z=>{
   const col=iCol(z.intensity);
