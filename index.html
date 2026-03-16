@@ -427,6 +427,7 @@ html,body{height:100%;background:var(--bg);color:var(--hi);font-family:var(--mon
           <button class="phb on" id="ctrlbtn" onclick="toggleCtrl()" style="display:none">◈ CTRL</button>
           <button class="phb on" id="hormuzbn" onclick="toggleHormuz()" style="display:none">⚓ HORMUZ</button>
           <button class="phb on" id="terrainbn" onclick="toggleTerrain()" style="display:none">⛰ TERRAIN</button>
+          <button class="phb on" id="oilbn" onclick="toggleOilPorts()" style="display:none">🛢 OIL/PORTS</button>
         </div>
       </div>
       <div id="map"></div>
@@ -2978,7 +2979,7 @@ setTimeout(()=>map.invalidateSize(),50);
 setTimeout(()=>map.invalidateSize(),300);
 setTimeout(()=>map.invalidateSize(),1000);
 window.addEventListener('resize',()=>map.invalidateSize());
-const mg=L.layerGroup().addTo(map), rg=L.layerGroup().addTo(map), cg=L.layerGroup().addTo(map), sg=L.layerGroup().addTo(map), nkRg=L.layerGroup().addTo(map), ukFl=L.layerGroup().addTo(map), conflLg=L.layerGroup().addTo(map), hormuzLg=L.layerGroup().addTo(map), terrainLg=L.layerGroup().addTo(map);
+const mg=L.layerGroup().addTo(map), rg=L.layerGroup().addTo(map), cg=L.layerGroup().addTo(map), sg=L.layerGroup().addTo(map), nkRg=L.layerGroup().addTo(map), ukFl=L.layerGroup().addTo(map), conflLg=L.layerGroup().addTo(map), hormuzLg=L.layerGroup().addTo(map), terrainLg=L.layerGroup().addTo(map), oilLg=L.layerGroup().addTo(map);
 function iCol(i){return i==='HIGH'?'#f87171':i==='MED'?'#fbbf24':'#34d399'}
 
 // ── COCOM BOUNDARY POLYGONS (approximate / open-source) ──────────────
@@ -3573,6 +3574,95 @@ function drawTerrain(){
 }
 function toggleTerrain(){terrainOn=!terrainOn;drawTerrain();}
 
+// ── Gulf Oil Facilities & Strategic Ports ─────────────────────────────────────
+let oilOn=true;
+const OIL_PORTS=[
+ // ── Iran ──
+ {lat:29.24, lng:50.32, name:"KHARG ISLAND — IRAN CRUDE TERMINAL",    type:"oil",
+  note:"Handles ~90% of Iran's crude oil exports (~2M bpd). The single most critical node in Iran's energy economy. A sustained strike here would collapse Iranian oil revenue within weeks. Heavily defended by IRGC-N and air defense systems.",
+  wiki:"Kharg_Island"},
+ {lat:27.83, lng:52.65, name:"ASSALUYEH — SOUTH PARS GAS COMPLEX",    type:"oil",
+  note:"World's largest natural gas field, shared with Qatar's North Dome. Iran's 24 phases here process ~700 mcm/day. Largest petrochemical hub in the Middle East. Strategically irreplaceable — cannot be relocated or rebuilt quickly.",
+  wiki:"South_Pars/North_Dome_gas_condensate_field"},
+ {lat:30.45, lng:49.08, name:"BANDAR IMAM KHOMEINI — PORT",            type:"port",
+  note:"Iran's largest commercial port by cargo volume. Major petrochemical export terminal adjacent to Mahshahr Special Economic Zone. Closest deep-water Iranian port to Iraqi border — IRGC western logistics anchor.",
+  wiki:"Bandar_Imam_Khomeini"},
+ // ── Saudi Arabia ──
+ {lat:26.68, lng:50.17, name:"RAS TANURA — SAUDI ARAMCO TERMINAL",    type:"oil",
+  note:"World's largest offshore oil loading terminal. Processes and exports ~6.5M bpd. A successful attack here would be the single most economically disruptive energy event in modern history. Aramco hardened significantly after the 2019 Abqaiq drone strike.",
+  wiki:"Ras_Tanura"},
+ {lat:26.26, lng:50.61, name:"JUBAIL INDUSTRIAL CITY",                 type:"oil",
+  note:"World's largest industrial city. 100+ major refineries and petrochemical complexes producing ~8% of global petrochemical output. Classified Saudi critical national infrastructure. Key Aramco downstream processing hub.",
+  wiki:"Jubail_Industrial_City"},
+ {lat:21.48, lng:39.19, name:"JEDDAH ISLAMIC PORT",                    type:"port",
+  note:"Saudi Arabia's largest Red Sea port. Critical logistics node for US military resupply and humanitarian operations. Houthi ASCM and drone reach extends to this port — assessed as within threat envelope from Yemen.",
+  wiki:"Jeddah_Islamic_Port"},
+ // ── UAE ──
+ {lat:25.02, lng:55.08, name:"JEBEL ALI PORT — DUBAI",                 type:"port",
+  note:"Largest port in the Middle East — 14M+ TEU/year. Home to the largest US naval installation outside CONUS. USN vessels, logistics, and pre-positioned equipment. Loss would gut US power projection across the entire theater.",
+  wiki:"Jebel_Ali_Port"},
+ {lat:24.11, lng:52.74, name:"RUWAIS — ADNOC REFINERY COMPLEX",        type:"oil",
+  note:"UAE's largest refinery (817,000 bpd). ADNOC's primary crude export terminal for Abu Dhabi production. Within Iranian ballistic missile range; outside most Houthi ASCM envelope. Key NATO/US contractor presence on-site.",
+  wiki:"Ruwais"},
+ // ── Qatar ──
+ {lat:25.90, lng:51.55, name:"RAS LAFFAN — QATAR LNG COMPLEX",         type:"oil",
+  note:"World's largest LNG export facility — Qatar supplies ~25% of global LNG. Sits atop the North Dome, the world's largest single hydrocarbon reservoir. A sustained attack would trigger a global energy crisis within 48 hours.",
+  wiki:"Ras_Laffan_Industrial_City"},
+ // ── Iraq ──
+ {lat:29.68, lng:48.82, name:"BASRA OIL TERMINAL (ABOT)",              type:"oil",
+  note:"Iraq's primary crude export terminal, offshore in the northern Gulf. Handles ~3.5M bpd — 98% of Iraq's oil revenue. ABOT and KAAOT were seized by US Navy SEALs in the opening minutes of OIF 2003 to prevent sabotage.",
+  wiki:"Basra_Oil_Terminal"},
+ {lat:30.03, lng:47.92, name:"UMM QASR PORT — IRAQ",                   type:"port",
+  note:"Iraq's only deep-water port. Seized by UK forces in the opening days of OIF 2003. Critical for humanitarian aid and military resupply. Proximity to Iranian border makes it vulnerable to rocket and militia interdiction.",
+  wiki:"Umm_Qasr"},
+ // ── Kuwait ──
+ {lat:29.07, lng:48.13, name:"MINA AL-AHMADI — KUWAIT OIL TERMINAL",   type:"oil",
+  note:"Kuwait's primary crude export facility. In 1991, retreating Iraqi forces ignited 700+ Kuwaiti oil wells — they burned for 9 months in the largest deliberate environmental catastrophe in history. Terminal was rapidly rebuilt post-liberation.",
+  wiki:"Mina_Al_Ahmadi"},
+];
+
+function drawOilPorts(){
+ oilLg.clearLayers();
+ const btn=document.getElementById('oilbn');
+ if(AC.id!=='CENTCOM'){btn.style.display='none';return;}
+ btn.style.display='';
+ btn.classList.toggle('on',oilOn);
+ if(!oilOn)return;
+ OIL_PORTS.forEach(p=>{
+  const isOil=p.type==='oil';
+  const col=isOil?'#fb923c':'#38bdf8';
+  const icon=L.divIcon({className:'',html:
+   `<div style="font-size:13px;line-height:1;filter:drop-shadow(0 1px 4px rgba(0,0,0,.9));cursor:pointer;user-select:none">${isOil?'🛢':'⚓'}</div>`,
+   iconAnchor:[7,13]});
+  const imgId='oi-'+Math.random().toString(36).slice(2,8);
+  const popupHtml=`<div style="font-family:monospace;width:268px">
+   <div style="font-size:8px;letter-spacing:1px;color:${col};margin-bottom:2px;opacity:.8">${isOil?'OIL / GAS FACILITY':'STRATEGIC PORT'}</div>
+   <div style="font-size:9px;letter-spacing:1.5px;color:#f0f4f0;margin-bottom:5px;font-weight:bold">${p.name}</div>
+   <div id="${imgId}" style="width:100%;height:80px;border:1px solid #3a4d3a;border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:8px;color:#6b7280;letter-spacing:1px;background:#1a1d1a">LOADING IMAGE…</div>
+   <div style="font-size:9px;color:#b8cdb8;margin-top:7px;line-height:1.55">${p.note}</div>
+   <div style="font-size:7px;color:#4a6a4a;margin-top:5px;letter-spacing:.5px">SRC: WIKIPEDIA / WIKIMEDIA COMMONS</div>
+  </div>`;
+  const marker=L.marker([p.lat,p.lng],{icon});
+  marker.bindPopup(popupHtml,{maxWidth:290,minWidth:290,className:''});
+  marker.on('popupopen',()=>{
+   fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(p.wiki)}`)
+    .then(r=>r.json())
+    .then(d=>{
+     const el=document.getElementById(imgId);
+     if(!el)return;
+     if(d.thumbnail&&d.thumbnail.source){
+      el.outerHTML=`<img src="${d.thumbnail.source}" alt="${p.name}" style="width:100%;max-height:148px;object-fit:cover;border:1px solid #3a4d3a;border-radius:2px;display:block">`;
+     } else {
+      el.textContent='NO IMAGE AVAILABLE';
+     }
+    })
+    .catch(()=>{const el=document.getElementById(imgId);if(el)el.textContent='IMAGE UNAVAILABLE';});
+  });
+  marker.addTo(oilLg);
+ });
+}
+function toggleOilPorts(){oilOn=!oilOn;drawOilPorts();}
+
 function updateMap(){
  mg.clearLayers();rg.clearLayers();
  document.getElementById('maptitle').textContent=AC.id+' — '+AC.full;
@@ -3583,6 +3673,7 @@ function updateMap(){
  drawUkraineFront();
  drawConflictZones();
  drawHormuz();
+ drawOilPorts();
  drawTerrain();
  AC.zones.forEach(z=>{
   const col=iCol(z.intensity);
