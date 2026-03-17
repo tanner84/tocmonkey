@@ -248,9 +248,11 @@ export const handler = async () => {
   const dateStr = now.toLocaleDateString('en-US', {
     month: 'short', day: 'numeric', year: 'numeric', timeZone: 'America/New_York',
   }).toUpperCase();
-  const dateKey = now.toISOString().slice(0, 10); // YYYY-MM-DD dedup key
+  const ymd     = now.toISOString().slice(0, 10); // YYYY-MM-DD
+  const slot    = now.getUTCHours() < 12 ? 'am' : 'pm';
+  const dateKey = `${ymd}-${slot}`; // separate dedup per slot so both runs can post
 
-  // ── Deduplication — skip if already posted today ────────────────────────────
+  // ── Deduplication — skip if already posted this slot ───────────────────────
   try {
     const store    = getStore('ncaamb-card-dedup');
     const existing = await store.get(dateKey);
