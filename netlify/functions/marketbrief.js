@@ -99,16 +99,17 @@ exports.handler = async function(event) {
       fetchAV('MRK'),
     ]);
 
-  const wti   = wtiRes.status   === 'fulfilled' ? wtiRes.value   : { price: 78.42, pct: 0 };
-  const brent = brentRes.status === 'fulfilled' ? brentRes.value : { price: 82.17, pct: 0 };
-  const gas   = gasRes.status   === 'fulfilled' ? gasRes.value   : { price: 2.84,  pct: 0 };
-  const aapl  = aaplRes.status  === 'fulfilled' ? aaplRes.value  : { symbol:'AAPL',  price: 171, pct: 0 };
-  const msft  = msftRes.status  === 'fulfilled' ? msftRes.value  : { symbol:'MSFT',  price: 415, pct: 0 };
-  const nvda  = nvdaRes.status  === 'fulfilled' ? nvdaRes.value  : { symbol:'NVDA',  price: 875, pct: 0 };
-  const googl = googlRes.status === 'fulfilled' ? googlRes.value : { symbol:'GOOGL', price: 165, pct: 0 };
-  const pfe   = pfeRes.status   === 'fulfilled' ? pfeRes.value   : { symbol:'PFE',   price: 28,  pct: 0 };
-  const jnj   = jnjRes.status   === 'fulfilled' ? jnjRes.value   : { symbol:'JNJ',   price: 158, pct: 0 };
-  const mrk   = mrkRes.status   === 'fulfilled' ? mrkRes.value   : { symbol:'MRK',   price: 127, pct: 0 };
+  const ok = r => r.status === 'fulfilled' && r.value != null;
+  const wti   = ok(wtiRes)   ? wtiRes.value   : { price: 78.42, pct: 0 };
+  const brent = ok(brentRes) ? brentRes.value : { price: 82.17, pct: 0 };
+  const gas   = ok(gasRes)   ? gasRes.value   : { price: 2.84,  pct: 0 };
+  const aapl  = ok(aaplRes)  ? aaplRes.value  : { symbol:'AAPL',  price: 171, pct: 0 };
+  const msft  = ok(msftRes)  ? msftRes.value  : { symbol:'MSFT',  price: 415, pct: 0 };
+  const nvda  = ok(nvdaRes)  ? nvdaRes.value  : { symbol:'NVDA',  price: 875, pct: 0 };
+  const googl = ok(googlRes) ? googlRes.value : { symbol:'GOOGL', price: 165, pct: 0 };
+  const pfe   = ok(pfeRes)   ? pfeRes.value   : { symbol:'PFE',   price: 28,  pct: 0 };
+  const jnj   = ok(jnjRes)   ? jnjRes.value   : { symbol:'JNJ',   price: 158, pct: 0 };
+  const mrk   = ok(mrkRes)   ? mrkRes.value   : { symbol:'MRK',   price: 127, pct: 0 };
 
   const techLine   = [aapl,msft,nvda,googl].map(s => `${s.symbol} ${fmt(s.price, s.pct)}`).join(' | ');
   const pharmaLine = [pfe,jnj,mrk].map(s => `${s.symbol} ${fmt(s.price, s.pct)}`).join(' | ');
