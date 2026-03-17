@@ -23,7 +23,7 @@ async function fetchRSSItems(cocom, siteUrl) {
 
 async function postToFacebook(message) {
   const pageId    = process.env.FACEBOOK_PAGE_ID;
-  const pageToken = process.env.FACEBOOK_PAGE_ACCESS_TOKEN;
+  const pageToken = process.env.FACEBOOK_PAGE_ACCESS_TOKEN || process.env.FACEBOOK_ACCESS_TOKEN;
   if (!pageId || !pageToken) throw new Error('Facebook env vars not set');
   const res = await fetch(`https://graph.facebook.com/v19.0/${pageId}/feed`, {
     method: 'POST',
