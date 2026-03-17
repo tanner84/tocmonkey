@@ -24,12 +24,12 @@
 [functions."maritimesitrep"]
   schedule = "0 1 * * *"
 
-# Market brief — open bell 9:30am ET (13:30 UTC EDT), close bell 4pm ET (20:00 UTC EDT), weekdays only
+# Market brief — open bell 9:30am EDT (13:30 UTC), close bell 5:30pm EDT (21:30 UTC), weekdays only
 [functions."marketbrief-open"]
   schedule = "30 13 * * 1-5"
 
 [functions."marketbrief-close"]
-  schedule = "50 20 * * 1-5"
+  schedule = "30 21 * * 1-5"
 
 # Protect the admin page — redirects /admin to admin.html
 [[redirects]]
