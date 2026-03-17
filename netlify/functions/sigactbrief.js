@@ -13,7 +13,7 @@
 // Required env vars (same as marketbrief):
 //   ANTHROPIC_API_KEY
 //   FACEBOOK_PAGE_ID
-//   FACEBOOK_PAGE_ACCESS_TOKEN
+//   FACEBOOK_ACCESS_TOKEN
 //   URL  (auto-set by Netlify — the site's deploy URL)
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -43,7 +43,7 @@ async function fetchRSSItems(cocom, siteUrl) {
 // ── Post to Facebook ──────────────────────────────────────────────────────────
 async function postToFacebook(message) {
   const pageId    = process.env.FACEBOOK_PAGE_ID;
-  const pageToken = process.env.FACEBOOK_PAGE_ACCESS_TOKEN;
+  const pageToken = process.env.FACEBOOK_ACCESS_TOKEN;
   if (!pageId || !pageToken) throw new Error('Facebook env vars not set');
   const res = await fetch(`https://graph.facebook.com/v19.0/${pageId}/feed`, {
     method: 'POST',
