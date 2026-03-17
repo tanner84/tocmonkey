@@ -16,6 +16,10 @@
 [functions."sigactsummary"]
   schedule = "0 12 * * *"
 
+# TOC SITREP — daily at 18:00 UTC (2pm ET), all 6 COCOMs
+[functions."tocsitrep"]
+  schedule = "0 18 * * *"
+
 # Market brief — open bell 9:30am ET (14:30 UTC), close bell 4pm ET (21:00 UTC), weekdays only
 [functions."marketbrief-open"]
   schedule = "30 14 * * 1-5"
