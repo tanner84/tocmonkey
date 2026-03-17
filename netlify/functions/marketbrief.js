@@ -12,7 +12,7 @@
 //   EIA_API_KEY              — already set
 //   ANTHROPIC_API_KEY        — already set
 //   FACEBOOK_PAGE_ID         — your Facebook Page numeric ID
-//   FACEBOOK_PAGE_ACCESS_TOKEN — long-lived Page access token
+//   FACEBOOK_ACCESS_TOKEN      — long-lived Page access token
 // ─────────────────────────────────────────────────────────────────────────────
 
 const EIA_SERIES = {
@@ -60,7 +60,7 @@ function fmt(price, pct) {
 // ── Post to Facebook ──────────────────────────────────────────────────────────
 async function postToFacebook(message) {
   const pageId    = process.env.FACEBOOK_PAGE_ID;
-  const pageToken = process.env.FACEBOOK_PAGE_ACCESS_TOKEN;
+  const pageToken = process.env.FACEBOOK_ACCESS_TOKEN;
   if (!pageId || !pageToken) throw new Error('Facebook env vars not set');
 
   const url = `https://graph.facebook.com/v19.0/${pageId}/feed`;
