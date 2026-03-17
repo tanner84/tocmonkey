@@ -72,8 +72,8 @@ exports.handler = async function() {
     return { statusCode: 500, body: `RSS fetch failed: ${e.message}` };
   }
 
-  // Take top 12 most recent items — Claude will select the most relevant
-  const top = items.slice(0, 12);
+  // Take top 20 most recent items — Claude will select the most relevant
+  const top = items.slice(0, 20);
   if (top.length === 0) {
     return { statusCode: 200, body: 'No RSS items — skipping post' };
   }
@@ -100,7 +100,7 @@ Write a SIGACT UPDATE post formatted exactly like this:
 
 #OSINT #${cocom} #TOCMonkey
 
-Rules: No speculation. No editorial. Locations first. Only include items with clear geographic/military/security relevance. If fewer than 3 relevant items exist, respond with exactly: SKIP
+Rules: No speculation. No editorial. Locations first. Include any item with geographic/political/security/conflict relevance — cast a wide net. Only respond with exactly SKIP if there is truly nothing newsworthy at all.
 Output only the post text — no preamble, no explanation.`;
 
   // ── Call Claude Haiku ─────────────────────────────────────────────────────
