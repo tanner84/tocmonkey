@@ -24,6 +24,11 @@
 [functions."maritimesitrep"]
   schedule = "0 1 * * *"
 
+# NCAA Men's Basketball score card — daily at 02:00 UTC (scores finalized overnight)
+[functions."ncaamb-card"]
+  schedule = "0 2 * * 2,3,4,5,6,0,1"
+  included_files = ["node_modules/@napi-rs/canvas-linux-x64-gnu/**", "public/**"]
+
 # Market brief — open bell 9:30am EDT (13:30 UTC), close bell 5:30pm EDT (21:30 UTC), weekdays only
 [functions."marketbrief-open"]
   schedule = "30 13 * * 1-5"
