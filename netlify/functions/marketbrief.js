@@ -122,25 +122,35 @@ exports.handler = async function(event) {
   const notableStr = sorted.slice(0,4).map(s => `${s.symbol} ${s.change >= 0 ? '+' : ''}${s.change.toFixed(2)}%`).join(' · ');
 
   // ── Build Claude prompt ───────────────────────────────────────────────────
-  const prompt = `You are a geopolitical market analyst. Given these current prices:
+  const prompt = `You are a market-intelligence writer for TOC Monkey, a SITREP dashboard that maps financial signals to COCOM threat environments. You generate ${bell === 'OPEN' ? 'open bell' : 'close bell'} summaries that connect commodity and equity moves to geopolitical drivers by region.
 
+PRICE DATA FOR THIS SESSION:
 Oil (WTI): ${fmt(wti.price, wti.change)}
 Oil (Brent): ${fmt(brent.price, brent.change)}
 Natural Gas: ${fmt(gas.price, gas.change)}
 Big Tech (AAPL/MSFT/NVDA/GOOGL): ${techLine || 'unavailable'}
 Pharma (PFE/JNJ/MRK): ${pharmaLine || 'unavailable'}
 
-Write a market brief formatted exactly like this:
+ACCURACY RULES — follow strictly:
+1. PRICE DATA — Never round or approximate percentage moves. Use exact figures from the source data above. If a figure is unavailable, omit it rather than estimate.
+2. CAUSAL ATTRIBUTION — Only assign a COCOM regional driver if there is a confirmed, reportable link between that AOR and the price move. Do not invent regional narratives to fill structural symmetry.
+3. BRENT vs WTI — When explaining spread behavior, attribute both to their actual drivers. If both moved on the same underlying event, say so. Divergence is a magnitude story, not necessarily a separate regional driver story.
+4. EQUITY CATALYSTS — Identify the primary intraday catalyst for notable movers. Do not default to macro/geopolitical framing when a discrete corporate event (earnings, conference, announcement) drove the move that session.
+5. DATE — This is the ${bell} BELL for the ${dateStr} trading session.
+6. FABRICATION PREVENTION — If geopolitical context is ambiguous or unconfirmed, use hedged language ("may reflect," "amid uncertainty around") rather than asserting causal linkage.
+
+Write a post formatted exactly like this:
 
 📊 ${bell} BELL | ${dateStr}
 
-[2-3 sentences connecting commodity movement to geopolitical context — oil to CENTCOM/EUCOM tensions, nat gas to European energy security, pharma to policy risk, tech to INDOPACOM/Taiwan tensions and chip supply chain]
+[2-3 sentences. Lead with the highest-confidence, most operationally significant signal. WTI and Brent get separate causal sentences only if their drivers differ. Equity movers: cite the specific catalyst first, macro context second. Military intelligence analyst voice — terse, no editorial.]
 
 Notable moves: ${notableStr || 'n/a'}
 
 #Markets #Commodities #TOCMonkey
 
-Rules: Connect market moves to the geopolitical regions. Terse. Military intelligence analyst voice. End with: Not investment advice.
+Not investment advice.
+
 Output only the post text — no preamble, no explanation.`;
 
   // ── Call Claude Haiku for the brief ───────────────────────────────────────
