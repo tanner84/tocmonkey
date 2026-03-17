@@ -12,9 +12,9 @@
 [functions."sigactbrief"]
   schedule = "0 */4 * * *"
 
-# 24-hour SIGACT summary — daily at 12:00 UTC (8am ET), EUCOM+CENTCOM+INDOPACOM
+# 24-hour SIGACT summary — daily at 12:30 UTC (8:30am EDT), EUCOM+CENTCOM+INDOPACOM
 [functions."sigactsummary"]
-  schedule = "0 12 * * *"
+  schedule = "30 12 * * *"
 
 # TOC SITREP — daily at 18:00 UTC (2pm ET), all 6 COCOMs
 [functions."tocsitrep"]
@@ -29,7 +29,7 @@
   schedule = "30 13 * * 1-5"
 
 [functions."marketbrief-close"]
-  schedule = "0 20 * * 1-5"
+  schedule = "30 20 * * 1-5"
 
 # Protect the admin page — redirects /admin to admin.html
 [[redirects]]
