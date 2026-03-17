@@ -29,7 +29,7 @@
   schedule = "30 13 * * 1-5"
 
 [functions."marketbrief-close"]
-  schedule = "30 20 * * 1-5"
+  schedule = "50 20 * * 1-5"
 
 # Protect the admin page — redirects /admin to admin.html
 [[redirects]]

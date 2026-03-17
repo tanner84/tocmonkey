@@ -1,55 +1,17 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // Market Brief — Netlify Scheduled Function
-// Schedule: weekdays at open bell (14:30 UTC / 9:30am ET) via netlify.toml
-//           weekdays at close bell (21:00 UTC / 4:00pm ET) via netlify.toml
+// Schedule: weekdays at open bell (13:30 UTC / 9:30am EDT) via netlify.toml
+//           weekdays at close bell (20:30 UTC / 4:30pm EDT) via netlify.toml
 //
-// 1. Fetch live prices: EIA (WTI, Brent, Nat Gas) + Alpha Vantage (7 stocks)
+// 1. Fetch live prices via Claude web_search tool
 // 2. Generate geopolitical brief via Claude Haiku
 // 3. POST to Facebook Page via Graph API
 //
 // Required env vars (Netlify dashboard → Environment Variables):
-//   ALPHAVANTAGE_KEY         — already set
-//   EIA_API_KEY              — already set
 //   ANTHROPIC_API_KEY        — already set
 //   FACEBOOK_PAGE_ID         — your Facebook Page numeric ID
 //   FACEBOOK_PAGE_ACCESS_TOKEN — long-lived Page access token
 // ─────────────────────────────────────────────────────────────────────────────
-
-const EIA_SERIES = {
-  WTI:     "PET.RWTC.D",
-  BRENT:   "PET.RBRTE.D",
-  NAT_GAS: "NG.RNGWHHD.D",
-};
-
-// ── EIA fetch (same pattern as ticker.js) ────────────────────────────────────
-async function fetchEIA(seriesId) {
-  const url = `https://api.eia.gov/v2/seriesid/${seriesId}?api_key=${process.env.EIA_API_KEY}&data[0]=value&sort[0][column]=period&sort[0][direction]=desc&length=2`;
-  const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
-  if (!res.ok) throw new Error(`EIA ${seriesId}: HTTP ${res.status}`);
-  const json = await res.json();
-  const rows = json?.response?.data || [];
-  if (rows.length < 2) return null;
-  const current = parseFloat(rows[0].value);
-  const prev    = parseFloat(rows[1].value);
-  const pct     = ((current - prev) / prev * 100);
-  return { price: current, change: parseFloat((current - prev).toFixed(3)), pct: parseFloat(pct.toFixed(2)) };
-}
-
-// ── Alpha Vantage fetch (same pattern as ticker.js) ──────────────────────────
-async function fetchAV(symbol) {
-  const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${process.env.ALPHAVANTAGE_KEY}`;
-  const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
-  if (!res.ok) return null;
-  const json = await res.json();
-  const q = json["Global Quote"];
-  if (!q || !q["05. price"]) return null;
-  return {
-    symbol,
-    price:  parseFloat(q["05. price"]),
-    change: parseFloat(q["09. change"]),
-    pct:    parseFloat(q["10. change percent"]?.replace('%','') || '0'),
-  };
-}
 
 // ── Format a price line ───────────────────────────────────────────────────────
 function fmt(price, pct) {
@@ -79,54 +41,94 @@ async function postToFacebook(message) {
 
 // ── Main handler ──────────────────────────────────────────────────────────────
 exports.handler = async function(event) {
-  // Determine OPEN or CLOSE based on UTC hour (open = 13-15, close = 20-22)
+  const anthropicKey = process.env.ANTHROPIC_API_KEY;
+  if (!anthropicKey) return { statusCode: 500, body: 'ANTHROPIC_API_KEY not set' };
+
+  // Determine OPEN or CLOSE based on UTC hour
   const utcHour = new Date().getUTCHours();
   const bell = (utcHour >= 13 && utcHour <= 15) ? 'OPEN' : 'CLOSE';
   const dateStr = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'America/New_York' }).toUpperCase();
 
-  // ── Fetch all prices concurrently ──────────────────────────────────────────
-  const [wtiRes, brentRes, gasRes, aaplRes, msftRes, nvdaRes, googlRes, pfeRes, jnjRes, mrkRes] =
-    await Promise.allSettled([
-      fetchEIA(EIA_SERIES.WTI),
-      fetchEIA(EIA_SERIES.BRENT),
-      fetchEIA(EIA_SERIES.NAT_GAS),
-      fetchAV('AAPL'),
-      fetchAV('MSFT'),
-      fetchAV('NVDA'),
-      fetchAV('GOOGL'),
-      fetchAV('PFE'),
-      fetchAV('JNJ'),
-      fetchAV('MRK'),
-    ]);
+  // ── Fetch live prices via Claude web_search ───────────────────────────────
+  const priceResponse = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": anthropicKey,
+      "anthropic-version": "2023-06-01"
+    },
+    body: JSON.stringify({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 1000,
+      tools: [{ type: "web_search_20250305", name: "web_search" }],
+      messages: [{
+        role: "user",
+        content: `Search for today's most recent prices for: WTI crude oil, Brent crude,
+      natural gas, AAPL, MSFT, NVDA, GOOGL, PFE, JNJ, MRK.
+      Return ONLY raw JSON with no markdown, no backticks, no preamble, no commentary.
+      Use this exact format:
+      {"WTI": {"price": 94.46, "change": -5.28}, "AAPL": {"price": 227.50, "change": 1.24}}
+      If you cannot find a current price for a ticker, omit that key entirely.
+      All change values are daily percent change.`
+      }]
+    })
+  });
 
-  const ok = r => r.status === 'fulfilled' && r.value != null;
-  const wti   = ok(wtiRes)   ? wtiRes.value   : { price: 78.42, pct: 0 };
-  const brent = ok(brentRes) ? brentRes.value : { price: 82.17, pct: 0 };
-  const gas   = ok(gasRes)   ? gasRes.value   : { price: 2.84,  pct: 0 };
-  const aapl  = ok(aaplRes)  ? aaplRes.value  : { symbol:'AAPL',  price: 171, pct: 0 };
-  const msft  = ok(msftRes)  ? msftRes.value  : { symbol:'MSFT',  price: 415, pct: 0 };
-  const nvda  = ok(nvdaRes)  ? nvdaRes.value  : { symbol:'NVDA',  price: 875, pct: 0 };
-  const googl = ok(googlRes) ? googlRes.value : { symbol:'GOOGL', price: 165, pct: 0 };
-  const pfe   = ok(pfeRes)   ? pfeRes.value   : { symbol:'PFE',   price: 28,  pct: 0 };
-  const jnj   = ok(jnjRes)   ? jnjRes.value   : { symbol:'JNJ',   price: 158, pct: 0 };
-  const mrk   = ok(mrkRes)   ? mrkRes.value   : { symbol:'MRK',   price: 127, pct: 0 };
+  const priceData = await priceResponse.json();
 
-  const techLine   = [aapl,msft,nvda,googl].map(s => `${s.symbol} ${fmt(s.price, s.pct)}`).join(' | ');
-  const pharmaLine = [pfe,jnj,mrk].map(s => `${s.symbol} ${fmt(s.price, s.pct)}`).join(' | ');
+  // Extract text content from response, handling tool_use blocks
+  const textBlock = priceData.content && priceData.content.find(block => block.type === "text");
+  if (!textBlock) {
+    console.error("No text block in price response:", JSON.stringify(priceData.content));
+    return { statusCode: 500, body: 'No text block in price response' };
+  }
 
-  // ── Notable movers (biggest absolute % moves) ─────────────────────────────
-  const allStocks = [aapl,msft,nvda,googl,pfe,jnj,mrk].filter(Boolean);
-  const sorted = [...allStocks].sort((a,b) => Math.abs(b.pct) - Math.abs(a.pct));
-  const notableStr = sorted.slice(0,4).map(s => `${s.symbol} ${s.pct >= 0 ? '+' : ''}${s.pct.toFixed(2)}%`).join(' · ');
+  let prices;
+  try {
+    prices = JSON.parse(textBlock.text.trim());
+  } catch (err) {
+    console.error("Price JSON parse failed. Raw response:", textBlock.text);
+    return { statusCode: 500, body: 'Price JSON parse failed' };
+  }
+
+  // Validate — skip any ticker returning 0 or null
+  const validated = Object.fromEntries(
+    Object.entries(prices).filter(([_, v]) => v.price && v.price !== 0)
+  );
+
+  if (Object.keys(validated).length < 3) {
+    console.error("Insufficient price data returned:", validated);
+    return { statusCode: 500, body: 'Insufficient price data' };
+  }
+
+  // ── Build price strings for prompt ───────────────────────────────────────
+  const g = (key, fallbackPrice) => validated[key] || { price: fallbackPrice, change: 0 };
+
+  const wti   = g('WTI',     78.42);
+  const brent = g('BRENT',   82.17);
+  const gas   = g('NAT_GAS', 2.84);
+
+  const stocks = ['AAPL','MSFT','NVDA','GOOGL','PFE','JNJ','MRK']
+    .map(sym => ({ symbol: sym, ...(validated[sym] || null) }))
+    .filter(s => s.price);
+
+  const techStocks   = stocks.filter(s => ['AAPL','MSFT','NVDA','GOOGL'].includes(s.symbol));
+  const pharmaStocks = stocks.filter(s => ['PFE','JNJ','MRK'].includes(s.symbol));
+
+  const techLine   = techStocks.map(s => `${s.symbol} ${fmt(s.price, s.change)}`).join(' | ');
+  const pharmaLine = pharmaStocks.map(s => `${s.symbol} ${fmt(s.price, s.change)}`).join(' | ');
+
+  const sorted = [...stocks].sort((a,b) => Math.abs(b.change) - Math.abs(a.change));
+  const notableStr = sorted.slice(0,4).map(s => `${s.symbol} ${s.change >= 0 ? '+' : ''}${s.change.toFixed(2)}%`).join(' · ');
 
   // ── Build Claude prompt ───────────────────────────────────────────────────
   const prompt = `You are a geopolitical market analyst. Given these current prices:
 
-Oil (WTI): ${fmt(wti.price, wti.pct)}
-Oil (Brent): ${fmt(brent.price, brent.pct)}
-Natural Gas: ${fmt(gas.price, gas.pct)}
-Big Tech (AAPL/MSFT/NVDA/GOOGL): ${techLine}
-Pharma (PFE/JNJ/MRK): ${pharmaLine}
+Oil (WTI): ${fmt(wti.price, wti.change)}
+Oil (Brent): ${fmt(brent.price, brent.change)}
+Natural Gas: ${fmt(gas.price, gas.change)}
+Big Tech (AAPL/MSFT/NVDA/GOOGL): ${techLine || 'unavailable'}
+Pharma (PFE/JNJ/MRK): ${pharmaLine || 'unavailable'}
 
 Write a market brief formatted exactly like this:
 
@@ -134,19 +136,14 @@ Write a market brief formatted exactly like this:
 
 [2-3 sentences connecting commodity movement to geopolitical context — oil to CENTCOM/EUCOM tensions, nat gas to European energy security, pharma to policy risk, tech to INDOPACOM/Taiwan tensions and chip supply chain]
 
-Notable moves: ${notableStr}
+Notable moves: ${notableStr || 'n/a'}
 
 #Markets #Commodities #TOCMonkey
 
 Rules: Connect market moves to the geopolitical regions. Terse. Military intelligence analyst voice. End with: Not investment advice.
 Output only the post text — no preamble, no explanation.`;
 
-  // ── Call Claude Haiku ─────────────────────────────────────────────────────
-  const anthropicKey = process.env.ANTHROPIC_API_KEY;
-  if (!anthropicKey) {
-    return { statusCode: 500, body: 'ANTHROPIC_API_KEY not set' };
-  }
-
+  // ── Call Claude Haiku for the brief ───────────────────────────────────────
   const aiRes = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -180,7 +177,6 @@ Output only the post text — no preamble, no explanation.`;
       body: JSON.stringify({ ok: true, fb_post_id: fbResult.id, bell, brief: briefText }),
     };
   } catch (fbErr) {
-    // Log the generated brief even if FB post fails
     console.error('Facebook post failed:', fbErr.message);
     console.log('Generated brief:\n', briefText);
     return {
