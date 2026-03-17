@@ -8,6 +8,10 @@
 [functions."scrapeArticles"]
   schedule = "0 6 * * *"
 
+# SIGACT brief — every 4 hours, rotates through all 6 COCOMs (one per run)
+[functions."sigactbrief"]
+  schedule = "0 */4 * * *"
+
 # Market brief — open bell 9:30am ET (14:30 UTC), close bell 4pm ET (21:00 UTC), weekdays only
 [functions."marketbrief-open"]
   schedule = "30 14 * * 1-5"
