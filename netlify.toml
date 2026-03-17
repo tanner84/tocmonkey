@@ -24,6 +24,16 @@
 [functions."maritimesitrep"]
   schedule = "0 1 * * *"
 
+# NBA score card — daily at 11:00 UTC (7am ET)
+[functions."nba-card"]
+  schedule = "0 11 * * *"
+  included_files = ["node_modules/@napi-rs/canvas-linux-x64-gnu/**", "public/**"]
+
+# NHL score card — daily at 11:30 UTC (7:30am ET)
+[functions."nhl-card"]
+  schedule = "30 11 * * *"
+  included_files = ["node_modules/@napi-rs/canvas-linux-x64-gnu/**", "public/**"]
+
 # UFC Fight Night card — Saturday at 07:00 UTC (3am ET), captures Friday night results
 [functions."ufc-card"]
   schedule = "0 7 * * 6"
