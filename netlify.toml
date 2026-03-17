@@ -24,6 +24,11 @@
 [functions."maritimesitrep"]
   schedule = "0 1 * * *"
 
+# UFC Fight Night card — Saturday at 07:00 UTC (3am ET), captures Friday night results
+[functions."ufc-card"]
+  schedule = "0 7 * * 6"
+  included_files = ["node_modules/@napi-rs/canvas-linux-x64-gnu/**", "public/**"]
+
 # NCAA Men's Basketball score cards — two daily runs:
 #   AM: 10:00 UTC (6am ET) — all overnight finals confirmed
 #   PM: 22:00 UTC (6pm ET) — afternoon game finals, before evening slate
