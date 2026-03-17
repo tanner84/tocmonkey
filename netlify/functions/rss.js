@@ -25,6 +25,14 @@ const FEEDS = [
   { name:"r/geopolitics",           handle:"GEOPOLITICS_R",    cocom:"ALL",       color:"mute",   url:"https://www.reddit.com/r/geopolitics/.rss" },
   { name:"r/worldnews",             handle:"WORLDNEWS_R",      cocom:"ALL",       color:"mute",   url:"https://www.reddit.com/r/worldnews/.rss" },
 
+  // ── MARITIME / NAVAL ────────────────────────────────────────────────────
+  { name:"gCaptain",                handle:"GCAPTAIN",         cocom:"ALL",       color:"blue",   url:"https://gcaptain.com/feed/" },
+  { name:"Naval News",              handle:"NAVALNEWS",        cocom:"ALL",       color:"blue",   url:"https://www.navalnews.com/feed/" },
+  { name:"The Maritime Executive",  handle:"MARITIMEEXEC",     cocom:"ALL",       color:"blue",   url:"https://maritime-executive.com/rss" },
+  { name:"USNI News",               handle:"USNI",             cocom:"ALL",       color:"blue",   url:"https://news.usni.org/feed" },
+  { name:"Lloyd's List",            handle:"LLOYDSLIST",       cocom:"ALL",       color:"blue",   url:"https://lloydslist.maritimeintelligence.informa.com/rss" },
+  { name:"Splash 247",              handle:"SPLASH247",        cocom:"ALL",       color:"blue",   url:"https://splash247.com/feed/" },
+
   // ── INVESTIGATIVE / ORGANIZED CRIME / CORRUPTION ────────────────────────
   { name:"OCCRP",                    handle:"OCCRP",            cocom:"ALL",       color:"amber",  url:"https://www.occrp.org/en/rss" },
   { name:"Bellingcat",               handle:"BELLINGCAT2",      cocom:"ALL",       color:"amber",  url:"https://www.bellingcat.com/feed/" },
