@@ -34,6 +34,11 @@
   schedule = "30 11 * * *"
   included_files = ["node_modules/@napi-rs/canvas-linux-x64-gnu/**", "public/**"]
 
+# PGA leaderboard card — Thu–Sun at 23:30 UTC (7:30pm ET), top 10 after each round
+[functions."pga-card"]
+  schedule = "30 23 * * 4,5,6,0"
+  included_files = ["node_modules/@napi-rs/canvas-linux-x64-gnu/**", "public/**"]
+
 # UFC Fight Night card — Saturday at 07:00 UTC (3am ET), captures Friday night results
 [functions."ufc-card"]
   schedule = "0 7 * * 6"
