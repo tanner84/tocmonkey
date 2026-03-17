@@ -8,6 +8,13 @@
 [functions."scrapeArticles"]
   schedule = "0 6 * * *"
 
+# Market brief — open bell 9:30am ET (14:30 UTC), close bell 4pm ET (21:00 UTC), weekdays only
+[functions."marketbrief-open"]
+  schedule = "30 14 * * 1-5"
+
+[functions."marketbrief-close"]
+  schedule = "0 21 * * 1-5"
+
 # Protect the admin page — redirects /admin to admin.html
 [[redirects]]
   from = "/admin"
@@ -18,7 +25,7 @@
 [[headers]]
   for = "/*"
   [headers.values]
-    Content-Security-Policy = "default-src 'self'; connect-src 'self' https://bsky.social https://api.bsky.app https://nitter.privacydev.net https://nitter.poast.org https://nitter.cz https://api.anthropic.com https://*.tile.openstreetmap.org https://acleddata.com https://metals-api.com https://www.alphavantage.co https://api.eia.gov https://www.fpri.org https://www.foreignaffairs.com https://warontherocks.com https://www.rand.org https://www.rusi.org https://cepa.org https://www.cna.org https://en.wikipedia.org; img-src 'self' data: https:; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' data:; frame-src 'self'; object-src 'none';"
+    Content-Security-Policy = "default-src 'self'; connect-src 'self' https://bsky.social https://api.bsky.app https://nitter.privacydev.net https://nitter.poast.org https://nitter.cz https://api.anthropic.com https://*.tile.openstreetmap.org https://acleddata.com https://metals-api.com https://www.alphavantage.co https://api.eia.gov https://www.fpri.org https://www.foreignaffairs.com https://warontherocks.com https://www.rand.org https://www.rusi.org https://cepa.org https://www.cna.org https://en.wikipedia.org https://graph.facebook.com; img-src 'self' data: https:; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' data:; frame-src 'self'; object-src 'none';"
 
 # Ensure functions are accessible
 [[headers]]
