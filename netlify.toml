@@ -24,6 +24,11 @@
 [functions."maritimesitrep"]
   schedule = "0 1 * * *"
 
+# OCG Brief — organized crime SIGACTs per COCOM, fills schedule gaps
+# 03→EUCOM  05→CENTCOM  09→INDOPACOM  14→AFRICOM  17→SOUTHCOM  21→NORTHCOM
+[functions."ocgbrief"]
+  schedule = "0 3,5,9,14,17,21 * * *"
+
 # NBA score card — daily at 11:00 UTC (7am ET)
 [functions."nba-card"]
   schedule = "0 11 * * *"
