@@ -1,9 +1,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // 24-Hour SIGACT Summary — Netlify Scheduled Function
-// Schedule: daily at 12:00 UTC (8am ET)
+// Schedule: daily at 12:30 UTC (8:30am EDT)
 //
 // Fetches EUCOM + CENTCOM + INDOPACOM RSS feeds concurrently,
 // generates a combined 24-hour SIGACT summary via Claude Haiku,
+// runs a second-pass verification against source material,
 // and posts to Facebook Page.
 //
 // Required env vars:
@@ -41,6 +42,49 @@ function formatItems(items, max = 20) {
   ).join('\n');
 }
 
+// ── Second-pass verification ──────────────────────────────────────────────────
+async function verifyPost(rawSource, generatedPost, anthropicKey) {
+  const verifyPrompt = `You are a fact-checking editor for a military OSINT dashboard.
+Review the following SIGACT post and apply these rules strictly:
+
+1. Every bullet point must be traceable to a specific headline or snippet in the source material provided below. If a bullet cannot be matched to a source item, delete it.
+
+2. If a bullet contains any of the following, rewrite or remove it:
+   - Causal language not in the source (words like 'resulting in', 'causing', 'leading to' unless directly quoted from source)
+   - Casualty numbers not explicitly stated in source headlines
+   - Unit names, commander names, or locations not present in source material
+   - Any speculation about intent, outcome, or next steps
+
+3. If a region ends up with fewer than 2 verified bullets after review, replace it with a SPOTLIGHT block using only documented background information — no current operational claims.
+
+4. Return the corrected post only. No commentary, no explanation of changes.
+
+SOURCE MATERIAL:
+${rawSource}
+
+POST TO VERIFY:
+${generatedPost}`;
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': anthropicKey,
+      'anthropic-version': '2023-06-01',
+    },
+    body: JSON.stringify({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 800,
+      messages: [{ role: 'user', content: verifyPrompt }],
+    }),
+    signal: AbortSignal.timeout(25000),
+  });
+
+  if (!res.ok) throw new Error(`Verification API error: ${res.status}`);
+  const data = await res.json();
+  return data?.content?.[0]?.text?.trim() || null;
+}
+
 exports.handler = async function() {
   const siteUrl = (process.env.URL || 'https://tocmonkey.com').replace(/\/$/, '');
   const dateStr = new Date().toISOString().slice(0, 10);
@@ -60,18 +104,24 @@ exports.handler = async function() {
     return { statusCode: 200, body: 'No RSS items for any COCOM — skipping' };
   }
 
+  const eucomText     = formatItems(eucom);
+  const centcomText   = formatItems(centcom);
+  const indopacomText = formatItems(indopacom);
+
+  const rawSource = `EUCOM:\n${eucomText}\n\nCENTCOM:\n${centcomText}\n\nINDOPACOM:\n${indopacomText}`;
+
   const prompt = `You are a military OSINT analyst writing a 24-hour SIGACT summary for a public geopolitical awareness page.
 
 Given these RSS headlines and snippets from the last 24 hours, organized by COCOM region:
 
 EUCOM:
-${formatItems(eucom)}
+${eucomText}
 
 CENTCOM:
-${formatItems(centcom)}
+${centcomText}
 
 INDOPACOM:
-${formatItems(indopacom)}
+${indopacomText}
 
 Write a post formatted exactly like this:
 
@@ -104,7 +154,7 @@ Rules:
 - Max 5 bullets per region.
 Output only the post text — no preamble, no explanation.`;
 
-  // ── Call Claude Haiku ─────────────────────────────────────────────────────
+  // ── Call Claude Haiku — Step 1: Generation ────────────────────────────────
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
   if (!anthropicKey) return { statusCode: 500, body: 'ANTHROPIC_API_KEY not set' };
 
@@ -126,23 +176,44 @@ Output only the post text — no preamble, no explanation.`;
   if (!aiRes.ok) return { statusCode: 500, body: `Claude API error: ${aiRes.status}` };
 
   const aiData = await aiRes.json();
-  const briefText = aiData?.content?.[0]?.text?.trim();
-  if (!briefText) return { statusCode: 500, body: 'No content from Claude' };
+  const draftText = aiData?.content?.[0]?.text?.trim();
+  if (!draftText) return { statusCode: 500, body: 'No content from Claude' };
+
+  console.log('DRAFT (pre-verification):\n', draftText);
+
+  // ── Step 2: Verification ──────────────────────────────────────────────────
+  let finalText = draftText;
+  try {
+    const verified = await verifyPost(rawSource, draftText, anthropicKey);
+    if (verified) {
+      finalText = verified;
+      console.log('VERIFIED (post-verification):\n', finalText);
+      if (draftText !== finalText) {
+        console.log('⚠️ Verification made changes to the draft.');
+      } else {
+        console.log('✓ Verification: no changes.');
+      }
+    } else {
+      console.warn('Verification returned empty — using draft.');
+    }
+  } catch(verifyErr) {
+    console.error('Verification failed — using draft:', verifyErr.message);
+  }
 
   // ── Post to Facebook ──────────────────────────────────────────────────────
   try {
-    const fbResult = await postToFacebook(briefText);
+    const fbResult = await postToFacebook(finalText);
     console.log(`24hr summary posted: ${fbResult.id}`);
     return {
       statusCode: 200,
-      body: JSON.stringify({ ok: true, fb_post_id: fbResult.id, brief: briefText }),
+      body: JSON.stringify({ ok: true, fb_post_id: fbResult.id, brief: finalText }),
     };
   } catch(fbErr) {
     console.error('Facebook post failed:', fbErr.message);
-    console.log('Generated brief:\n', briefText);
+    console.log('Final brief:\n', finalText);
     return {
       statusCode: 500,
-      body: JSON.stringify({ ok: false, error: fbErr.message, brief: briefText }),
+      body: JSON.stringify({ ok: false, error: fbErr.message, brief: finalText }),
     };
   }
 };

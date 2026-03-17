@@ -8,9 +8,10 @@
 //
 // 1. Fetches live RSS items for that COCOM (calls own /rss function)
 // 2. Generates SIGACT UPDATE post via Claude Haiku
-// 3. POSTs to Facebook Page
+// 3. Runs second-pass verification against source material
+// 4. POSTs to Facebook Page
 //
-// Required env vars (same as marketbrief):
+// Required env vars:
 //   ANTHROPIC_API_KEY
 //   FACEBOOK_PAGE_ID
 //   FACEBOOK_PAGE_ACCESS_TOKEN
@@ -53,6 +54,49 @@ async function postToFacebook(message) {
   });
   if (!res.ok) throw new Error(`Facebook API ${res.status}: ${await res.text()}`);
   return await res.json();
+}
+
+// ── Second-pass verification ──────────────────────────────────────────────────
+async function verifyPost(rawSource, generatedPost, anthropicKey) {
+  const verifyPrompt = `You are a fact-checking editor for a military OSINT dashboard.
+Review the following SIGACT post and apply these rules strictly:
+
+1. Every bullet point must be traceable to a specific headline or snippet in the source material provided below. If a bullet cannot be matched to a source item, delete it.
+
+2. If a bullet contains any of the following, rewrite or remove it:
+   - Causal language not in the source (words like 'resulting in', 'causing', 'leading to' unless directly quoted from source)
+   - Casualty numbers not explicitly stated in source headlines
+   - Unit names, commander names, or locations not present in source material
+   - Any speculation about intent, outcome, or next steps
+
+3. If a region ends up with fewer than 2 verified bullets after review, replace it with a SPOTLIGHT block using only documented background information — no current operational claims.
+
+4. Return the corrected post only. No commentary, no explanation of changes.
+
+SOURCE MATERIAL:
+${rawSource}
+
+POST TO VERIFY:
+${generatedPost}`;
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': anthropicKey,
+      'anthropic-version': '2023-06-01',
+    },
+    body: JSON.stringify({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 500,
+      messages: [{ role: 'user', content: verifyPrompt }],
+    }),
+    signal: AbortSignal.timeout(20000),
+  });
+
+  if (!res.ok) throw new Error(`Verification API error: ${res.status}`);
+  const data = await res.json();
+  return data?.content?.[0]?.text?.trim() || null;
 }
 
 // ── Main handler ──────────────────────────────────────────────────────────────
@@ -103,7 +147,7 @@ Write a SIGACT UPDATE post formatted exactly like this:
 Rules: No speculation. No editorial. Locations first. Include any item with geographic/political/security/conflict relevance — cast a wide net. Only respond with exactly SKIP if there is truly nothing newsworthy at all.
 Output only the post text — no preamble, no explanation.`;
 
-  // ── Call Claude Haiku ─────────────────────────────────────────────────────
+  // ── Call Claude Haiku — Step 1: Generation ────────────────────────────────
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
   if (!anthropicKey) return { statusCode: 500, body: 'ANTHROPIC_API_KEY not set' };
 
@@ -125,27 +169,48 @@ Output only the post text — no preamble, no explanation.`;
   if (!aiRes.ok) return { statusCode: 500, body: `Claude API error: ${aiRes.status}` };
 
   const aiData = await aiRes.json();
-  const briefText = aiData?.content?.[0]?.text?.trim();
+  const draftText = aiData?.content?.[0]?.text?.trim();
 
-  if (!briefText || briefText === 'SKIP') {
+  if (!draftText || draftText === 'SKIP') {
     console.log(`SIGACT ${cocom}: Claude returned SKIP — insufficient relevant items`);
     return { statusCode: 200, body: `Skipped ${cocom} — insufficient relevant items` };
   }
 
+  console.log(`SIGACT ${cocom} DRAFT (pre-verification):\n`, draftText);
+
+  // ── Step 2: Verification ──────────────────────────────────────────────────
+  let finalText = draftText;
+  try {
+    const verified = await verifyPost(itemsText, draftText, anthropicKey);
+    if (verified) {
+      finalText = verified;
+      console.log(`SIGACT ${cocom} VERIFIED (post-verification):\n`, finalText);
+      if (draftText !== finalText) {
+        console.log('⚠️ Verification made changes to the draft.');
+      } else {
+        console.log('✓ Verification: no changes.');
+      }
+    } else {
+      console.warn('Verification returned empty — using draft.');
+    }
+  } catch(verifyErr) {
+    console.error('Verification failed — using draft:', verifyErr.message);
+  }
+
   // ── Post to Facebook ──────────────────────────────────────────────────────
   try {
-    const fbResult = await postToFacebook(briefText);
+    const fbResult = await postToFacebook(finalText);
     console.log(`SIGACT ${cocom} posted: ${fbResult.id}`);
     return {
       statusCode: 200,
-      body: JSON.stringify({ ok: true, cocom, fb_post_id: fbResult.id, brief: briefText }),
+      body: JSON.stringify({ ok: true, cocom, fb_post_id: fbResult.id, brief: finalText }),
     };
   } catch(fbErr) {
     console.error('Facebook post failed:', fbErr.message);
-    console.log('Generated brief:\n', briefText);
+    console.log('Final brief:\n', finalText);
     return {
       statusCode: 500,
-      body: JSON.stringify({ ok: false, cocom, error: fbErr.message, brief: briefText }),
+      body: JSON.stringify({ ok: false, cocom, error: fbErr.message, brief: finalText }),
     };
   }
 };
