@@ -20,17 +20,42 @@
 
 // UTC hour → COCOM rotation (4-hour windows)
 const COCOM_ROTATION = [
-  { cocom: 'EUCOM',      full: 'U.S. European Command',          hours: [0,1,2,3]   },
-  { cocom: 'CENTCOM',    full: 'U.S. Central Command',           hours: [4,5,6,7]   },
-  { cocom: 'INDOPACOM',  full: 'U.S. Indo-Pacific Command',      hours: [8,9,10,11] },
-  { cocom: 'AFRICOM',    full: 'U.S. Africa Command',            hours: [12,13,14,15] },
-  { cocom: 'SOUTHCOM',   full: 'U.S. Southern Command',          hours: [16,17,18,19] },
-  { cocom: 'NORTHCOM',   full: 'U.S. Northern Command',          hours: [20,21,22,23] },
+  {
+    cocom: 'EUCOM', full: 'U.S. European Command', hours: [0,1,2,3],
+    focus: 'Ukraine conflict, Eastern European security, NATO posture, Balkans, Baltic states, European defense industry, Russian military activity',
+    exclude: 'Do NOT include items from the Middle East, Africa, or Asia — those belong to other COCOMs.',
+  },
+  {
+    cocom: 'CENTCOM', full: 'U.S. Central Command', hours: [4,5,6,7],
+    focus: 'Middle East conflicts, Iraq, Syria, Iran, Yemen, Afghanistan, Central Asia, Red Sea/Arabian Gulf security, Israel-Gaza',
+    exclude: 'Do NOT include items from Europe, Sub-Saharan Africa, or Asia-Pacific.',
+  },
+  {
+    cocom: 'INDOPACOM', full: 'U.S. Indo-Pacific Command', hours: [8,9,10,11],
+    focus: 'South China Sea, Taiwan Strait, North Korea, Indo-Pacific military activity, Southeast Asia security, Australia/Japan/South Korea alliances',
+    exclude: 'Do NOT include items from Europe, Middle East, or Africa.',
+  },
+  {
+    cocom: 'AFRICOM', full: 'U.S. Africa Command', hours: [12,13,14,15],
+    focus: 'Sahel instability, Horn of Africa, West Africa coups/terror, East Africa maritime security, sub-Saharan conflicts, Wagner/Russian activity in Africa',
+    exclude: 'Do NOT include items from Europe, Middle East, or Asia.',
+  },
+  {
+    cocom: 'SOUTHCOM', full: 'U.S. Southern Command', hours: [16,17,18,19],
+    focus: 'Latin America and Caribbean security, Venezuela, Colombia, Mexico cartels, Haiti, narcotrafficking, regional elections and instability',
+    exclude: 'Do NOT include items from Europe, Middle East, Africa, or Asia.',
+  },
+  {
+    cocom: 'NORTHCOM', full: 'U.S. Northern Command', hours: [20,21,22,23],
+    focus: 'North American homeland security, U.S.-Canada-Mexico border, Arctic sovereignty, NORAD activity, domestic military readiness, cyber threats to U.S. infrastructure',
+    exclude: 'Do NOT include items outside North America or the Arctic region.',
+  },
 ];
 
 function getCocomForHour(utcHour) {
   return COCOM_ROTATION.find(c => c.hours.includes(utcHour)) || COCOM_ROTATION[0];
 }
+
 
 // ── Fetch RSS items for COCOM via own function ────────────────────────────────
 async function fetchRSSItems(cocom, siteUrl) {
@@ -57,21 +82,26 @@ async function postToFacebook(message) {
 }
 
 // ── Second-pass verification ──────────────────────────────────────────────────
-async function verifyPost(rawSource, generatedPost, anthropicKey) {
+async function verifyPost(rawSource, generatedPost, cocom, focus, exclude, anthropicKey) {
   const verifyPrompt = `You are a fact-checking editor for a military OSINT dashboard.
-Review the following SIGACT post and apply these rules strictly:
+Review the following SIGACT post for ${cocom} and apply these rules strictly:
 
-1. Every bullet point must be traceable to a specific headline or snippet in the source material provided below. If a bullet cannot be matched to a source item, delete it.
+AOR FOCUS: ${focus}
+GEOGRAPHIC RULE: ${exclude}
 
-2. If a bullet contains any of the following, rewrite or remove it:
-   - Causal language not in the source (words like 'resulting in', 'causing', 'leading to' unless directly quoted from source)
+1. Remove any bullet that covers events outside the ${cocom} AOR. If a bullet describes events in the Middle East, Africa, Asia, etc. and this is a EUCOM post — delete it. Apply the same logic for all COCOMs.
+
+2. Every remaining bullet must be traceable to a specific headline or snippet in the source material. If a bullet cannot be matched, delete it.
+
+3. Remove any bullet that contains:
    - Casualty numbers not explicitly stated in source headlines
-   - Unit names, commander names, or locations not present in source material
+   - Unit names, ship names, commander names, or locations not present in source material
+   - Causal language not directly from the source (e.g. 'resulting in', 'causing', 'leading to')
    - Any speculation about intent, outcome, or next steps
 
-3. If a region ends up with fewer than 2 verified bullets after review, replace it with a SPOTLIGHT block using only documented background information — no current operational claims.
+4. If fewer than 2 bullets remain after review, respond with only: SKIP
 
-4. Return the corrected post only. No commentary, no explanation of changes.
+5. Return the corrected post only. No commentary, no explanation of changes.
 
 SOURCE MATERIAL:
 ${rawSource}
@@ -102,7 +132,7 @@ ${generatedPost}`;
 // ── Main handler ──────────────────────────────────────────────────────────────
 exports.handler = async function() {
   const utcHour = new Date().getUTCHours();
-  const { cocom, full } = getCocomForHour(utcHour);
+  const { cocom, full, focus, exclude } = getCocomForHour(utcHour);
   const timestamp = new Date().toISOString().replace('T',' ').slice(0,16);
 
   const siteUrl = (process.env.URL || 'https://tocmonkey.com').replace(/\/$/, '');
@@ -129,7 +159,11 @@ exports.handler = async function() {
   // ── Build Claude prompt ───────────────────────────────────────────────────
   const prompt = `You are a military OSINT analyst writing a public SIGACT update for a geopolitical awareness page.
 
-Given these raw RSS headlines and snippets for ${full} (${cocom}) region:
+AOR: ${full} (${cocom})
+FOCUS TOPICS: ${focus}
+STRICT GEOGRAPHIC RULE: ${exclude}
+
+Given these raw RSS headlines and snippets:
 ${itemsText}
 
 Write a SIGACT UPDATE post formatted exactly like this:
@@ -144,7 +178,11 @@ Write a SIGACT UPDATE post formatted exactly like this:
 
 #OSINT #${cocom} #TOCMonkey
 
-Rules: No speculation. No editorial. Locations first. Include any item with geographic/political/security/conflict relevance — cast a wide net. Only respond with exactly SKIP if there is truly nothing newsworthy at all.
+Rules:
+- Only include items that fall within the ${cocom} AOR. Discard any items outside that geographic scope.
+- No speculation. No editorial. No invented details. Locations first.
+- Use only what is stated in the source headlines — do not add context, causes, or outcomes not in the source.
+- Only respond with exactly SKIP if there is truly nothing relevant within the AOR.
 Output only the post text — no preamble, no explanation.`;
 
   // ── Call Claude Haiku — Step 1: Generation ────────────────────────────────
@@ -181,11 +219,14 @@ Output only the post text — no preamble, no explanation.`;
   // ── Step 2: Verification ──────────────────────────────────────────────────
   let finalText = draftText;
   try {
-    const verified = await verifyPost(itemsText, draftText, anthropicKey);
-    if (verified) {
+    const verified = await verifyPost(itemsText, draftText, cocom, focus, exclude, anthropicKey);
+    if (verified === 'SKIP') {
+      console.log(`SIGACT ${cocom}: verification rejected all bullets (out-of-AOR or unverifiable) — skipping`);
+      return { statusCode: 200, body: `Skipped ${cocom} — failed verification` };
+    } else if (verified) {
       finalText = verified;
-      console.log(`SIGACT ${cocom} VERIFIED (post-verification):\n`, finalText);
       if (draftText !== finalText) {
+        console.log(`SIGACT ${cocom} VERIFIED (post-verification):\n`, finalText);
         console.log('⚠️ Verification made changes to the draft.');
       } else {
         console.log('✓ Verification: no changes.');
