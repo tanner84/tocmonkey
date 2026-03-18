@@ -13,6 +13,7 @@
 //   FACEBOOK_PAGE_ACCESS_TOKEN or FACEBOOK_ACCESS_TOKEN
 // ─────────────────────────────────────────────────────────────────────────────
 
+const fs = require('fs');
 const path = require('path');
 const { createCanvas, loadImage, GlobalFonts } = require('@napi-rs/canvas');
 const { getStore } = require('@netlify/blobs');
@@ -21,9 +22,12 @@ const { getStore } = require('@netlify/blobs');
 (function registerFonts() {
   const fontDir = path.join(process.env.LAMBDA_TASK_ROOT || path.join(__dirname, '../..'), 'public/fonts');
   try {
-    GlobalFonts.registerFromPath(path.join(fontDir, 'RobotoMono-Regular.ttf'), 'RobotoMono');
-    GlobalFonts.registerFromPath(path.join(fontDir, 'RobotoMono-Bold.ttf'), 'RobotoMono');
-  } catch(e) { console.warn('Font registration failed:', e.message); }
+    GlobalFonts.register(fs.readFileSync(path.join(fontDir, 'RobotoMono-Regular.ttf')), 'RobotoMono');
+    GlobalFonts.register(fs.readFileSync(path.join(fontDir, 'RobotoMono-Bold.ttf')), 'RobotoMono');
+    console.log('ufc-card fonts OK. Families:', GlobalFonts.families?.map(f => f.family).join(', '));
+  } catch(e) {
+    console.error('ufc-card font registration failed:', e.message, '| dir:', fontDir);
+  }
 }());
 
 // ── Colors ────────────────────────────────────────────────────────────────────
