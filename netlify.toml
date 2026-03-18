@@ -64,6 +64,10 @@
   schedule = "0 7 * * 6"
   included_files = ["node_modules/@napi-rs/canvas-linux-x64-gnu/**", "public/**"]
 
+# F1 test card — no schedule, trigger manually from Netlify dashboard
+[functions."f1-card-test"]
+  included_files = ["node_modules/@napi-rs/canvas-linux-x64-gnu/**", "public/**"]
+
 # Market brief — open bell 9:45am EDT (13:45 UTC), close bell 5:30pm EDT (21:30 UTC), weekdays only
 [functions."marketbrief-open"]
   schedule = "45 13 * * 1-5"
