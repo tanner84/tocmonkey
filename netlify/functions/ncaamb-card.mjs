@@ -278,8 +278,8 @@ export const handler = async () => {
   );
   console.log(`ncaamb-card: ${finalGames.length} final games`);
 
-  if (finalGames.length < 4) {
-    console.log('ncaamb-card: fewer than 4 finals — skipping');
+  if (finalGames.length < 1) {
+    console.log('ncaamb-card: no finals — skipping');
     return { statusCode: 200, body: `Only ${finalGames.length} finals — skipping` };
   }
 

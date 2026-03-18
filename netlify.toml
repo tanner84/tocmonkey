@@ -33,14 +33,14 @@
 [functions."adizbrief"]
   schedule = "0 7 * * *"
 
-# NBA score card — daily at 11:00 UTC (7am ET)
+# NBA score card — daily at 11:30 UTC (7:30am ET)
 [functions."nba-card"]
-  schedule = "0 11 * * *"
+  schedule = "30 11 * * *"
   included_files = ["node_modules/@napi-rs/canvas-linux-x64-gnu/**", "public/**"]
 
-# NHL score card — daily at 11:30 UTC (7:30am ET)
+# NHL score card — daily at 11:45 UTC (7:45am ET)
 [functions."nhl-card"]
-  schedule = "30 11 * * *"
+  schedule = "45 11 * * *"
   included_files = ["node_modules/@napi-rs/canvas-linux-x64-gnu/**", "public/**"]
 
 # PGA leaderboard card — Thu–Sun at 23:30 UTC (7:30pm ET), top 10 after each round
@@ -54,10 +54,10 @@
   included_files = ["node_modules/@napi-rs/canvas-linux-x64-gnu/**", "public/**"]
 
 # NCAA Men's Basketball score cards — two daily runs:
-#   AM: 10:00 UTC (6am ET) — all overnight finals confirmed
+#   AM: 11:15 UTC (7:15am ET) — all overnight finals confirmed
 #   PM: 22:00 UTC (6pm ET) — afternoon game finals, before evening slate
 [functions."ncaamb-card-am"]
-  schedule = "0 10 * * *"
+  schedule = "15 11 * * *"
   included_files = ["node_modules/@napi-rs/canvas-linux-x64-gnu/**", "public/**"]
 
 [functions."ncaamb-card-pm"]

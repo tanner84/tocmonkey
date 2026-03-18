@@ -254,8 +254,8 @@ export const handler = async () => {
   const finalGames = games.filter(g => String(g.status || '').toLowerCase().includes('final'));
   console.log(`nhl-card: ${finalGames.length} final games`);
 
-  if (finalGames.length < 2) {
-    console.log('nhl-card: fewer than 2 finals — skipping');
+  if (finalGames.length < 1) {
+    console.log('nhl-card: no finals — skipping');
     return { statusCode: 200, body: `Only ${finalGames.length} finals — skipping` };
   }
 
