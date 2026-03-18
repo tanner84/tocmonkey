@@ -12,9 +12,9 @@
 [functions."sigactbrief"]
   schedule = "0 */4 * * *"
 
-# 24-hour SIGACT summary — daily at 12:30 UTC (8:30am EDT), EUCOM+CENTCOM+INDOPACOM
+# 24-hour SIGACT summary — daily at 14:15 UTC (10:15am EDT), EUCOM+CENTCOM+INDOPACOM
 [functions."sigactsummary"]
-  schedule = "30 12 * * *"
+  schedule = "15 14 * * *"
 
 # TOC SITREP — daily at 18:00 UTC (2pm ET), all 6 COCOMs
 [functions."tocsitrep"]
@@ -64,9 +64,9 @@
   schedule = "0 7 * * 6"
   included_files = ["node_modules/@napi-rs/canvas-linux-x64-gnu/**", "public/**"]
 
-# Market brief — open bell 9:30am EDT (13:30 UTC), close bell 5:30pm EDT (21:30 UTC), weekdays only
+# Market brief — open bell 9:45am EDT (13:45 UTC), close bell 5:30pm EDT (21:30 UTC), weekdays only
 [functions."marketbrief-open"]
-  schedule = "30 13 * * 1-5"
+  schedule = "45 13 * * 1-5"
 
 [functions."marketbrief-close"]
   schedule = "30 21 * * 1-5"
