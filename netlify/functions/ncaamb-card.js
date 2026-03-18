@@ -259,7 +259,7 @@ exports.handler = async () => {
     month: 'short', day: 'numeric', year: 'numeric', timeZone: 'America/New_York',
   }).toUpperCase();
   const ymd     = now.toISOString().slice(0, 10); // YYYY-MM-DD
-  const slot    = now.getUTCHours() < 12 ? 'am' : 'pm';
+  const slot    = now.getUTCHours() < 17 ? 'am' : 'pm'; // AM run ≤16:59 UTC, PM run 17+ UTC
   const dateKey = `${ymd}-${slot}`; // separate dedup per slot so both runs can post
 
   // ── Deduplication — skip if already posted this slot ───────────────────────

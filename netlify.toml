@@ -34,10 +34,10 @@
   schedule = "0 7 * * *"
 
 # NCAA Men's Basketball score cards — two daily runs:
-#   AM: 13:05 UTC (8:05am ET) — all overnight finals confirmed
+#   AM: 14:40 UTC (9:40am ET) — all overnight finals confirmed
 #   PM: 22:00 UTC (5pm ET) — afternoon game finals, before evening slate
 [functions."ncaamb-card-am"]
-  schedule = "5 13 * * *"
+  schedule = "40 14 * * *"
   included_files = ["node_modules/@napi-rs/canvas-linux-x64-gnu/**", "public/**"]
 
 [functions."ncaamb-card-pm"]
