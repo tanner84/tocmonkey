@@ -1,8 +1,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// NHL Score Card — Netlify Scheduled Function
+// NBA Score Card — Netlify Scheduled Function
 // Schedule: daily at 11:30 UTC (7:30am ET) — captures previous night's finals
 //
-// 1. Fetch NHL scores via Claude web_search
+// 1. Fetch NBA scores via Claude web_search
 // 2. Render 1080x1080 score card with @napi-rs/canvas
 // 3. Deduplicate via Netlify Blobs
 // 4. POST to Facebook as photo
@@ -13,21 +13,21 @@
 //   FACEBOOK_PAGE_ACCESS_TOKEN or FACEBOOK_ACCESS_TOKEN
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { createCanvas, loadImage } from '@napi-rs/canvas';
-import { getStore } from '@netlify/blobs';
+const { createCanvas, loadImage } = require('@napi-rs/canvas');
+const { getStore } = require('@netlify/blobs');
 
 const C = {
-  bg:        '#08080f',
-  bgAlt:     '#0a0a15',
-  border:    '#1a1a3a',
-  accent:    '#00338D',   // NHL blue
+  bg:        '#080f18',
+  bgAlt:     '#0a1220',
+  border:    '#1a2a4a',
+  accent:    '#C9082A',   // NBA red
   winWhite:  '#ffffff',
-  loseGray:  '#3a3a5a',
-  dimBlue:   '#2a2a4a',
-  faintBlue: '#1a1a2a',
-  sep:       '#111118',
-  at:        '#2a2a4a',
-  otColor:   '#FFB81C',   // gold for OT/SO
+  loseGray:  '#3a4a6a',
+  dimBlue:   '#2a3a5a',
+  faintBlue: '#1a2a3a',
+  sep:       '#111a2a',
+  at:        '#2a3a5a',
+  label:     '#C9082A',
 };
 
 async function fetchScores(anthropicKey) {
@@ -44,10 +44,10 @@ async function fetchScores(anthropicKey) {
       tools: [{ type: 'web_search_20250305', name: 'web_search' }],
       messages: [{
         role: 'user',
-        content: `Search for last night's NHL hockey final scores including overtime and shootout results.
+        content: `Search for last night's NBA basketball final scores.
 Return ONLY raw JSON no markdown no backticks:
-{"games": [{"away": "TEAM ABBREVIATION", "awayScore": 0, "home": "TEAM ABBREVIATION", "homeScore": 0, "status": "final", "ot": false, "shootout": false}]}
-Use standard 3-letter NHL team abbreviations (TOR, BOS, NYR, etc). Prioritize playoff games first. Cap at 12 games.
+{"games": [{"away": "TEAM ABBREVIATION", "awayScore": 0, "home": "TEAM ABBREVIATION", "homeScore": 0, "status": "final", "ot": false}]}
+Use standard 3-letter team abbreviations (LAL, BOS, GSW, etc). Prioritize playoff games first. Cap at 12 games.
 If no games found return {"games": []}`,
       }],
     }),
@@ -70,12 +70,12 @@ If no games found return {"games": []}`,
   return Array.isArray(parsed.games) ? parsed.games : [];
 }
 
-function finishLabel(g) {
-  if (g.shootout) return ' SO';
-  if (g.ot === true || g.ot === 'OT') return ' OT';
-  if (String(g.ot || '').toUpperCase() === '2OT') return ' 2OT';
-  if (String(g.ot || '').toUpperCase() === '3OT') return ' 3OT';
-  return '';
+function otLabel(ot) {
+  if (!ot || ot === false) return '';
+  if (ot === true || ot === 'OT') return ' OT';
+  if (String(ot).toUpperCase() === '2OT') return ' 2OT';
+  if (String(ot).toUpperCase() === '3OT') return ' 3OT';
+  return ` ${String(ot).toUpperCase()}`;
 }
 
 async function buildCard(games, dateStr) {
@@ -103,7 +103,7 @@ async function buildCard(games, dateStr) {
   ctx.fillStyle = C.accent;
   ctx.font = 'bold 72px monospace';
   ctx.textAlign = 'right';
-  ctx.fillText('NHL', W - 30, 105);
+  ctx.fillText('NBA', W - 30, 105);
 
   // Date
   ctx.fillStyle = C.dimBlue;
@@ -129,9 +129,8 @@ async function buildCard(games, dateStr) {
   };
 
   for (let i = 0; i < MAX; i++) {
-    const g      = games[i];
-    const rowY   = START_Y + i * ROW_H;
-    const finish = finishLabel(g);
+    const g    = games[i];
+    const rowY = START_Y + i * ROW_H;
 
     ctx.fillStyle = i % 2 === 0 ? C.bg : C.bgAlt;
     ctx.fillRect(0, rowY, W, ROW_H);
@@ -167,19 +166,11 @@ async function buildCard(games, dateStr) {
     ctx.textAlign = 'center';
     ctx.fillText('@', COL.atCenter, textY);
 
-    // Home score
+    // Home score + OT
     ctx.fillStyle = homeColor;
     ctx.font = `${homeWon ? 'bold ' : ''}22px monospace`;
     ctx.textAlign = 'left';
-    ctx.fillText(String(g.homeScore ?? ''), COL.homeScoreL, textY);
-
-    // OT/SO badge inline after home score (gold)
-    if (finish) {
-      ctx.fillStyle = C.otColor;
-      ctx.font = 'bold 14px monospace';
-      ctx.textAlign = 'left';
-      ctx.fillText(finish.trim(), COL.homeScoreL + 44, textY);
-    }
+    ctx.fillText(String(g.homeScore ?? '') + otLabel(g.ot), COL.homeScoreL, textY);
 
     // Home team
     ctx.fillStyle = homeColor;
@@ -222,7 +213,7 @@ async function postPhoto(imageBuffer, message) {
   return await res.json();
 }
 
-export const handler = async () => {
+exports.handler = async () => {
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
   if (!anthropicKey) return { statusCode: 500, body: 'ANTHROPIC_API_KEY not set' };
 
@@ -230,13 +221,13 @@ export const handler = async () => {
   const dateStr = now.toLocaleDateString('en-US', {
     month: 'short', day: 'numeric', year: 'numeric', timeZone: 'America/New_York',
   }).toUpperCase();
-  const dateKey = `nhl-${now.toISOString().slice(0, 10)}`;
+  const dateKey = `nba-${now.toISOString().slice(0, 10)}`;
 
   try {
     const store    = getStore('sports-card-dedup');
     const existing = await store.get(dateKey);
     if (existing) {
-      console.log(`nhl-card: already posted for ${dateKey} — skipping`);
+      console.log(`nba-card: already posted for ${dateKey} — skipping`);
       return { statusCode: 200, body: `Already posted for ${dateKey}` };
     }
   } catch(e) {
@@ -252,27 +243,27 @@ export const handler = async () => {
   }
 
   const finalGames = games.filter(g => String(g.status || '').toLowerCase().includes('final'));
-  console.log(`nhl-card: ${finalGames.length} final games`);
+  console.log(`nba-card: ${finalGames.length} final games`);
 
   if (finalGames.length < 1) {
-    console.log('nhl-card: no finals — skipping');
+    console.log('nba-card: no finals — skipping');
     return { statusCode: 200, body: `Only ${finalGames.length} finals — skipping` };
   }
 
   let imageBuffer;
   try {
     imageBuffer = await buildCard(finalGames.slice(0, 12), dateStr);
-    console.log(`nhl-card: rendered (${imageBuffer.length} bytes)`);
+    console.log(`nba-card: rendered (${imageBuffer.length} bytes)`);
   } catch(e) {
     console.error('Card render failed:', e.message);
     return { statusCode: 500, body: `Card render failed: ${e.message}` };
   }
 
-  const message = `[NHL] SCORES | ${dateStr}\n\ntocmonkey.com\n\n#NHL #Hockey #TOCMonkey`;
+  const message = `[NBA] SCORES | ${dateStr}\n\ntocmonkey.com\n\n#NBA #Basketball #TOCMonkey`;
   try {
     const result = await postPhoto(imageBuffer, message);
     const postId = result.id || result.post_id || 'unknown';
-    console.log(`nhl-card posted: ${postId}`);
+    console.log(`nba-card posted: ${postId}`);
 
     try {
       const store = getStore('sports-card-dedup');

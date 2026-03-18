@@ -13,8 +13,8 @@
 //   FACEBOOK_PAGE_ACCESS_TOKEN or FACEBOOK_ACCESS_TOKEN
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { createCanvas, loadImage } from '@napi-rs/canvas';
-import { getStore } from '@netlify/blobs';
+const { createCanvas, loadImage } = require('@napi-rs/canvas');
+const { getStore } = require('@netlify/blobs');
 
 const C = {
   bg:        '#030a03',
@@ -263,7 +263,7 @@ async function postPhoto(imageBuffer, message) {
   return await res.json();
 }
 
-export const handler = async () => {
+exports.handler = async () => {
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
   if (!anthropicKey) return { statusCode: 500, body: 'ANTHROPIC_API_KEY not set' };
 
