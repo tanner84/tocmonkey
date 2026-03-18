@@ -14,6 +14,12 @@
 //   URL  (auto-set by Netlify)
 // ─────────────────────────────────────────────────────────────────────────────
 
+const COCOM_AOR = {
+  EUCOM:     'Europe and Eurasia — Ukraine conflict, NATO posture, Balkans, Baltic states, Russian military activity, European defense industry. NOT Middle East, Africa, or Asia.',
+  CENTCOM:   'Middle East and Central Asia — Iraq, Syria, Iran, Yemen, Afghanistan, Red Sea/Arabian Gulf, Israel-Gaza. NOT Europe, Sub-Saharan Africa, or Asia-Pacific.',
+  INDOPACOM: 'Indo-Pacific — South China Sea, Taiwan Strait, North Korea, Southeast Asia, Australia/Japan/South Korea alliances. NOT Europe, Middle East, or Africa.',
+};
+
 async function fetchRSSItems(cocom, siteUrl) {
   const url = `${siteUrl}/.netlify/functions/rss?cocom=${cocom}`;
   const res = await fetch(url, { signal: AbortSignal.timeout(15000) });
@@ -45,19 +51,26 @@ function formatItems(items, max = 20) {
 // ── Second-pass verification ──────────────────────────────────────────────────
 async function verifyPost(rawSource, generatedPost, anthropicKey) {
   const verifyPrompt = `You are a fact-checking editor for a military OSINT dashboard.
-Review the following SIGACT post and apply these rules strictly:
+Review the following 24-hour SIGACT summary and apply these rules strictly:
 
-1. Every bullet point must be traceable to a specific headline or snippet in the source material provided below. If a bullet cannot be matched to a source item, delete it.
+AOR RULES — enforce geographic scope per section:
+- EUCOM section: ${COCOM_AOR.EUCOM}
+- CENTCOM section: ${COCOM_AOR.CENTCOM}
+- INDOPACOM section: ${COCOM_AOR.INDOPACOM}
 
-2. If a bullet contains any of the following, rewrite or remove it:
-   - Causal language not in the source (words like 'resulting in', 'causing', 'leading to' unless directly quoted from source)
+1. Remove any bullet that covers events outside that section's AOR (e.g. a Middle East item in the EUCOM section must be deleted).
+
+2. Every remaining bullet must be traceable to a specific headline or snippet in the source material. If a bullet cannot be matched, delete it.
+
+3. Remove any bullet that contains:
    - Casualty numbers not explicitly stated in source headlines
-   - Unit names, commander names, or locations not present in source material
+   - Unit names, ship names, commander names not present in source material
+   - Causal language not directly from the source (e.g. 'resulting in', 'causing', 'leading to')
    - Any speculation about intent, outcome, or next steps
 
-3. If a region ends up with fewer than 2 verified bullets after review, replace it with a SPOTLIGHT block using only documented background information — no current operational claims.
+4. If a section ends up with fewer than 2 verified bullets, omit that entire section from the post rather than pad it.
 
-4. Return the corrected post only. No commentary, no explanation of changes.
+5. Return the corrected post only. No commentary, no explanation of changes.
 
 SOURCE MATERIAL:
 ${rawSource}
@@ -112,6 +125,11 @@ exports.handler = async function() {
 
   const prompt = `You are a military OSINT analyst writing a 24-hour SIGACT summary for a public geopolitical awareness page.
 
+AOR RULES — each section must stay within its geographic scope:
+- EUCOM: ${COCOM_AOR.EUCOM}
+- CENTCOM: ${COCOM_AOR.CENTCOM}
+- INDOPACOM: ${COCOM_AOR.INDOPACOM}
+
 Given these RSS headlines and snippets from the last 24 hours, organized by COCOM region:
 
 EUCOM:
@@ -147,11 +165,11 @@ Write a post formatted exactly like this:
 #OSINT #EUCOM #CENTCOM #INDOPACOM #TOCMonkey
 
 Rules:
-- Minimum 3 bullets per region. If fewer than 3 real items exist for a region, omit that region entirely rather than pad with low-confidence items.
-- Locations first, always.
-- No speculation, no editorial, no adjectives.
-- Consolidate duplicate reports of the same event into one bullet.
-- Max 5 bullets per region.
+- Each section must ONLY use items from its own AOR source list above. Do not pull CENTCOM events into EUCOM, etc.
+- Minimum 3 bullets per section. If fewer than 3 real items exist for a section, omit that section entirely.
+- Locations first, always. No speculation, no editorial, no adjectives.
+- Use only what is stated in the source headlines — do not add context, causes, or outcomes not in the source.
+- Consolidate duplicate reports of the same event into one bullet. Max 5 bullets per section.
 Output only the post text — no preamble, no explanation.`;
 
   // ── Call Claude Haiku — Step 1: Generation ────────────────────────────────
@@ -187,8 +205,8 @@ Output only the post text — no preamble, no explanation.`;
     const verified = await verifyPost(rawSource, draftText, anthropicKey);
     if (verified) {
       finalText = verified;
-      console.log('VERIFIED (post-verification):\n', finalText);
       if (draftText !== finalText) {
+        console.log('VERIFIED (post-verification):\n', finalText);
         console.log('⚠️ Verification made changes to the draft.');
       } else {
         console.log('✓ Verification: no changes.');
