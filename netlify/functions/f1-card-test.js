@@ -60,7 +60,10 @@ async function fetchResults(anthropicKey) {
     signal: AbortSignal.timeout(30000),
   });
 
-  if (!res.ok) throw new Error(`Anthropic API ${res.status}`);
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`Anthropic API ${res.status}: ${body}`);
+  }
   const data = await res.json();
   const textBlock = data.content?.find(b => b.type === 'text');
   if (!textBlock) throw new Error('No text block in response');
