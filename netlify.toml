@@ -29,6 +29,10 @@
 [functions."ocgbrief"]
   schedule = "0 3,5,9,14,17,21 * * *"
 
+# ADIZ Brief — daily airspace snapshot, two-stage pipeline (Sonnet+web_search → Haiku→FB)
+[functions."adizbrief"]
+  schedule = "0 7 * * *"
+
 # NBA score card — daily at 11:00 UTC (7am ET)
 [functions."nba-card"]
   schedule = "0 11 * * *"
