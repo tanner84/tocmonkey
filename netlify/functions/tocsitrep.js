@@ -14,6 +14,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 // Per-COCOM OCG focus and geographic scope
+const { getStore } = require('@netlify/blobs');
+
 const COCOM_OCG = {
   EUCOM: {
     aor: 'Europe and Eurasia',
@@ -129,6 +131,18 @@ ${generatedPost}`;
 exports.handler = async function() {
   const siteUrl = (process.env.URL || 'https://tocmonkey.com').replace(/\/$/, '');
   const dateStr = new Date().toISOString().slice(0, 10);
+  const dateKey = `tocsitrep-${dateStr}`;
+
+  try {
+    const store    = getStore('sitrep-dedup');
+    const existing = await store.get(dateKey);
+    if (existing) {
+      console.log(`tocsitrep: already posted for ${dateKey} — skipping`);
+      return { statusCode: 200, body: `Already posted for ${dateKey}` };
+    }
+  } catch(e) {
+    console.warn('Blobs dedup check failed (non-fatal):', e.message);
+  }
 
   // ── Fetch all 6 COCOMs concurrently ──────────────────────────────────────
   const [eucomRes, centcomRes, indopacomRes, northcomRes, southcomRes, africomRes] =
@@ -291,10 +305,19 @@ Output only the post text — no preamble, no explanation.`;
   // ── Post to Facebook ──────────────────────────────────────────────────────
   try {
     const fbResult = await postToFacebook(finalText);
-    console.log(`TOC SITREP posted: ${fbResult.id}`);
+    const postId   = fbResult.id || fbResult.post_id || 'unknown';
+    console.log(`TOC SITREP posted: ${postId}`);
+
+    try {
+      const store = getStore('sitrep-dedup');
+      await store.set(dateKey, postId);
+    } catch(e) {
+      console.warn('Blobs dedup write failed (non-fatal):', e.message);
+    }
+
     return {
       statusCode: 200,
-      body: JSON.stringify({ ok: true, fb_post_id: fbResult.id, brief: finalText }),
+      body: JSON.stringify({ ok: true, fb_post_id: postId, brief: finalText }),
     };
   } catch(fbErr) {
     console.error('Facebook post failed:', fbErr.message);

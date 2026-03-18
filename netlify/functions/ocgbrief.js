@@ -16,6 +16,8 @@
 //   FACEBOOK_PAGE_ACCESS_TOKEN or FACEBOOK_ACCESS_TOKEN
 // ─────────────────────────────────────────────────────────────────────────────
 
+const { getStore } = require('@netlify/blobs');
+
 const OCG_COCOM = {
   3:  { cocom: 'EUCOM',     full: 'U.S. European Command',     aor: 'Europe and Eurasia', regions: 'Balkans, Eastern Europe, Caucasus, Western Europe' },
   5:  { cocom: 'CENTCOM',   full: 'U.S. Central Command',      aor: 'Middle East and Central Asia', regions: 'Afghanistan, Iran, Iraq, Syria, Central Asia, Arabian Peninsula' },
@@ -175,8 +177,21 @@ exports.handler = async function() {
   const utcHour   = new Date().getUTCHours();
   const cocomInfo = getCocom(utcHour);
   const timestamp = new Date().toISOString().replace('T', ' ').slice(0, 16);
+  const dateKey   = `ocg-${cocomInfo.cocom}-${new Date().toISOString().slice(0,10)}`;
 
   console.log(`ocgbrief: hour=${utcHour} → ${cocomInfo.cocom}`);
+
+  // ── Dedup — one post per COCOM per day ────────────────────────────────────
+  try {
+    const store    = getStore('sitrep-dedup');
+    const existing = await store.get(dateKey);
+    if (existing) {
+      console.log(`ocgbrief ${cocomInfo.cocom}: already posted for ${dateKey} — skipping`);
+      return { statusCode: 200, body: `Already posted for ${dateKey}` };
+    }
+  } catch(e) {
+    console.warn('Blobs dedup check failed (non-fatal):', e.message);
+  }
 
   // ── Fetch draft via web_search ─────────────────────────────────────────────
   let draft, sources;
@@ -215,10 +230,19 @@ exports.handler = async function() {
   // ── Post to Facebook ───────────────────────────────────────────────────────
   try {
     const fbResult = await postToFacebook(finalText);
-    console.log(`ocgbrief ${cocomInfo.cocom} posted: ${fbResult.id}`);
+    const postId   = fbResult.id || fbResult.post_id || 'unknown';
+    console.log(`ocgbrief ${cocomInfo.cocom} posted: ${postId}`);
+
+    try {
+      const store = getStore('sitrep-dedup');
+      await store.set(dateKey, postId);
+    } catch(e) {
+      console.warn('Blobs dedup write failed (non-fatal):', e.message);
+    }
+
     return {
       statusCode: 200,
-      body: JSON.stringify({ ok: true, cocom: cocomInfo.cocom, fb_post_id: fbResult.id }),
+      body: JSON.stringify({ ok: true, cocom: cocomInfo.cocom, fb_post_id: postId }),
     };
   } catch(e) {
     console.error('Facebook post failed:', e.message);

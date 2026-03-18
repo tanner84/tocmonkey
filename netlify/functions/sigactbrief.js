@@ -18,6 +18,8 @@
 //   URL  (auto-set by Netlify — the site's deploy URL)
 // ─────────────────────────────────────────────────────────────────────────────
 
+const { getStore } = require('@netlify/blobs');
+
 // UTC hour → COCOM rotation (4-hour windows)
 const COCOM_ROTATION = [
   {
@@ -134,8 +136,21 @@ exports.handler = async function() {
   const utcHour = new Date().getUTCHours();
   const { cocom, full, focus, exclude } = getCocomForHour(utcHour);
   const timestamp = new Date().toISOString().replace('T',' ').slice(0,16);
+  const dateKey   = `sigact-${cocom}-${new Date().toISOString().slice(0,10)}`;
 
   const siteUrl = (process.env.URL || 'https://tocmonkey.com').replace(/\/$/, '');
+
+  // ── Dedup — one post per COCOM per day ────────────────────────────────────
+  try {
+    const store    = getStore('sitrep-dedup');
+    const existing = await store.get(dateKey);
+    if (existing) {
+      console.log(`sigactbrief ${cocom}: already posted for ${dateKey} — skipping`);
+      return { statusCode: 200, body: `Already posted for ${dateKey}` };
+    }
+  } catch(e) {
+    console.warn('Blobs dedup check failed (non-fatal):', e.message);
+  }
 
   // ── Fetch RSS items ───────────────────────────────────────────────────────
   let items = [];
@@ -241,10 +256,19 @@ Output only the post text — no preamble, no explanation.`;
   // ── Post to Facebook ──────────────────────────────────────────────────────
   try {
     const fbResult = await postToFacebook(finalText);
-    console.log(`SIGACT ${cocom} posted: ${fbResult.id}`);
+    const postId   = fbResult.id || fbResult.post_id || 'unknown';
+    console.log(`SIGACT ${cocom} posted: ${postId}`);
+
+    try {
+      const store = getStore('sitrep-dedup');
+      await store.set(dateKey, postId);
+    } catch(e) {
+      console.warn('Blobs dedup write failed (non-fatal):', e.message);
+    }
+
     return {
       statusCode: 200,
-      body: JSON.stringify({ ok: true, cocom, fb_post_id: fbResult.id, brief: finalText }),
+      body: JSON.stringify({ ok: true, cocom, fb_post_id: postId, brief: finalText }),
     };
   } catch(fbErr) {
     console.error('Facebook post failed:', fbErr.message);

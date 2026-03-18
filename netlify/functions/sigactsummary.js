@@ -14,6 +14,8 @@
 //   URL  (auto-set by Netlify)
 // ─────────────────────────────────────────────────────────────────────────────
 
+const { getStore } = require('@netlify/blobs');
+
 const COCOM_AOR = {
   EUCOM:     'Europe and Eurasia — Ukraine conflict, NATO posture, Balkans, Baltic states, Russian military activity, European defense industry. NOT Middle East, Africa, or Asia.',
   CENTCOM:   'Middle East and Central Asia — Iraq, Syria, Iran, Yemen, Afghanistan, Red Sea/Arabian Gulf, Israel-Gaza. NOT Europe, Sub-Saharan Africa, or Asia-Pacific.',
@@ -101,6 +103,18 @@ ${generatedPost}`;
 exports.handler = async function() {
   const siteUrl = (process.env.URL || 'https://tocmonkey.com').replace(/\/$/, '');
   const dateStr = new Date().toISOString().slice(0, 10);
+  const dateKey = `sigactsummary-${dateStr}`;
+
+  try {
+    const store    = getStore('sitrep-dedup');
+    const existing = await store.get(dateKey);
+    if (existing) {
+      console.log(`sigactsummary: already posted for ${dateKey} — skipping`);
+      return { statusCode: 200, body: `Already posted for ${dateKey}` };
+    }
+  } catch(e) {
+    console.warn('Blobs dedup check failed (non-fatal):', e.message);
+  }
 
   // ── Fetch all three COCOMs concurrently ───────────────────────────────────
   const [eucomRes, centcomRes, indopacomRes] = await Promise.allSettled([
@@ -221,10 +235,19 @@ Output only the post text — no preamble, no explanation.`;
   // ── Post to Facebook ──────────────────────────────────────────────────────
   try {
     const fbResult = await postToFacebook(finalText);
-    console.log(`24hr summary posted: ${fbResult.id}`);
+    const postId   = fbResult.id || fbResult.post_id || 'unknown';
+    console.log(`24hr summary posted: ${postId}`);
+
+    try {
+      const store = getStore('sitrep-dedup');
+      await store.set(dateKey, postId);
+    } catch(e) {
+      console.warn('Blobs dedup write failed (non-fatal):', e.message);
+    }
+
     return {
       statusCode: 200,
-      body: JSON.stringify({ ok: true, fb_post_id: fbResult.id, brief: finalText }),
+      body: JSON.stringify({ ok: true, fb_post_id: postId, brief: finalText }),
     };
   } catch(fbErr) {
     console.error('Facebook post failed:', fbErr.message);

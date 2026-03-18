@@ -13,6 +13,8 @@
 //   URL  (auto-set by Netlify)
 // ─────────────────────────────────────────────────────────────────────────────
 
+const { getStore } = require('@netlify/blobs');
+
 async function fetchRSSItems(cocom, siteUrl) {
   const url = `${siteUrl}/.netlify/functions/rss?cocom=${cocom}`;
   const res = await fetch(url, { signal: AbortSignal.timeout(15000) });
@@ -92,7 +94,21 @@ ${generatedPost}`;
 
 exports.handler = async function() {
   const siteUrl = (process.env.URL || 'https://tocmonkey.com').replace(/\/$/, '');
-  const dateStr = new Date().toISOString().slice(0, 10);
+  const now     = new Date();
+  const dateStr = now.toISOString().slice(0, 10);
+  const dateKey = `maritime-${dateStr}`;
+
+  // ── Dedup — one post per day ───────────────────────────────────────────────
+  try {
+    const store    = getStore('sitrep-dedup');
+    const existing = await store.get(dateKey);
+    if (existing) {
+      console.log(`maritimesitrep: already posted for ${dateKey} — skipping`);
+      return { statusCode: 200, body: `Already posted for ${dateKey}` };
+    }
+  } catch(e) {
+    console.warn('Blobs dedup check failed (non-fatal):', e.message);
+  }
 
   // ── Fetch maritime-relevant COCOMs + ALL maritime sources concurrently ─────
   const [centcomRes, indopacomRes, eucomRes, northcomRes, allRes] =
@@ -262,10 +278,19 @@ Output only the post text — no preamble, no explanation.`;
   // ── Post to Facebook ──────────────────────────────────────────────────────
   try {
     const fbResult = await postToFacebook(finalText);
-    console.log(`Maritime SITREP posted: ${fbResult.id}`);
+    const postId   = fbResult.id || fbResult.post_id || 'unknown';
+    console.log(`Maritime SITREP posted: ${postId}`);
+
+    try {
+      const store = getStore('sitrep-dedup');
+      await store.set(dateKey, postId);
+    } catch(e) {
+      console.warn('Blobs dedup write failed (non-fatal):', e.message);
+    }
+
     return {
       statusCode: 200,
-      body: JSON.stringify({ ok: true, fb_post_id: fbResult.id, brief: finalText }),
+      body: JSON.stringify({ ok: true, fb_post_id: postId, brief: finalText }),
     };
   } catch(fbErr) {
     console.error('Facebook post failed:', fbErr.message);
