@@ -13,8 +13,18 @@
 //   FACEBOOK_PAGE_ACCESS_TOKEN or FACEBOOK_ACCESS_TOKEN
 // ─────────────────────────────────────────────────────────────────────────────
 
-const { createCanvas, loadImage } = require('@napi-rs/canvas');
+const path = require('path');
+const { createCanvas, loadImage, GlobalFonts } = require('@napi-rs/canvas');
 const { getStore } = require('@netlify/blobs');
+
+// Register bundled fonts — Lambda has no system fonts
+(function registerFonts() {
+  const fontDir = path.join(process.env.LAMBDA_TASK_ROOT || path.join(__dirname, '../..'), 'public/fonts');
+  try {
+    GlobalFonts.registerFromPath(path.join(fontDir, 'RobotoMono-Regular.ttf'), 'RobotoMono');
+    GlobalFonts.registerFromPath(path.join(fontDir, 'RobotoMono-Bold.ttf'), 'RobotoMono');
+  } catch(e) { console.warn('Font registration failed:', e.message); }
+}());
 
 // ── Colors ────────────────────────────────────────────────────────────────────
 const C = {
@@ -119,19 +129,19 @@ async function buildCard(eventName, fights, dateStr) {
 
   // ── Sport label "UFC" ────────────────────────────────────────────────────────
   ctx.fillStyle = C.accent;
-  ctx.font = 'bold 72px monospace';
+  ctx.font = 'bold 72px RobotoMono';
   ctx.textAlign = 'right';
   ctx.fillText('UFC', W - 30, 105);
 
   // ── Date ────────────────────────────────────────────────────────────────────
   ctx.fillStyle = C.dimBlue;
-  ctx.font = '24px monospace';
+  ctx.font = '24px RobotoMono';
   ctx.textAlign = 'right';
   ctx.fillText(dateStr, W - 30, 140);
 
   // ── Event name ──────────────────────────────────────────────────────────────
   ctx.fillStyle = C.winGold;
-  ctx.font = 'bold 22px monospace';
+  ctx.font = 'bold 22px RobotoMono';
   ctx.textAlign = 'right';
   const evLabel = String(eventName).toUpperCase().slice(0, 38);
   ctx.fillText(evLabel, W - 30, 170);
@@ -142,7 +152,7 @@ async function buildCard(eventName, fights, dateStr) {
 
   // ── Column header ───────────────────────────────────────────────────────────
   ctx.fillStyle = C.dimBlue;
-  ctx.font = '14px monospace';
+  ctx.font = '14px RobotoMono';
   ctx.textAlign = 'left';
   ctx.fillText('WINNER', 30, 218);
   ctx.textAlign = 'right';
@@ -180,7 +190,7 @@ async function buildCard(eventName, fights, dateStr) {
 
     // ── Winner (left) ─────────────────────────────────────────────────────────
     ctx.fillStyle = C.winGold;
-    ctx.font = 'bold 20px monospace';
+    ctx.font = 'bold 20px RobotoMono';
     ctx.textAlign = 'left';
     ctx.fillText(String(f.winner || '').slice(0, 18), 30, midY);
 
@@ -190,7 +200,7 @@ async function buildCard(eventName, fights, dateStr) {
 
     // ── Loser (right) ─────────────────────────────────────────────────────────
     ctx.fillStyle = C.loseText;
-    ctx.font = '18px monospace';
+    ctx.font = '18px RobotoMono';
     ctx.textAlign = 'right';
     ctx.fillText(String(f.loser || '').slice(0, 18), W - 30, midY);
 
@@ -206,25 +216,25 @@ async function buildCard(eventName, fights, dateStr) {
     ctx.fill();
 
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 14px monospace';
+    ctx.font = 'bold 14px RobotoMono';
     ctx.textAlign = 'center';
     ctx.fillText(methodStr, W / 2, badgeY + 18);
 
     // ── Round · Time · Weight class (center sub-row) ──────────────────────────
     ctx.fillStyle = C.at;
-    ctx.font = '13px monospace';
+    ctx.font = '13px RobotoMono';
     ctx.textAlign = 'center';
     ctx.fillText(`${detailStr}  ·  ${wcStr}`, W / 2, subY);
   }
 
   // ── Footer ────────────────────────────────────────────────────────────────
   ctx.fillStyle = C.faintBlue;
-  ctx.font = '20px monospace';
+  ctx.font = '20px RobotoMono';
   ctx.textAlign = 'left';
   ctx.fillText('OPEN SOURCE · NOT VERIFIED', 30, 1040);
 
   ctx.fillStyle = C.dimBlue;
-  ctx.font = '22px monospace';
+  ctx.font = '22px RobotoMono';
   ctx.textAlign = 'right';
   ctx.fillText('tocmonkey.com', W - 30, 1040);
 

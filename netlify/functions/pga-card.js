@@ -13,8 +13,18 @@
 //   FACEBOOK_PAGE_ACCESS_TOKEN or FACEBOOK_ACCESS_TOKEN
 // ─────────────────────────────────────────────────────────────────────────────
 
-const { createCanvas, loadImage } = require('@napi-rs/canvas');
+const path = require('path');
+const { createCanvas, loadImage, GlobalFonts } = require('@napi-rs/canvas');
 const { getStore } = require('@netlify/blobs');
+
+// Register bundled fonts — Lambda has no system fonts
+(function registerFonts() {
+  const fontDir = path.join(process.env.LAMBDA_TASK_ROOT || path.join(__dirname, '../..'), 'public/fonts');
+  try {
+    GlobalFonts.registerFromPath(path.join(fontDir, 'RobotoMono-Regular.ttf'), 'RobotoMono');
+    GlobalFonts.registerFromPath(path.join(fontDir, 'RobotoMono-Bold.ttf'), 'RobotoMono');
+  } catch(e) { console.warn('Font registration failed:', e.message); }
+}());
 
 const C = {
   bg:        '#030a03',
@@ -129,25 +139,25 @@ async function buildCard(tournament, round, players, dateStr) {
 
   // Sport label "PGA"
   ctx.fillStyle = C.gold;
-  ctx.font = 'bold 72px monospace';
+  ctx.font = 'bold 72px RobotoMono';
   ctx.textAlign = 'right';
   ctx.fillText('PGA', W - 30, 105);
 
   // Round indicator
   ctx.fillStyle = C.accent;
-  ctx.font = 'bold 28px monospace';
+  ctx.font = 'bold 28px RobotoMono';
   ctx.textAlign = 'right';
   ctx.fillText(round ? `ROUND ${round.replace(/[^0-9]/g, '')}` : '', W - 30, 145);
 
   // Date
   ctx.fillStyle = C.dimGreen;
-  ctx.font = '22px monospace';
+  ctx.font = '22px RobotoMono';
   ctx.textAlign = 'right';
   ctx.fillText(dateStr, W - 30, 175);
 
   // Tournament name (below logo, left side)
   ctx.fillStyle = C.gold;
-  ctx.font = 'bold 22px monospace';
+  ctx.font = 'bold 22px RobotoMono';
   ctx.textAlign = 'left';
   const tnLabel = String(tournament || 'PGA TOUR').toUpperCase().slice(0, 34);
   ctx.fillText(tnLabel, 200, 80);
@@ -158,7 +168,7 @@ async function buildCard(tournament, round, players, dateStr) {
 
   // Column headers
   ctx.fillStyle = C.goldDim;
-  ctx.font = '16px monospace';
+  ctx.font = '16px RobotoMono';
   ctx.textAlign = 'center';
   ctx.fillText('POS', 55, 220);
   ctx.textAlign = 'left';
@@ -191,7 +201,7 @@ async function buildCard(tournament, round, players, dateStr) {
 
     // Position
     ctx.fillStyle = posColor(p.pos);
-    ctx.font = 'bold 22px monospace';
+    ctx.font = 'bold 22px RobotoMono';
     ctx.textAlign = 'center';
     ctx.fillText(String(p.pos || '').slice(0, 4), 55, midY);
 
@@ -203,40 +213,40 @@ async function buildCard(tournament, round, players, dateStr) {
 
     // Player name
     ctx.fillStyle = C.even;
-    ctx.font = 'bold 22px monospace';
+    ctx.font = 'bold 22px RobotoMono';
     ctx.textAlign = 'left';
     ctx.fillText(String(p.name || '').slice(0, 22), 110, midY);
 
     // Total score
     const totalStr = formatScore(p.total);
     ctx.fillStyle = scoreColor(p.total);
-    ctx.font = 'bold 26px monospace';
+    ctx.font = 'bold 26px RobotoMono';
     ctx.textAlign = 'center';
     ctx.fillText(totalStr, 700, midY);
 
     // Today's score
     const todayStr = formatScore(p.today);
     ctx.fillStyle = scoreColor(p.today);
-    ctx.font = '22px monospace';
+    ctx.font = '22px RobotoMono';
     ctx.textAlign = 'center';
     ctx.fillText(todayStr, 840, midY);
 
     // Thru
     const thruStr = String(p.thru || '-');
     ctx.fillStyle = thruStr === 'F' ? C.dimGreen : C.gold;
-    ctx.font = thruStr === 'F' ? '18px monospace' : '20px monospace';
+    ctx.font = thruStr === 'F' ? '18px RobotoMono' : '20px RobotoMono';
     ctx.textAlign = 'center';
     ctx.fillText(thruStr, 980, midY);
   }
 
   // Footer
   ctx.fillStyle = C.faintGreen;
-  ctx.font = '20px monospace';
+  ctx.font = '20px RobotoMono';
   ctx.textAlign = 'left';
   ctx.fillText('OPEN SOURCE · NOT VERIFIED', 30, 1040);
 
   ctx.fillStyle = C.dimGreen;
-  ctx.font = '22px monospace';
+  ctx.font = '22px RobotoMono';
   ctx.textAlign = 'right';
   ctx.fillText('tocmonkey.com', W - 30, 1040);
 

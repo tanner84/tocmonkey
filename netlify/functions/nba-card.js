@@ -13,8 +13,18 @@
 //   FACEBOOK_PAGE_ACCESS_TOKEN or FACEBOOK_ACCESS_TOKEN
 // ─────────────────────────────────────────────────────────────────────────────
 
-const { createCanvas, loadImage } = require('@napi-rs/canvas');
+const path = require('path');
+const { createCanvas, loadImage, GlobalFonts } = require('@napi-rs/canvas');
 const { getStore } = require('@netlify/blobs');
+
+// Register bundled fonts — Lambda has no system fonts
+(function registerFonts() {
+  const fontDir = path.join(process.env.LAMBDA_TASK_ROOT || path.join(__dirname, '../..'), 'public/fonts');
+  try {
+    GlobalFonts.registerFromPath(path.join(fontDir, 'RobotoMono-Regular.ttf'), 'RobotoMono');
+    GlobalFonts.registerFromPath(path.join(fontDir, 'RobotoMono-Bold.ttf'), 'RobotoMono');
+  } catch(e) { console.warn('Font registration failed:', e.message); }
+}());
 
 const C = {
   bg:        '#080f18',
@@ -101,13 +111,13 @@ async function buildCard(games, dateStr) {
 
   // Sport label
   ctx.fillStyle = C.accent;
-  ctx.font = 'bold 72px monospace';
+  ctx.font = 'bold 72px RobotoMono';
   ctx.textAlign = 'right';
   ctx.fillText('NBA', W - 30, 105);
 
   // Date
   ctx.fillStyle = C.dimBlue;
-  ctx.font = '28px monospace';
+  ctx.font = '28px RobotoMono';
   ctx.textAlign = 'right';
   ctx.fillText(dateStr, W - 30, 150);
 
@@ -150,43 +160,43 @@ async function buildCard(games, dateStr) {
 
     // Away team
     ctx.fillStyle = awayColor;
-    ctx.font = `${awayWon ? 'bold ' : ''}20px monospace`;
+    ctx.font = `${awayWon ? 'bold ' : ''}20px RobotoMono`;
     ctx.textAlign = 'left';
     ctx.fillText(String(g.away || '').slice(0, 12), COL.awayTeamL, textY);
 
     // Away score
     ctx.fillStyle = awayColor;
-    ctx.font = `${awayWon ? 'bold ' : ''}22px monospace`;
+    ctx.font = `${awayWon ? 'bold ' : ''}22px RobotoMono`;
     ctx.textAlign = 'right';
     ctx.fillText(String(g.awayScore ?? ''), COL.awayScoreR, textY);
 
     // "@"
     ctx.fillStyle = C.at;
-    ctx.font = '18px monospace';
+    ctx.font = '18px RobotoMono';
     ctx.textAlign = 'center';
     ctx.fillText('@', COL.atCenter, textY);
 
     // Home score + OT
     ctx.fillStyle = homeColor;
-    ctx.font = `${homeWon ? 'bold ' : ''}22px monospace`;
+    ctx.font = `${homeWon ? 'bold ' : ''}22px RobotoMono`;
     ctx.textAlign = 'left';
     ctx.fillText(String(g.homeScore ?? '') + otLabel(g.ot), COL.homeScoreL, textY);
 
     // Home team
     ctx.fillStyle = homeColor;
-    ctx.font = `${homeWon ? 'bold ' : ''}20px monospace`;
+    ctx.font = `${homeWon ? 'bold ' : ''}20px RobotoMono`;
     ctx.textAlign = 'right';
     ctx.fillText(String(g.home || '').slice(0, 12), COL.homeTeamR, textY);
   }
 
   // Footer
   ctx.fillStyle = C.faintBlue;
-  ctx.font = '20px monospace';
+  ctx.font = '20px RobotoMono';
   ctx.textAlign = 'left';
   ctx.fillText('OPEN SOURCE · NOT VERIFIED', 30, 1040);
 
   ctx.fillStyle = C.dimBlue;
-  ctx.font = '22px monospace';
+  ctx.font = '22px RobotoMono';
   ctx.textAlign = 'right';
   ctx.fillText('tocmonkey.com', W - 30, 1040);
 
