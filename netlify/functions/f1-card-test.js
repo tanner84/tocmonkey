@@ -10,31 +10,30 @@ const path = require('path');
 const { createCanvas, GlobalFonts } = require('@napi-rs/canvas');
 const { getStore } = require('@netlify/blobs');
 
-// ── Font registration ─────────────────────────────────────────────────────────
+// ── Font setup ────────────────────────────────────────────────────────────────
+let FONT = 'sans-serif'; // fallback — overwritten if registration succeeds
+
 (function registerFonts() {
   const fontDir = path.join(process.env.LAMBDA_TASK_ROOT || path.join(__dirname, '../..'), 'public/fonts');
   try {
-    // Try custom TTF first
-    const regBuf  = fs.readFileSync(path.join(fontDir, 'RobotoMono-Regular.ttf'));
-    const boldBuf = fs.readFileSync(path.join(fontDir, 'RobotoMono-Bold.ttf'));
-    const r1 = GlobalFonts.register(regBuf);
-    const r2 = GlobalFonts.register(boldBuf);
+    // loadFontsFromDir registers every TTF in the dir under its embedded family name
+    const n = GlobalFonts.loadFontsFromDir(fontDir);
     let families = GlobalFonts.getFamilies();
-    console.log(`f1-card-test register: r1=${r1} r2=${r2} families=${JSON.stringify(families)}`);
+    console.log(`f1-card-test loadFontsFromDir(${fontDir}): loaded=${n} families=${JSON.stringify(families)}`);
 
-    // If nothing registered, try loading system fonts
     if (!families || families.length === 0) {
-      console.log('f1-card-test: no custom fonts, trying loadSystemFonts...');
-      GlobalFonts.loadSystemFonts();
+      // Fallback: register buffers individually
+      GlobalFonts.register(fs.readFileSync(path.join(fontDir, 'RobotoMono-Regular.ttf')));
+      GlobalFonts.register(fs.readFileSync(path.join(fontDir, 'RobotoMono-Bold.ttf')));
       families = GlobalFonts.getFamilies();
-      console.log(`f1-card-test system fonts: count=${families.length} first=${JSON.stringify(families[0])}`);
+      console.log(`f1-card-test register(buffer) fallback: families=${JSON.stringify(families)}`);
     }
 
-    // Set alias from whatever registered
     if (families && families.length > 0) {
-      const actual = (families[0].family || families[0]).toString();
-      GlobalFonts.setAlias(actual, 'RobotoMono');
-      console.log(`f1-card-test alias: "${actual}" -> "RobotoMono"`);
+      FONT = (families[0].family || families[0]).toString();
+      console.log(`f1-card-test FONT="${FONT}"`);
+    } else {
+      console.warn('f1-card-test: no fonts registered, using sans-serif fallback');
     }
   } catch(e) {
     console.error('f1-card-test font registration failed:', e.message, '| dir:', fontDir);
@@ -87,7 +86,7 @@ async function fetchResults(anthropicKey) {
   const textBlock = data.content?.find(b => b.type === 'text');
   if (!textBlock) throw new Error('No text block in response');
 
-  const text = textBlock.text.trim().replace(/^```json?\n?/, '').replace(/\n?```$/, '');
+  const text = textBlock.text.trim().replace(/^```json?${FONT}n?/, '').replace(/${FONT}n?```$/, '');
   return JSON.parse(text);
 }
 
@@ -107,31 +106,31 @@ function buildCard(data) {
 
   // ── "F1" label ───────────────────────────────────────────────────────────────
   ctx.fillStyle = C.red;
-  ctx.font = "bold 96px RobotoMono";
+  ctx.font = `bold 96px ${FONT}`;
   ctx.textAlign = 'left';
   ctx.fillText('F1', 40, 120);
 
   // ── "RACE RESULTS" label ──────────────────────────────────────────────────────
   ctx.fillStyle = C.white;
-  ctx.font = "bold 36px RobotoMono";
+  ctx.font = `bold 36px ${FONT}`;
   ctx.textAlign = 'left';
   ctx.fillText('RACE RESULTS', 40, 165);
 
   // ── Race name (right side) ────────────────────────────────────────────────────
   ctx.fillStyle = C.white;
-  ctx.font = "bold 28px RobotoMono";
+  ctx.font = `bold 28px ${FONT}`;
   ctx.textAlign = 'right';
   const raceName = String(data.race || '').toUpperCase();
   ctx.fillText(raceName, W - 40, 100);
 
   // ── Circuit + date ────────────────────────────────────────────────────────────
   ctx.fillStyle = C.dim;
-  ctx.font = "22px RobotoMono";
+  ctx.font = `22px ${FONT}`;
   ctx.textAlign = 'right';
   ctx.fillText(String(data.circuit || ''), W - 40, 132);
 
   ctx.fillStyle = C.dim;
-  ctx.font = "22px RobotoMono";
+  ctx.font = `22px ${FONT}`;
   ctx.textAlign = 'right';
   ctx.fillText(String(data.date || ''), W - 40, 162);
 
@@ -160,26 +159,26 @@ function buildCard(data) {
 
     // Position label
     ctx.fillStyle = color;
-    ctx.font = "bold 80px RobotoMono";
+    ctx.font = `bold 80px ${FONT}`;
     ctx.textAlign = 'left';
     ctx.fillText(POS_LABEL[pos] || `P${pos}`, 50, rowY + 95);
 
     // Driver name
     ctx.fillStyle = C.white;
-    ctx.font = "bold 42px RobotoMono";
+    ctx.font = `bold 42px ${FONT}`;
     ctx.textAlign = 'left';
     ctx.fillText(String(r.driver || ''), 200, rowY + 68);
 
     // Team name
     ctx.fillStyle = C.dim;
-    ctx.font = "28px RobotoMono";
+    ctx.font = `28px ${FONT}`;
     ctx.textAlign = 'left';
     ctx.fillText(String(r.team || ''), 200, rowY + 110);
 
     // Time / gap
     const timeStr = pos === 1 ? (r.time || '') : (r.gap || '');
     ctx.fillStyle = color;
-    ctx.font = "bold 32px RobotoMono";
+    ctx.font = `bold 32px ${FONT}`;
     ctx.textAlign = 'right';
     ctx.fillText(String(timeStr), W - 50, rowY + 90);
   });
@@ -190,12 +189,12 @@ function buildCard(data) {
 
   // ── Footer ────────────────────────────────────────────────────────────────────
   ctx.fillStyle = C.faint;
-  ctx.font = "20px RobotoMono";
+  ctx.font = `20px ${FONT}`;
   ctx.textAlign = 'left';
   ctx.fillText('OPEN SOURCE · NOT VERIFIED', 40, 1068);
 
   ctx.fillStyle = C.dim;
-  ctx.font = "20px RobotoMono";
+  ctx.font = `20px ${FONT}`;
   ctx.textAlign = 'right';
   ctx.fillText('tocmonkey.com', W - 40, 1068);
 
@@ -252,7 +251,7 @@ exports.handler = async () => {
   const dateStr = new Date().toLocaleDateString('en-US', {
     month: 'short', day: 'numeric', year: 'numeric', timeZone: 'America/New_York',
   }).toUpperCase();
-  const message = `[F1] ${data.race || 'RACE RESULTS'} | ${data.date || dateStr}\n\ntocmonkey.com\n\n#F1 #Formula1 #TOCMonkey`;
+  const message = `[F1] ${data.race || 'RACE RESULTS'} | ${data.date || dateStr}${FONT}n${FONT}ntocmonkey.com${FONT}n${FONT}n#F1 #Formula1 #TOCMonkey`;
 
   try {
     const result = await postPhoto(imageBuffer, message);
