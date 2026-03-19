@@ -1,10 +1,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // OCG Brief — Netlify Scheduled Function
-// Schedule: 0 3,5,9,14,17,21 * * * (fills gaps between SIGACT/other reports)
+// Schedule: 0 2,6,10,15,19,23 * * * (midpoints between SIGACT posts)
 //
 // UTC hour → COCOM:
-//   03 → EUCOM      05 → CENTCOM     09 → INDOPACOM
-//   14 → AFRICOM    17 → SOUTHCOM    21 → NORTHCOM
+//   02 → EUCOM      06 → CENTCOM     10 → INDOPACOM
+//   15 → AFRICOM    19 → SOUTHCOM    23 → NORTHCOM
 //
 // 1. web_search for organized crime SIGACTs in COCOM AOR (Claude Sonnet)
 // 2. Second-pass verification (Claude Haiku)
@@ -19,12 +19,12 @@
 const { getStore } = require('@netlify/blobs');
 
 const OCG_COCOM = {
-  3:  { cocom: 'EUCOM',     full: 'U.S. European Command',     aor: 'Europe and Eurasia', regions: 'Balkans, Eastern Europe, Caucasus, Western Europe' },
-  5:  { cocom: 'CENTCOM',   full: 'U.S. Central Command',      aor: 'Middle East and Central Asia', regions: 'Afghanistan, Iran, Iraq, Syria, Central Asia, Arabian Peninsula' },
-  9:  { cocom: 'INDOPACOM', full: 'U.S. Indo-Pacific Command',  aor: 'Indo-Pacific', regions: 'Southeast Asia, South Asia, East Asia, Pacific Islands' },
-  14: { cocom: 'AFRICOM',   full: 'U.S. Africa Command',        aor: 'Africa', regions: 'Sahel, Horn of Africa, West Africa, Central Africa, East Africa' },
-  17: { cocom: 'SOUTHCOM',  full: 'U.S. Southern Command',      aor: 'Latin America and Caribbean', regions: 'Mexico, Central America, Colombia, Venezuela, Caribbean, Brazil' },
-  21: { cocom: 'NORTHCOM',  full: 'U.S. Northern Command',      aor: 'North America', regions: 'United States, Canada, Mexico border, Arctic' },
+  2:  { cocom: 'EUCOM',     full: 'U.S. European Command',     aor: 'Europe and Eurasia', regions: 'Balkans, Eastern Europe, Caucasus, Western Europe' },
+  6:  { cocom: 'CENTCOM',   full: 'U.S. Central Command',      aor: 'Middle East and Central Asia', regions: 'Afghanistan, Iran, Iraq, Syria, Central Asia, Arabian Peninsula' },
+  10: { cocom: 'INDOPACOM', full: 'U.S. Indo-Pacific Command',  aor: 'Indo-Pacific', regions: 'Southeast Asia, South Asia, East Asia, Pacific Islands' },
+  15: { cocom: 'AFRICOM',   full: 'U.S. Africa Command',        aor: 'Africa', regions: 'Sahel, Horn of Africa, West Africa, Central Africa, East Africa' },
+  19: { cocom: 'SOUTHCOM',  full: 'U.S. Southern Command',      aor: 'Latin America and Caribbean', regions: 'Mexico, Central America, Colombia, Venezuela, Caribbean, Brazil' },
+  23: { cocom: 'NORTHCOM',  full: 'U.S. Northern Command',      aor: 'North America', regions: 'United States, Canada, Mexico border, Arctic' },
 };
 
 function getCocom(utcHour) {

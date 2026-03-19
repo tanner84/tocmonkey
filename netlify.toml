@@ -25,10 +25,10 @@
 [functions."maritimesitrep"]
   schedule = "0 1 * * *"
 
-# OCG Brief — organized crime SIGACTs per COCOM, fills schedule gaps
-# 03→EUCOM  05→CENTCOM  09→INDOPACOM  14→AFRICOM  17→SOUTHCOM  21→NORTHCOM
+# OCG Brief — organized crime SIGACTs per COCOM, midpoints between SIGACT posts
+# 02→EUCOM  06→CENTCOM  10→INDOPACOM  15→AFRICOM  19→SOUTHCOM  23→NORTHCOM
 [functions."ocgbrief"]
-  schedule = "0 3,5,9,14,17,21 * * *"
+  schedule = "0 2,6,10,15,19,23 * * *"
 
 # ADIZ Brief — daily airspace snapshot, two-stage pipeline (Sonnet+web_search → Haiku→FB)
 [functions."adizbrief"]
