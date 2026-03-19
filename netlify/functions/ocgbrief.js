@@ -23,7 +23,26 @@ const OCG_COCOM = {
   6:  { cocom: 'CENTCOM',   full: 'U.S. Central Command',      aor: 'Middle East and Central Asia', regions: 'Afghanistan, Iran, Iraq, Syria, Central Asia, Arabian Peninsula' },
   10: { cocom: 'INDOPACOM', full: 'U.S. Indo-Pacific Command',  aor: 'Indo-Pacific', regions: 'Southeast Asia, South Asia, East Asia, Pacific Islands' },
   15: { cocom: 'AFRICOM',   full: 'U.S. Africa Command',        aor: 'Africa', regions: 'Sahel, Horn of Africa, West Africa, Central Africa, East Africa' },
-  19: { cocom: 'SOUTHCOM',  full: 'U.S. Southern Command',      aor: 'Latin America and Caribbean', regions: 'Mexico, Central America, Colombia, Venezuela, Caribbean, Brazil' },
+  19: { cocom: 'SOUTHCOM',  full: 'U.S. Southern Command',      aor: 'Latin America and Caribbean', regions: 'Mexico, Central America, Colombia, Venezuela, Caribbean, Brazil',
+       sources: [
+         // Intelligence & Security
+         'https://insightcrime.org', 'https://www.latinnews.com', 'https://southernpulse.com',
+         'https://latinamericasecurityreport.com',
+         // Military & Defense
+         'https://www.zona-militar.com/en/', 'https://www.infodefensa.com', 'https://military.einnews.com/region/south-america',
+         // Investigative / Crime
+         'https://ojo-publico.com',
+         // Regional News
+         'https://en.mercopress.com', 'https://www.reuters.com/world/americas/', 'https://apnews.com/hub/latin-america',
+         // Country-specific
+         'https://g1.globo.com', 'https://www.lanacion.com.ar', 'https://www.eltiempo.com', 'https://www.semana.com',
+         'https://runrun.es', 'https://efectococuyo.com', 'https://www.primicias.ec',
+         'https://www.paginasiete.bo', 'https://www.animalpolitico.com', 'https://www.milenio.com',
+         // Think Tanks & Analysis
+         'https://igarape.org.br', 'https://www.cfr.org/global-conflict-tracker',
+         'https://www.verdadabierta.com', 'https://www.connectas.org',
+       ],
+  },
   23: { cocom: 'NORTHCOM',  full: 'U.S. Northern Command',      aor: 'North America', regions: 'United States, Canada, Mexico border, Arctic' },
 };
 
@@ -33,11 +52,15 @@ function getCocom(utcHour) {
 
 // ── Fetch OCG SIGACTs via Claude web_search ───────────────────────────────────
 async function fetchOCGSigacts(cocomInfo, timestamp, anthropicKey) {
-  const { cocom, full, aor, regions } = cocomInfo;
+  const { cocom, full, aor, regions, sources } = cocomInfo;
+
+  const sourceBlock = sources && sources.length
+    ? `\nPriority sources to search (check these first):\n${sources.map(s => `- ${s}`).join('\n')}\n`
+    : '';
 
   const prompt = `Search for the latest organized crime and transnational criminal organization (OCG/TCO) activity in the ${full} (${cocom}) area of responsibility: ${aor}.
 Focus on: ${regions}.
-
+${sourceBlock}
 Look for recent news (past 24-48 hours) on:
 - Drug trafficking operations and seizures
 - Human trafficking and smuggling networks
