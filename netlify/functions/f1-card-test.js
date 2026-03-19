@@ -14,9 +14,12 @@ const { getStore } = require('@netlify/blobs');
 (function registerFonts() {
   const fontDir = path.join(process.env.LAMBDA_TASK_ROOT || path.join(__dirname, '../..'), 'public/fonts');
   try {
-    GlobalFonts.register(fs.readFileSync(path.join(fontDir, 'RobotoMono-Regular.ttf')), 'RobotoMono');
-    GlobalFonts.register(fs.readFileSync(path.join(fontDir, 'RobotoMono-Bold.ttf')), 'RobotoMono');
-    console.log('f1-card-test fonts OK. Families:', GlobalFonts.families?.map(f => f.family).join(', '));
+    const regBuf  = fs.readFileSync(path.join(fontDir, 'RobotoMono-Regular.ttf'));
+    const boldBuf = fs.readFileSync(path.join(fontDir, 'RobotoMono-Bold.ttf'));
+    const r1 = GlobalFonts.register(regBuf);
+    const r2 = GlobalFonts.register(boldBuf);
+    const families = (GlobalFonts.families || []).map(f => f.family || JSON.stringify(f)).join(', ');
+    console.log(`f1-card-test fonts OK. reg=${r1} bold=${r2} families=[${families}]`);
   } catch(e) {
     console.error('f1-card-test font registration failed:', e.message, '| dir:', fontDir);
   }
@@ -88,31 +91,31 @@ function buildCard(data) {
 
   // ── "F1" label ───────────────────────────────────────────────────────────────
   ctx.fillStyle = C.red;
-  ctx.font = 'bold 96px RobotoMono';
+  ctx.font = "bold 96px 'Roboto Mono'";
   ctx.textAlign = 'left';
   ctx.fillText('F1', 40, 120);
 
   // ── "RACE RESULTS" label ──────────────────────────────────────────────────────
   ctx.fillStyle = C.white;
-  ctx.font = 'bold 36px RobotoMono';
+  ctx.font = "bold 36px 'Roboto Mono'";
   ctx.textAlign = 'left';
   ctx.fillText('RACE RESULTS', 40, 165);
 
   // ── Race name (right side) ────────────────────────────────────────────────────
   ctx.fillStyle = C.white;
-  ctx.font = 'bold 28px RobotoMono';
+  ctx.font = "bold 28px 'Roboto Mono'";
   ctx.textAlign = 'right';
   const raceName = String(data.race || '').toUpperCase();
   ctx.fillText(raceName, W - 40, 100);
 
   // ── Circuit + date ────────────────────────────────────────────────────────────
   ctx.fillStyle = C.dim;
-  ctx.font = '22px RobotoMono';
+  ctx.font = "22px 'Roboto Mono'";
   ctx.textAlign = 'right';
   ctx.fillText(String(data.circuit || ''), W - 40, 132);
 
   ctx.fillStyle = C.dim;
-  ctx.font = '22px RobotoMono';
+  ctx.font = "22px 'Roboto Mono'";
   ctx.textAlign = 'right';
   ctx.fillText(String(data.date || ''), W - 40, 162);
 
@@ -141,26 +144,26 @@ function buildCard(data) {
 
     // Position label
     ctx.fillStyle = color;
-    ctx.font = 'bold 80px RobotoMono';
+    ctx.font = "bold 80px 'Roboto Mono'";
     ctx.textAlign = 'left';
     ctx.fillText(POS_LABEL[pos] || `P${pos}`, 50, rowY + 95);
 
     // Driver name
     ctx.fillStyle = C.white;
-    ctx.font = 'bold 42px RobotoMono';
+    ctx.font = "bold 42px 'Roboto Mono'";
     ctx.textAlign = 'left';
     ctx.fillText(String(r.driver || ''), 200, rowY + 68);
 
     // Team name
     ctx.fillStyle = C.dim;
-    ctx.font = '28px RobotoMono';
+    ctx.font = "28px 'Roboto Mono'";
     ctx.textAlign = 'left';
     ctx.fillText(String(r.team || ''), 200, rowY + 110);
 
     // Time / gap
     const timeStr = pos === 1 ? (r.time || '') : (r.gap || '');
     ctx.fillStyle = color;
-    ctx.font = 'bold 32px RobotoMono';
+    ctx.font = "bold 32px 'Roboto Mono'";
     ctx.textAlign = 'right';
     ctx.fillText(String(timeStr), W - 50, rowY + 90);
   });
@@ -171,12 +174,12 @@ function buildCard(data) {
 
   // ── Footer ────────────────────────────────────────────────────────────────────
   ctx.fillStyle = C.faint;
-  ctx.font = '20px RobotoMono';
+  ctx.font = "20px 'Roboto Mono'";
   ctx.textAlign = 'left';
   ctx.fillText('OPEN SOURCE · NOT VERIFIED', 40, 1068);
 
   ctx.fillStyle = C.dim;
-  ctx.font = '20px RobotoMono';
+  ctx.font = "20px 'Roboto Mono'";
   ctx.textAlign = 'right';
   ctx.fillText('tocmonkey.com', W - 40, 1068);
 
