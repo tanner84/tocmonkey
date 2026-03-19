@@ -14,17 +14,27 @@ const { getStore } = require('@netlify/blobs');
 (function registerFonts() {
   const fontDir = path.join(process.env.LAMBDA_TASK_ROOT || path.join(__dirname, '../..'), 'public/fonts');
   try {
+    // Try custom TTF first
     const regBuf  = fs.readFileSync(path.join(fontDir, 'RobotoMono-Regular.ttf'));
     const boldBuf = fs.readFileSync(path.join(fontDir, 'RobotoMono-Bold.ttf'));
     const r1 = GlobalFonts.register(regBuf);
     const r2 = GlobalFonts.register(boldBuf);
-    const families = GlobalFonts.getFamilies();
-    console.log(`f1-card-test fonts: r1=${r1} r2=${r2} families=${JSON.stringify(families)}`);
-    // Create alias so ctx.font can use 'RobotoMono' without spaces
+    let families = GlobalFonts.getFamilies();
+    console.log(`f1-card-test register: r1=${r1} r2=${r2} families=${JSON.stringify(families)}`);
+
+    // If nothing registered, try loading system fonts
+    if (!families || families.length === 0) {
+      console.log('f1-card-test: no custom fonts, trying loadSystemFonts...');
+      GlobalFonts.loadSystemFonts();
+      families = GlobalFonts.getFamilies();
+      console.log(`f1-card-test system fonts: count=${families.length} first=${JSON.stringify(families[0])}`);
+    }
+
+    // Set alias from whatever registered
     if (families && families.length > 0) {
-      const actual = families[0].family || families[0];
+      const actual = (families[0].family || families[0]).toString();
       GlobalFonts.setAlias(actual, 'RobotoMono');
-      console.log(`f1-card-test alias set: "${actual}" -> "RobotoMono"`);
+      console.log(`f1-card-test alias: "${actual}" -> "RobotoMono"`);
     }
   } catch(e) {
     console.error('f1-card-test font registration failed:', e.message, '| dir:', fontDir);
