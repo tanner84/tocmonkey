@@ -42,15 +42,15 @@ let FONT = 'sans-serif'; // fallback — overwritten if registration succeeds
 
 // ── Colors ────────────────────────────────────────────────────────────────────
 const C = {
-  bg:      '#0a0a0a',
-  bgRow:   '#111111',
+  bg:      '#FFFFFF',   // WHITE for font debug
+  bgRow:   '#EEEEEE',
   red:     '#E8002D',
-  gold:    '#FFD700',
-  silver:  '#C0C0C0',
-  bronze:  '#CD7F32',
-  white:   '#FFFFFF',
-  dim:     '#888888',
-  faint:   '#444444',
+  gold:    '#B8860B',   // darker gold visible on white
+  silver:  '#666666',
+  bronze:  '#8B4513',
+  white:   '#111111',   // dark text on white bg
+  dim:     '#444444',
+  faint:   '#888888',
 };
 
 const MEDAL = ['', C.gold, C.silver, C.bronze];
