@@ -135,13 +135,14 @@ exports.handler = async () => {
   let imageBuffer;
   try {
     const svg = buildSVG(data);
+    const regPath  = path.join(FONT_DIR, 'RobotoMono-Regular.ttf');
+    const boldPath = path.join(FONT_DIR, 'RobotoMono-Bold.ttf');
+    const fs = require('fs');
+    console.log('resvg font check:', fs.existsSync(regPath), fs.existsSync(boldPath), FONT_DIR);
     const resvg = new Resvg(svg, {
       font: {
-        loadSystemFonts: false,
-        fontFiles: [
-          path.join(FONT_DIR, 'RobotoMono-Regular.ttf'),
-          path.join(FONT_DIR, 'RobotoMono-Bold.ttf'),
-        ],
+        loadSystemFonts: true,
+        fontFiles: [regPath, boldPath],
       },
     });
     const rawPng = resvg.render().asPng();
