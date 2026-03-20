@@ -90,8 +90,11 @@ async function fetchResults(anthropicKey) {
   const textBlock = data.content?.find(b => b.type === 'text');
   if (!textBlock) throw new Error('No text block in response');
 
-  const text = textBlock.text.trim().replace(/^```json?\n?/, '').replace(/\n?```$/, '');
-  return JSON.parse(text);
+  const raw = textBlock.text.trim();
+  // Extract first {...} block regardless of surrounding prose
+  const match = raw.match(/\{[\s\S]*\}/);
+  if (!match) throw new Error(`No JSON object found in response: ${raw.slice(0, 100)}`);
+  return JSON.parse(match[0]);
 }
 
 // ── Post image to Facebook ────────────────────────────────────────────────────
