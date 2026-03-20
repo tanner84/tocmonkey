@@ -1,62 +1,73 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // F1 Race Results Card — TEST FUNCTION (no dedup, always posts)
-//
-// Fetches last week's F1 race top 3, renders a 1080x1080 podium card.
-// Trigger manually via Netlify dashboard or schedule below.
+// Uses SVG + sharp instead of @napi-rs/canvas to avoid Lambda font issues.
 // ─────────────────────────────────────────────────────────────────────────────
 
 const fs   = require('fs');
 const path = require('path');
-const { createCanvas, GlobalFonts } = require('@napi-rs/canvas');
-const { getStore } = require('@netlify/blobs');
+const sharp = require('sharp');
 
-// ── Font setup ────────────────────────────────────────────────────────────────
-let FONT = 'sans-serif'; // fallback — overwritten if registration succeeds
+const FONT_DIR = path.join(process.env.LAMBDA_TASK_ROOT || path.join(__dirname, '../..'), 'public/fonts');
 
-(function registerFonts() {
-  const fontDir = path.join(process.env.LAMBDA_TASK_ROOT || path.join(__dirname, '../..'), 'public/fonts');
-  try {
-    // loadFontsFromDir registers every TTF in the dir under its embedded family name
-    const n = GlobalFonts.loadFontsFromDir(fontDir);
-    let families = GlobalFonts.getFamilies();
-    console.log(`f1-card-test loadFontsFromDir(${fontDir}): loaded=${n} families=${JSON.stringify(families)}`);
+function escXml(s) {
+  return String(s || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
 
-    if (!families || families.length === 0) {
-      // Fallback: register buffers individually
-      GlobalFonts.register(fs.readFileSync(path.join(fontDir, 'RobotoMono-Regular.ttf')));
-      GlobalFonts.register(fs.readFileSync(path.join(fontDir, 'RobotoMono-Bold.ttf')));
-      families = GlobalFonts.getFamilies();
-      console.log(`f1-card-test register(buffer) fallback: families=${JSON.stringify(families)}`);
-    }
+function buildSVG(data) {
+  const W = 1080, H = 1080;
 
-    if (families && families.length > 0) {
-      FONT = (families[0].family || families[0]).toString();
-      console.log(`f1-card-test FONT="${FONT}"`);
-    } else {
-      console.warn('f1-card-test: no fonts registered, using sans-serif fallback');
-    }
-  } catch(e) {
-    console.error('f1-card-test font registration failed:', e.message, '| dir:', fontDir);
-  }
-}());
+  // Embed fonts as base64 so Lambda doesn't need system fontconfig
+  const regB64  = fs.readFileSync(path.join(FONT_DIR, 'RobotoMono-Regular.ttf')).toString('base64');
+  const boldB64 = fs.readFileSync(path.join(FONT_DIR, 'RobotoMono-Bold.ttf')).toString('base64');
 
-// ── Colors ────────────────────────────────────────────────────────────────────
-const C = {
-  bg:      '#FFFFFF',   // WHITE for font debug
-  bgRow:   '#EEEEEE',
-  red:     '#E8002D',
-  gold:    '#B8860B',   // darker gold visible on white
-  silver:  '#666666',
-  bronze:  '#8B4513',
-  white:   '#111111',   // dark text on white bg
-  dim:     '#444444',
-  faint:   '#888888',
-};
+  const MEDAL = ['', '#FFD700', '#C0C0C0', '#CD7F32'];
+  const results = Array.isArray(data.results) ? data.results.slice(0, 3) : [];
 
-const MEDAL = ['', C.gold, C.silver, C.bronze];
-const POS_LABEL = ['', 'P1', 'P2', 'P3'];
+  const rows = results.map((r, i) => {
+    const pos      = r.pos || (i + 1);
+    const color    = MEDAL[pos] || '#FFFFFF';
+    const rowY     = 240 + i * 220;
+    const timeStr  = pos === 1 ? (r.time || '') : (r.gap || '');
+    return `
+    <rect x="20" y="${rowY}" width="1040" height="204" fill="#111111"/>
+    <rect x="20" y="${rowY}" width="8"    height="204" fill="${color}"/>
+    <text x="50"   y="${rowY + 100}" font-family="RobotoMono" font-weight="700" font-size="80" fill="${color}">P${pos}</text>
+    <text x="200"  y="${rowY + 72}"  font-family="RobotoMono" font-weight="700" font-size="42" fill="#FFFFFF">${escXml(r.driver)}</text>
+    <text x="200"  y="${rowY + 115}" font-family="RobotoMono" font-weight="400" font-size="28" fill="#888888">${escXml(r.team)}</text>
+    <text x="1030" y="${rowY + 95}"  font-family="RobotoMono" font-weight="700" font-size="32" fill="${color}" text-anchor="end">${escXml(timeStr)}</text>`;
+  }).join('');
 
-// ── Fetch last week's F1 results via Claude web_search ───────────────────────
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">
+  <defs><style>
+    @font-face { font-family: 'RobotoMono'; font-weight: 400; src: url('data:font/truetype;base64,${regB64}') format('truetype'); }
+    @font-face { font-family: 'RobotoMono'; font-weight: 700; src: url('data:font/truetype;base64,${boldB64}') format('truetype'); }
+  </style></defs>
+
+  <rect width="${W}" height="${H}" fill="#0a0a0a"/>
+  <rect x="0" y="0" width="${W}" height="8" fill="#E8002D"/>
+
+  <text x="40"    y="120" font-family="RobotoMono" font-weight="700" font-size="96" fill="#E8002D">F1</text>
+  <text x="40"    y="165" font-family="RobotoMono" font-weight="700" font-size="36" fill="#FFFFFF">RACE RESULTS</text>
+  <text x="1040"  y="100" font-family="RobotoMono" font-weight="700" font-size="28" fill="#FFFFFF" text-anchor="end">${escXml((data.race || '').toUpperCase())}</text>
+  <text x="1040"  y="134" font-family="RobotoMono" font-weight="400" font-size="22" fill="#888888" text-anchor="end">${escXml(data.circuit)}</text>
+  <text x="1040"  y="164" font-family="RobotoMono" font-weight="400" font-size="22" fill="#888888" text-anchor="end">${escXml(data.date)}</text>
+
+  <rect x="0" y="200" width="${W}" height="4" fill="#E8002D"/>
+
+  ${rows}
+
+  <rect x="0" y="1040" width="${W}" height="4" fill="#E8002D"/>
+  <text x="40"   y="1068" font-family="RobotoMono" font-weight="400" font-size="20" fill="#444444">OPEN SOURCE · NOT VERIFIED</text>
+  <text x="1040" y="1068" font-family="RobotoMono" font-weight="400" font-size="20" fill="#888888" text-anchor="end">tocmonkey.com</text>
+</svg>`;
+}
+
+// ── Fetch F1 results via Claude web_search ────────────────────────────────────
 async function fetchResults(anthropicKey) {
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -71,7 +82,7 @@ async function fetchResults(anthropicKey) {
       tools: [{ type: 'web_search_20250305', name: 'web_search' }],
       messages: [{
         role: 'user',
-        content: `Search for the most recent Formula 1 Grand Prix race results. Return ONLY raw JSON, no markdown, no backticks:
+        content: `Search for the most recent Formula 1 Grand Prix race results. Return ONLY raw JSON, no markdown, no backticks, no explanation:
 {"race":"Grand Prix Name","circuit":"Circuit Name","date":"Mon DD, YYYY","results":[{"pos":1,"driver":"Full Name","team":"Team Name","time":"H:MM:SS.mmm","gap":null},{"pos":2,"driver":"Full Name","team":"Team Name","time":null,"gap":"+X.XXXs"},{"pos":3,"driver":"Full Name","team":"Team Name","time":null,"gap":"+X.XXXs"}]}`,
       }],
     }),
@@ -86,122 +97,11 @@ async function fetchResults(anthropicKey) {
   const textBlock = data.content?.find(b => b.type === 'text');
   if (!textBlock) throw new Error('No text block in response');
 
-  const text = textBlock.text.trim().replace(/^```json?${FONT}n?/, '').replace(/${FONT}n?```$/, '');
+  const text = textBlock.text.trim().replace(/^```json?\n?/, '').replace(/\n?```$/, '');
   return JSON.parse(text);
 }
 
-// ── Render 1080x1080 podium card ──────────────────────────────────────────────
-function buildCard(data) {
-  const W = 1080, H = 1080;
-  const canvas = createCanvas(W, H);
-  const ctx = canvas.getContext('2d');
-
-  // Background
-  ctx.fillStyle = C.bg;
-  ctx.fillRect(0, 0, W, H);
-
-  // Top red bar
-  ctx.fillStyle = C.red;
-  ctx.fillRect(0, 0, W, 8);
-
-  // ── "F1" label ───────────────────────────────────────────────────────────────
-  ctx.fillStyle = C.red;
-  ctx.font = `bold 96px ${FONT}`;
-  ctx.textAlign = 'left';
-  ctx.fillText('F1', 40, 120);
-
-  // ── "RACE RESULTS" label ──────────────────────────────────────────────────────
-  ctx.fillStyle = C.white;
-  ctx.font = `bold 36px ${FONT}`;
-  ctx.textAlign = 'left';
-  ctx.fillText('RACE RESULTS', 40, 165);
-
-  // ── Race name (right side) ────────────────────────────────────────────────────
-  ctx.fillStyle = C.white;
-  ctx.font = `bold 28px ${FONT}`;
-  ctx.textAlign = 'right';
-  const raceName = String(data.race || '').toUpperCase();
-  ctx.fillText(raceName, W - 40, 100);
-
-  // ── Circuit + date ────────────────────────────────────────────────────────────
-  ctx.fillStyle = C.dim;
-  ctx.font = `22px ${FONT}`;
-  ctx.textAlign = 'right';
-  ctx.fillText(String(data.circuit || ''), W - 40, 132);
-
-  ctx.fillStyle = C.dim;
-  ctx.font = `22px ${FONT}`;
-  ctx.textAlign = 'right';
-  ctx.fillText(String(data.date || ''), W - 40, 162);
-
-  // ── Divider ───────────────────────────────────────────────────────────────────
-  ctx.fillStyle = C.red;
-  ctx.fillRect(0, 200, W, 4);
-
-  // ── Podium rows ───────────────────────────────────────────────────────────────
-  const results = Array.isArray(data.results) ? data.results.slice(0, 3) : [];
-
-  const ROW_START = 240;
-  const ROW_H     = 220;
-
-  results.forEach((r, i) => {
-    const pos     = r.pos || (i + 1);
-    const color   = MEDAL[pos] || C.white;
-    const rowY    = ROW_START + i * ROW_H;
-
-    // Row background
-    ctx.fillStyle = C.bgRow;
-    ctx.fillRect(20, rowY, W - 40, ROW_H - 16);
-
-    // Left accent strip in medal color
-    ctx.fillStyle = color;
-    ctx.fillRect(20, rowY, 8, ROW_H - 16);
-
-    // Position label
-    ctx.fillStyle = color;
-    ctx.font = `bold 80px ${FONT}`;
-    ctx.textAlign = 'left';
-    ctx.fillText(POS_LABEL[pos] || `P${pos}`, 50, rowY + 95);
-
-    // Driver name
-    ctx.fillStyle = C.white;
-    ctx.font = `bold 42px ${FONT}`;
-    ctx.textAlign = 'left';
-    ctx.fillText(String(r.driver || ''), 200, rowY + 68);
-
-    // Team name
-    ctx.fillStyle = C.dim;
-    ctx.font = `28px ${FONT}`;
-    ctx.textAlign = 'left';
-    ctx.fillText(String(r.team || ''), 200, rowY + 110);
-
-    // Time / gap
-    const timeStr = pos === 1 ? (r.time || '') : (r.gap || '');
-    ctx.fillStyle = color;
-    ctx.font = `bold 32px ${FONT}`;
-    ctx.textAlign = 'right';
-    ctx.fillText(String(timeStr), W - 50, rowY + 90);
-  });
-
-  // ── Bottom divider ────────────────────────────────────────────────────────────
-  ctx.fillStyle = C.red;
-  ctx.fillRect(0, 1040, W, 4);
-
-  // ── Footer ────────────────────────────────────────────────────────────────────
-  ctx.fillStyle = C.faint;
-  ctx.font = `20px ${FONT}`;
-  ctx.textAlign = 'left';
-  ctx.fillText('OPEN SOURCE · NOT VERIFIED', 40, 1068);
-
-  ctx.fillStyle = C.dim;
-  ctx.font = `20px ${FONT}`;
-  ctx.textAlign = 'right';
-  ctx.fillText('tocmonkey.com', W - 40, 1068);
-
-  return canvas.toBuffer('image/png');
-}
-
-// ── Post to Facebook ──────────────────────────────────────────────────────────
+// ── Post image to Facebook ────────────────────────────────────────────────────
 async function postPhoto(imageBuffer, message) {
   const pageId    = process.env.FACEBOOK_PAGE_ID;
   const pageToken = process.env.FACEBOOK_PAGE_ACCESS_TOKEN || process.env.FACEBOOK_ACCESS_TOKEN;
@@ -227,7 +127,6 @@ exports.handler = async () => {
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
   if (!anthropicKey) return { statusCode: 500, body: 'ANTHROPIC_API_KEY not set' };
 
-  // Fetch results
   let data;
   try {
     data = await fetchResults(anthropicKey);
@@ -237,21 +136,17 @@ exports.handler = async () => {
     return { statusCode: 500, body: `Fetch failed: ${e.message}` };
   }
 
-  // Render
   let imageBuffer;
   try {
-    imageBuffer = buildCard(data);
-    console.log(`f1-card-test: rendered (${imageBuffer.length} bytes)`);
+    const svg = buildSVG(data);
+    imageBuffer = await sharp(Buffer.from(svg)).png().toBuffer();
+    console.log(`f1-card-test: rendered ${imageBuffer.length} bytes`);
   } catch(e) {
     console.error('f1-card-test render failed:', e.message);
     return { statusCode: 500, body: `Render failed: ${e.message}` };
   }
 
-  // Post
-  const dateStr = new Date().toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric', timeZone: 'America/New_York',
-  }).toUpperCase();
-  const message = `[F1] ${data.race || 'RACE RESULTS'} | ${data.date || dateStr}${FONT}n${FONT}ntocmonkey.com${FONT}n${FONT}n#F1 #Formula1 #TOCMonkey`;
+  const message = `[F1] ${data.race || 'RACE RESULTS'} | ${data.date || ''}\n\ntocmonkey.com\n\n#F1 #Formula1 #TOCMonkey`;
 
   try {
     const result = await postPhoto(imageBuffer, message);
