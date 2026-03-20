@@ -6,6 +6,7 @@
 
 const path = require('path');
 const { Resvg } = require('@resvg/resvg-js');
+const sharp = require('sharp');
 
 const FONT_DIR = path.join(process.env.LAMBDA_TASK_ROOT || path.join(__dirname, '../..'), 'public/fonts');
 
@@ -100,7 +101,7 @@ async function postPhoto(imageBuffer, message) {
   if (!pageId || !pageToken) throw new Error('Facebook env vars not set');
 
   const form = new FormData();
-  form.append('source', new Blob([imageBuffer], { type: 'image/png' }), 'card.png');
+  form.append('source', new Blob([imageBuffer], { type: 'image/jpeg' }), 'card.jpg');
   form.append('message', message);
   form.append('access_token', pageToken);
 
@@ -140,7 +141,8 @@ exports.handler = async () => {
         ],
       },
     });
-    imageBuffer = resvg.render().asPng();
+    const rawPng = resvg.render().asPng();
+    imageBuffer = await sharp(rawPng).jpeg({ quality: 88 }).toBuffer();
     console.log(`f1-card-test: rendered ${imageBuffer.length} bytes`);
   } catch(e) {
     console.error('f1-card-test render failed:', e.message);
