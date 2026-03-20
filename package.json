@@ -5,6 +5,7 @@
   "dependencies": {
     "@netlify/blobs": "^8.1.0",
     "@napi-rs/canvas": "^0.1.53",
+    "@resvg/resvg-js": "^2.6.2",
     "rss-parser": "^3.13.0",
     "sharp": "^0.33.5"
   }

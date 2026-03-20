@@ -1,9 +1,13 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // F1 Race Results Card — TEST FUNCTION (no dedup, always posts)
-// Uses SVG + sharp instead of @napi-rs/canvas to avoid Lambda font issues.
+// Uses SVG + @resvg/resvg-js (self-contained Rust renderer, loads fonts
+// directly from file — no system fontconfig needed on Lambda).
 // ─────────────────────────────────────────────────────────────────────────────
 
-const sharp = require('sharp');
+const path = require('path');
+const { Resvg } = require('@resvg/resvg-js');
+
+const FONT_DIR = path.join(process.env.LAMBDA_TASK_ROOT || path.join(__dirname, '../..'), 'public/fonts');
 
 function escXml(s) {
   return String(s || '')
@@ -15,7 +19,7 @@ function escXml(s) {
 
 function buildSVG(data) {
   const W = 1080, H = 1080;
-  const F = 'monospace';
+  const F = 'Roboto Mono';
 
   const MEDAL = ['', '#FFD700', '#C0C0C0', '#CD7F32'];
   const results = Array.isArray(data.results) ? data.results.slice(0, 3) : [];
@@ -127,7 +131,16 @@ exports.handler = async () => {
   let imageBuffer;
   try {
     const svg = buildSVG(data);
-    imageBuffer = await sharp(Buffer.from(svg)).png().toBuffer();
+    const resvg = new Resvg(svg, {
+      font: {
+        loadSystemFonts: false,
+        fontFiles: [
+          path.join(FONT_DIR, 'RobotoMono-Regular.ttf'),
+          path.join(FONT_DIR, 'RobotoMono-Bold.ttf'),
+        ],
+      },
+    });
+    imageBuffer = resvg.render().asPng();
     console.log(`f1-card-test: rendered ${imageBuffer.length} bytes`);
   } catch(e) {
     console.error('f1-card-test render failed:', e.message);
