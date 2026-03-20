@@ -39,35 +39,28 @@
 #   PM: 22:00 UTC (5pm ET) — afternoon game finals, before evening slate
 [functions."ncaamb-card-am"]
   schedule = "40 14 * * *"
-  included_files = ["node_modules/@napi-rs/canvas-linux-x64-gnu/**", "public/**"]
 
 [functions."ncaamb-card-pm"]
   schedule = "0 22 * * *"
-  included_files = ["node_modules/@napi-rs/canvas-linux-x64-gnu/**", "public/**"]
 
-# NBA score card — daily at 13:15 UTC (8:15am ET)
+# NBA score card — daily at 13:15 UTC (9:15am ET)
 [functions."nba-card"]
   schedule = "15 13 * * *"
-  included_files = ["node_modules/@napi-rs/canvas-linux-x64-gnu/**", "public/**"]
 
-# NHL score card — daily at 13:25 UTC (8:25am ET)
+# NHL score card — daily at 13:25 UTC (9:25am ET)
 [functions."nhl-card"]
   schedule = "25 13 * * *"
-  included_files = ["node_modules/@napi-rs/canvas-linux-x64-gnu/**", "public/**"]
 
 # PGA leaderboard card — Thu–Sun at 23:30 UTC (7:30pm ET), top 10 after each round
 [functions."pga-card"]
   schedule = "30 23 * * 4,5,6,0"
-  included_files = ["node_modules/@napi-rs/canvas-linux-x64-gnu/**", "public/**"]
 
 # UFC Fight Night card — Saturday at 07:00 UTC (3am ET), captures Friday night results
 [functions."ufc-card"]
   schedule = "0 7 * * 6"
-  included_files = ["node_modules/@napi-rs/canvas-linux-x64-gnu/**", "public/**"]
 
 # F1 test card — no schedule, trigger manually via endpoint
 [functions."f1-card-test"]
-  included_files = ["node_modules/@img/**", "node_modules/sharp/**", "public/fonts/**"]
 
 # Market brief — open bell 9:45am EDT (13:45 UTC), close bell 5:30pm EDT (21:30 UTC), weekdays only
 [functions."marketbrief-open"]
