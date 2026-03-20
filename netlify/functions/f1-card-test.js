@@ -95,11 +95,17 @@ async function fetchResults(anthropicKey) {
       model: 'claude-sonnet-4-20250514',
       max_tokens: 800,
       tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-      messages: [{
-        role: 'user',
-        content: `Search for the most recent Formula 1 Grand Prix race results. Return ONLY a raw JSON object, no markdown, no explanation:
-{"race":"Grand Prix Name","circuit":"Circuit Name","date":"Mon DD, YYYY","results":[{"pos":1,"driver":"Full Name","team":"Team Name","time":"H:MM:SS.mmm","gap":null},{"pos":2,"driver":"Full Name","team":"Team Name","time":null,"gap":"+X.XXXs"},{"pos":3,"driver":"Full Name","team":"Team Name","time":null,"gap":"+X.XXXs"}]}`,
-      }],
+      messages: [
+        {
+          role: 'user',
+          content: `Search for the most recent Formula 1 Grand Prix race results (top 3 finishers). Then reply with ONLY the JSON object below, filled in — no prose, no markdown, nothing else:
+{"race":"","circuit":"","date":"Mon DD, YYYY","results":[{"pos":1,"driver":"","team":"","time":"","gap":null},{"pos":2,"driver":"","team":"","time":null,"gap":""},{"pos":3,"driver":"","team":"","time":null,"gap":""}]}`,
+        },
+        {
+          role: 'assistant',
+          content: '{',
+        },
+      ],
     }),
     signal: AbortSignal.timeout(30000),
   });
@@ -112,7 +118,8 @@ async function fetchResults(anthropicKey) {
   const textBlock = data.content?.find(b => b.type === 'text');
   if (!textBlock) throw new Error('No text block in response');
 
-  const match = textBlock.text.match(/\{[\s\S]*\}/);
+  const raw = ('{' + textBlock.text).trim();
+  const match = raw.match(/\{[\s\S]*\}/);
   if (!match) throw new Error(`No JSON in response: ${textBlock.text.slice(0, 120)}`);
   return JSON.parse(match[0]);
 }
