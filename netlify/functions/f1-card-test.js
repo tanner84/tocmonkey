@@ -1,42 +1,64 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // F1 Race Results Card — TEST FUNCTION (no dedup, always posts)
-// Uses SVG + @resvg/resvg-js (self-contained Rust renderer, loads fonts
-// directly from file — no system fontconfig needed on Lambda).
+//
+// Text rendering approach: opentype.js converts TTF → SVG <path> data.
+// sharp converts SVG → JPEG. No renderer font loading required.
 // ─────────────────────────────────────────────────────────────────────────────
 
-const path = require('path');
-const { Resvg } = require('@resvg/resvg-js');
-const sharp = require('sharp');
+const fs       = require('fs');
+const path     = require('path');
+const opentype = require('opentype.js');
+const sharp    = require('sharp');
 
-const FONT_DIR = path.join(process.env.LAMBDA_TASK_ROOT || path.join(__dirname, '../..'), 'public/fonts');
+const FONT_DIR = path.join(
+  process.env.LAMBDA_TASK_ROOT || path.join(__dirname, '../..'),
+  'public/fonts'
+);
 
-function escXml(s) {
-  return String(s || '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+// ── Font loading (pure JS, uses fs.readFileSync — confirmed works on Lambda) ──
+let _reg, _bold;
+function fonts() {
+  if (!_reg) {
+    const regBuf  = fs.readFileSync(path.join(FONT_DIR, 'RobotoMono-Regular.ttf'));
+    const boldBuf = fs.readFileSync(path.join(FONT_DIR, 'RobotoMono-Bold.ttf'));
+    _reg  = opentype.parse(regBuf.buffer);
+    _bold = opentype.parse(boldBuf.buffer);
+    console.log('f1-card-test: fonts loaded via opentype.js');
+  }
+  return { reg: _reg, bold: _bold };
 }
 
+// ── Render text as SVG <path> — no renderer font support needed ───────────────
+function txt(str, x, y, size, color, bold = false, align = 'left') {
+  const s = String(str || '');
+  if (!s) return '';
+  const font = bold ? fonts().bold : fonts().reg;
+  let startX = x;
+  if (align === 'right')  startX = x - font.getAdvanceWidth(s, size);
+  if (align === 'center') startX = x - font.getAdvanceWidth(s, size) / 2;
+  const p = font.getPath(s, startX, y, size);
+  p.fill = color;
+  return p.toSVG(1);
+}
+
+// ── Build 1080×1080 SVG card ──────────────────────────────────────────────────
 function buildSVG(data) {
   const W = 1080, H = 1080;
-  const F = 'Roboto Mono';
-
   const MEDAL = ['', '#FFD700', '#C0C0C0', '#CD7F32'];
   const results = Array.isArray(data.results) ? data.results.slice(0, 3) : [];
 
   const rows = results.map((r, i) => {
-    const pos      = r.pos || (i + 1);
-    const color    = MEDAL[pos] || '#FFFFFF';
-    const rowY     = 240 + i * 220;
-    const timeStr  = pos === 1 ? (r.time || '') : (r.gap || '');
+    const pos     = r.pos || (i + 1);
+    const color   = MEDAL[pos] || '#FFFFFF';
+    const rowY    = 240 + i * 220;
+    const timeStr = pos === 1 ? (r.time || '') : (r.gap || '');
     return `
-    <rect x="20" y="${rowY}" width="1040" height="204" fill="#111111"/>
-    <rect x="20" y="${rowY}" width="8"    height="204" fill="${color}"/>
-    <text x="50"   y="${rowY + 100}" font-family="${F}" font-weight="bold"   font-size="80" fill="${color}">P${pos}</text>
-    <text x="200"  y="${rowY + 72}"  font-family="${F}" font-weight="bold"   font-size="42" fill="#FFFFFF">${escXml(r.driver)}</text>
-    <text x="200"  y="${rowY + 115}" font-family="${F}" font-weight="normal" font-size="28" fill="#888888">${escXml(r.team)}</text>
-    <text x="1030" y="${rowY + 95}"  font-family="${F}" font-weight="bold"   font-size="32" fill="${color}" text-anchor="end">${escXml(timeStr)}</text>`;
+  <rect x="20" y="${rowY}" width="1040" height="204" fill="#111111"/>
+  <rect x="20" y="${rowY}" width="8"    height="204" fill="${color}"/>
+  ${txt(`P${pos}`,    50,   rowY + 100, 80, color,     true)}
+  ${txt(r.driver,    200,   rowY + 75,  42, '#FFFFFF',  true)}
+  ${txt(r.team,      200,   rowY + 118, 28, '#888888',  false)}
+  ${txt(timeStr,    1030,   rowY + 100, 32, color,      true, 'right')}`;
   }).join('');
 
   return `<?xml version="1.0" encoding="UTF-8"?>
@@ -44,19 +66,19 @@ function buildSVG(data) {
   <rect width="${W}" height="${H}" fill="#0a0a0a"/>
   <rect x="0" y="0" width="${W}" height="8" fill="#E8002D"/>
 
-  <text x="40"   y="120" font-family="${F}" font-weight="bold"   font-size="96" fill="#E8002D">F1</text>
-  <text x="40"   y="165" font-family="${F}" font-weight="bold"   font-size="36" fill="#FFFFFF">RACE RESULTS</text>
-  <text x="1040" y="100" font-family="${F}" font-weight="bold"   font-size="28" fill="#FFFFFF" text-anchor="end">${escXml((data.race || '').toUpperCase())}</text>
-  <text x="1040" y="134" font-family="${F}" font-weight="normal" font-size="22" fill="#888888" text-anchor="end">${escXml(data.circuit)}</text>
-  <text x="1040" y="164" font-family="${F}" font-weight="normal" font-size="22" fill="#888888" text-anchor="end">${escXml(data.date)}</text>
+  ${txt('F1',                              40,   120, 96, '#E8002D',  true)}
+  ${txt('RACE RESULTS',                    40,   165, 36, '#FFFFFF',  true)}
+  ${txt((data.race||'').toUpperCase(),   1040,   100, 28, '#FFFFFF',  true,  'right')}
+  ${txt(data.circuit,                    1040,   134, 22, '#888888',  false, 'right')}
+  ${txt(data.date,                       1040,   164, 22, '#888888',  false, 'right')}
 
   <rect x="0" y="200" width="${W}" height="4" fill="#E8002D"/>
 
   ${rows}
 
   <rect x="0" y="1040" width="${W}" height="4" fill="#E8002D"/>
-  <text x="40"   y="1068" font-family="${F}" font-weight="normal" font-size="20" fill="#444444">OPEN SOURCE · NOT VERIFIED</text>
-  <text x="1040" y="1068" font-family="${F}" font-weight="normal" font-size="20" fill="#888888" text-anchor="end">tocmonkey.com</text>
+  ${txt('OPEN SOURCE · NOT VERIFIED',      40,  1068, 20, '#444444',  false)}
+  ${txt('tocmonkey.com',                 1040,  1068, 20, '#888888',  false, 'right')}
 </svg>`;
 }
 
@@ -75,7 +97,7 @@ async function fetchResults(anthropicKey) {
       tools: [{ type: 'web_search_20250305', name: 'web_search' }],
       messages: [{
         role: 'user',
-        content: `Search for the most recent Formula 1 Grand Prix race results. Return ONLY raw JSON, no markdown, no backticks, no explanation:
+        content: `Search for the most recent Formula 1 Grand Prix race results. Return ONLY a raw JSON object, no markdown, no explanation:
 {"race":"Grand Prix Name","circuit":"Circuit Name","date":"Mon DD, YYYY","results":[{"pos":1,"driver":"Full Name","team":"Team Name","time":"H:MM:SS.mmm","gap":null},{"pos":2,"driver":"Full Name","team":"Team Name","time":null,"gap":"+X.XXXs"},{"pos":3,"driver":"Full Name","team":"Team Name","time":null,"gap":"+X.XXXs"}]}`,
       }],
     }),
@@ -90,14 +112,12 @@ async function fetchResults(anthropicKey) {
   const textBlock = data.content?.find(b => b.type === 'text');
   if (!textBlock) throw new Error('No text block in response');
 
-  const raw = textBlock.text.trim();
-  // Extract first {...} block regardless of surrounding prose
-  const match = raw.match(/\{[\s\S]*\}/);
-  if (!match) throw new Error(`No JSON object found in response: ${raw.slice(0, 100)}`);
+  const match = textBlock.text.match(/\{[\s\S]*\}/);
+  if (!match) throw new Error(`No JSON in response: ${textBlock.text.slice(0, 120)}`);
   return JSON.parse(match[0]);
 }
 
-// ── Post image to Facebook ────────────────────────────────────────────────────
+// ── Post JPEG to Facebook ─────────────────────────────────────────────────────
 async function postPhoto(imageBuffer, message) {
   const pageId    = process.env.FACEBOOK_PAGE_ID;
   const pageToken = process.env.FACEBOOK_PAGE_ACCESS_TOKEN || process.env.FACEBOOK_ACCESS_TOKEN;
@@ -135,18 +155,7 @@ exports.handler = async () => {
   let imageBuffer;
   try {
     const svg = buildSVG(data);
-    const regPath  = path.join(FONT_DIR, 'RobotoMono-Regular.ttf');
-    const boldPath = path.join(FONT_DIR, 'RobotoMono-Bold.ttf');
-    const fs = require('fs');
-    console.log('resvg font check:', fs.existsSync(regPath), fs.existsSync(boldPath), FONT_DIR);
-    const resvg = new Resvg(svg, {
-      font: {
-        loadSystemFonts: true,
-        fontFiles: [regPath, boldPath],
-      },
-    });
-    const rawPng = resvg.render().asPng();
-    imageBuffer = await sharp(rawPng).jpeg({ quality: 88 }).toBuffer();
+    imageBuffer = await sharp(Buffer.from(svg)).jpeg({ quality: 88 }).toBuffer();
     console.log(`f1-card-test: rendered ${imageBuffer.length} bytes`);
   } catch(e) {
     console.error('f1-card-test render failed:', e.message);

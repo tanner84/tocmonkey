@@ -67,7 +67,7 @@
 
 # F1 test card — no schedule, trigger manually via endpoint
 [functions."f1-card-test"]
-  included_files = ["node_modules/@resvg/**", "node_modules/@img/**", "node_modules/sharp/**", "public/fonts/**"]
+  included_files = ["node_modules/@img/**", "node_modules/sharp/**", "public/fonts/**"]
 
 # Market brief — open bell 9:45am EDT (13:45 UTC), close bell 5:30pm EDT (21:30 UTC), weekdays only
 [functions."marketbrief-open"]
