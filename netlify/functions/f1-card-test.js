@@ -5,7 +5,6 @@
 // sharp converts SVG → JPEG. No renderer font loading required.
 // ─────────────────────────────────────────────────────────────────────────────
 
-const fs       = require('fs');
 const path     = require('path');
 const opentype = require('opentype.js');
 const sharp    = require('sharp');
@@ -19,10 +18,8 @@ const FONT_DIR = path.join(
 let _reg, _bold;
 function fonts() {
   if (!_reg) {
-    const regBuf  = fs.readFileSync(path.join(FONT_DIR, 'RobotoMono-Regular.ttf'));
-    const boldBuf = fs.readFileSync(path.join(FONT_DIR, 'RobotoMono-Bold.ttf'));
-    _reg  = opentype.parse(regBuf.buffer);
-    _bold = opentype.parse(boldBuf.buffer);
+    _reg  = opentype.loadSync(path.join(FONT_DIR, 'RobotoMono-Regular.ttf'));
+    _bold = opentype.loadSync(path.join(FONT_DIR, 'RobotoMono-Bold.ttf'));
     console.log('f1-card-test: fonts loaded via opentype.js');
   }
   return { reg: _reg, bold: _bold };
