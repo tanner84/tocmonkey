@@ -3,11 +3,7 @@
 // Uses SVG + sharp instead of @napi-rs/canvas to avoid Lambda font issues.
 // ─────────────────────────────────────────────────────────────────────────────
 
-const fs   = require('fs');
-const path = require('path');
 const sharp = require('sharp');
-
-const FONT_DIR = path.join(process.env.LAMBDA_TASK_ROOT || path.join(__dirname, '../..'), 'public/fonts');
 
 function escXml(s) {
   return String(s || '')
@@ -19,10 +15,7 @@ function escXml(s) {
 
 function buildSVG(data) {
   const W = 1080, H = 1080;
-
-  // Embed fonts as base64 so Lambda doesn't need system fontconfig
-  const regB64  = fs.readFileSync(path.join(FONT_DIR, 'RobotoMono-Regular.ttf')).toString('base64');
-  const boldB64 = fs.readFileSync(path.join(FONT_DIR, 'RobotoMono-Bold.ttf')).toString('base64');
+  const F = 'monospace';
 
   const MEDAL = ['', '#FFD700', '#C0C0C0', '#CD7F32'];
   const results = Array.isArray(data.results) ? data.results.slice(0, 3) : [];
@@ -35,35 +28,30 @@ function buildSVG(data) {
     return `
     <rect x="20" y="${rowY}" width="1040" height="204" fill="#111111"/>
     <rect x="20" y="${rowY}" width="8"    height="204" fill="${color}"/>
-    <text x="50"   y="${rowY + 100}" font-family="RobotoMono" font-weight="700" font-size="80" fill="${color}">P${pos}</text>
-    <text x="200"  y="${rowY + 72}"  font-family="RobotoMono" font-weight="700" font-size="42" fill="#FFFFFF">${escXml(r.driver)}</text>
-    <text x="200"  y="${rowY + 115}" font-family="RobotoMono" font-weight="400" font-size="28" fill="#888888">${escXml(r.team)}</text>
-    <text x="1030" y="${rowY + 95}"  font-family="RobotoMono" font-weight="700" font-size="32" fill="${color}" text-anchor="end">${escXml(timeStr)}</text>`;
+    <text x="50"   y="${rowY + 100}" font-family="${F}" font-weight="bold"   font-size="80" fill="${color}">P${pos}</text>
+    <text x="200"  y="${rowY + 72}"  font-family="${F}" font-weight="bold"   font-size="42" fill="#FFFFFF">${escXml(r.driver)}</text>
+    <text x="200"  y="${rowY + 115}" font-family="${F}" font-weight="normal" font-size="28" fill="#888888">${escXml(r.team)}</text>
+    <text x="1030" y="${rowY + 95}"  font-family="${F}" font-weight="bold"   font-size="32" fill="${color}" text-anchor="end">${escXml(timeStr)}</text>`;
   }).join('');
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">
-  <defs><style>
-    @font-face { font-family: 'RobotoMono'; font-weight: 400; src: url('data:font/truetype;base64,${regB64}') format('truetype'); }
-    @font-face { font-family: 'RobotoMono'; font-weight: 700; src: url('data:font/truetype;base64,${boldB64}') format('truetype'); }
-  </style></defs>
-
   <rect width="${W}" height="${H}" fill="#0a0a0a"/>
   <rect x="0" y="0" width="${W}" height="8" fill="#E8002D"/>
 
-  <text x="40"    y="120" font-family="RobotoMono" font-weight="700" font-size="96" fill="#E8002D">F1</text>
-  <text x="40"    y="165" font-family="RobotoMono" font-weight="700" font-size="36" fill="#FFFFFF">RACE RESULTS</text>
-  <text x="1040"  y="100" font-family="RobotoMono" font-weight="700" font-size="28" fill="#FFFFFF" text-anchor="end">${escXml((data.race || '').toUpperCase())}</text>
-  <text x="1040"  y="134" font-family="RobotoMono" font-weight="400" font-size="22" fill="#888888" text-anchor="end">${escXml(data.circuit)}</text>
-  <text x="1040"  y="164" font-family="RobotoMono" font-weight="400" font-size="22" fill="#888888" text-anchor="end">${escXml(data.date)}</text>
+  <text x="40"   y="120" font-family="${F}" font-weight="bold"   font-size="96" fill="#E8002D">F1</text>
+  <text x="40"   y="165" font-family="${F}" font-weight="bold"   font-size="36" fill="#FFFFFF">RACE RESULTS</text>
+  <text x="1040" y="100" font-family="${F}" font-weight="bold"   font-size="28" fill="#FFFFFF" text-anchor="end">${escXml((data.race || '').toUpperCase())}</text>
+  <text x="1040" y="134" font-family="${F}" font-weight="normal" font-size="22" fill="#888888" text-anchor="end">${escXml(data.circuit)}</text>
+  <text x="1040" y="164" font-family="${F}" font-weight="normal" font-size="22" fill="#888888" text-anchor="end">${escXml(data.date)}</text>
 
   <rect x="0" y="200" width="${W}" height="4" fill="#E8002D"/>
 
   ${rows}
 
   <rect x="0" y="1040" width="${W}" height="4" fill="#E8002D"/>
-  <text x="40"   y="1068" font-family="RobotoMono" font-weight="400" font-size="20" fill="#444444">OPEN SOURCE · NOT VERIFIED</text>
-  <text x="1040" y="1068" font-family="RobotoMono" font-weight="400" font-size="20" fill="#888888" text-anchor="end">tocmonkey.com</text>
+  <text x="40"   y="1068" font-family="${F}" font-weight="normal" font-size="20" fill="#444444">OPEN SOURCE · NOT VERIFIED</text>
+  <text x="1040" y="1068" font-family="${F}" font-weight="normal" font-size="20" fill="#888888" text-anchor="end">tocmonkey.com</text>
 </svg>`;
 }
 
