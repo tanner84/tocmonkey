@@ -70,9 +70,9 @@ Look for recent news (past 24-48 hours) on:
 - Arms trafficking
 - Corruption, organized crime-linked arrests, or government crackdowns
 
-Write a SIGACT UPDATE post formatted exactly like this:
+Write an ORGANIZED CRIME SITUATION REPORT post formatted exactly like this:
 
-🟠 OCG SIGACT | ${cocom} | ${timestamp} UTC
+🟠 ORGANIZED CRIME SITREP | ${cocom} | ${timestamp} UTC
 
 - [Country/Region] — [one sentence, factual, terse]
 - [Country/Region] — [one sentence, factual, terse]
@@ -80,7 +80,7 @@ Write a SIGACT UPDATE post formatted exactly like this:
 
 ⚠️ DISCLAIMER: All reporting is derived from open-source media. Not verified by primary sources. For situational awareness only.
 
-#OSINT #OCG #${cocom} #TOCMonkey
+#OSINT #OrganizedCrime #TransnationalCrime #${cocom} #TOCMonkey
 
 Rules: No speculation. No editorial. Locations first. Only verified or reported facts from search results.
 If no relevant organized crime activity found in the past 48 hours, respond with only: SKIP
