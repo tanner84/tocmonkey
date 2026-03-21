@@ -1,27 +1,36 @@
-// F1 Race Results — posts logo + text scores to Facebook
-const { getStore } = require('@netlify/blobs');
+// F1 Race Results — pulls verified results from Jolpica (Ergast) API, posts logo + text to Facebook
+// Jolpica is the community-maintained Ergast replacement: https://jolpi.ca/ergast/
+// No API key required. Returns official FIA-verified race results.
 
-async function fetchResults(anthropicKey) {
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-api-key': anthropicKey, 'anthropic-version': '2023-06-01' },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 600,
-      tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-      messages: [
-        { role: 'user', content: 'Search for the most recent Formula 1 Grand Prix race results. Return ONLY a raw JSON object — no prose, no markdown:\n{"race":"","circuit":"","date":"Mon DD YYYY","results":[{"pos":1,"driver":"","team":"","time":""},{"pos":2,"driver":"","team":"","gap":""},{"pos":3,"driver":"","team":"","gap":""}]}' },
-        { role: 'assistant', content: '{' },
-      ],
-    }),
-    signal: AbortSignal.timeout(30000),
+async function fetchResults() {
+  const url = 'https://api.jolpi.ca/ergast/f1/current/last/results/';
+  const res = await fetch(url, {
+    headers: { 'Accept': 'application/json' },
+    signal: AbortSignal.timeout(15000),
   });
-  if (!res.ok) throw new Error(`Anthropic API ${res.status}: ${await res.text()}`);
+  if (!res.ok) throw new Error(`Jolpica API ${res.status}`);
   const data = await res.json();
-  const text = data.content?.find(b => b.type === 'text')?.text || '';
-  const match = ('{' + text).match(/\{[\s\S]*\}/);
-  if (!match) throw new Error(`No JSON: ${text.slice(0, 120)}`);
-  return JSON.parse(match[0]);
+
+  const races = data?.MRData?.RaceTable?.Races;
+  if (!races || races.length === 0) throw new Error('No race data returned');
+
+  const race = races[0];
+  if (!race.Results || race.Results.length === 0) throw new Error('Race has no results yet');
+
+  const top3 = race.Results.slice(0, 3).map(r => ({
+    pos:    parseInt(r.position, 10),
+    driver: `${r.Driver.givenName} ${r.Driver.familyName}`,
+    team:   r.Constructor.name,
+    // P1 gets race time, P2+ get gap
+    time:   r.position === '1' ? (r.Time?.time || '') : (r.Time?.time || '+N/A'),
+  }));
+
+  return {
+    race:    race.raceName,
+    circuit: race.Circuit.circuitName,
+    date:    race.date,
+    results: top3,
+  };
 }
 
 async function postToFacebook(message) {
@@ -38,12 +47,9 @@ async function postToFacebook(message) {
 }
 
 exports.handler = async () => {
-  const anthropicKey = process.env.ANTHROPIC_API_KEY;
-  if (!anthropicKey) return { statusCode: 500, body: 'ANTHROPIC_API_KEY not set' };
-
   let data;
   try {
-    data = await fetchResults(anthropicKey);
+    data = await fetchResults();
     console.log('f1-card-test: fetched', data.race, data.date);
   } catch(e) {
     console.error('f1-card-test fetch failed:', e.message);
@@ -51,13 +57,16 @@ exports.handler = async () => {
   }
 
   const MEDAL = ['', '🥇', '🥈', '🥉'];
-  const lines = (data.results || []).slice(0, 3).map(r => {
+  const lines = data.results.map(r => {
     const medal = MEDAL[r.pos] || `P${r.pos}`;
-    const time  = r.pos === 1 ? (r.time || '') : (r.gap || '');
-    return `${medal} ${r.driver} — ${r.team}${time ? ' — ' + time : ''}`;
+    return `${medal} ${r.driver} — ${r.team}${r.time ? ' — ' + r.time : ''}`;
   });
 
-  const message = `[F1] ${data.race} | ${data.date}\n\n${lines.join('\n')}\n\ntocmonkey.com\n\n#F1 #Formula1 #TOCMonkey`;
+  // Format date from YYYY-MM-DD to "Mon DD, YYYY"
+  const d = new Date(data.date + 'T12:00:00Z');
+  const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase();
+
+  const message = `🏎 [F1] ${data.race} | ${dateStr}\n\n${lines.join('\n')}\n\ntocmonkey.com\n\n#F1 #Formula1 #TOCMonkey`;
 
   try {
     const result = await postToFacebook(message);

@@ -1,28 +1,63 @@
-// PGA Leaderboard — posts logo + text top-10 to Facebook
+// PGA Leaderboard — pulls verified data from ESPN Golf API, posts logo + text top-10 to Facebook
 // Runs Thu–Sun at 23:30 UTC (7:30pm ET), captures each round's end-of-day leaderboard
 const { getStore } = require('@netlify/blobs');
 
-async function fetchLeaderboard(anthropicKey) {
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-api-key': anthropicKey, 'anthropic-version': '2023-06-01' },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 800,
-      tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-      messages: [
-        { role: 'user', content: 'Search for the current PGA Tour tournament leaderboard. Return ONLY raw JSON, no markdown:\n{"tournament":"NAME","round":"R1","players":[{"pos":1,"name":"PLAYER","score":-10,"today":-4},{"pos":2,"name":"PLAYER","score":-8,"today":-3}]}\nInclude top 10 players. Score and today are strokes relative to par (negative = under par). If no tournament active, return {"tournament":"","round":"","players":[]}' },
-        { role: 'assistant', content: '{' },
-      ],
-    }),
-    signal: AbortSignal.timeout(30000),
-  });
-  if (!res.ok) throw new Error(`Anthropic API ${res.status}: ${await res.text()}`);
+function fmtScore(val) {
+  const n = Number(val);
+  if (isNaN(n) || val === '' || val == null) return 'E';
+  if (n === 0) return 'E';
+  return n > 0 ? `+${n}` : `${n}`;
+}
+
+async function fetchLeaderboard() {
+  const url = 'https://site.api.espn.com/apis/site/v2/sports/golf/leaderboard?league=pga';
+  const res = await fetch(url, { signal: AbortSignal.timeout(15000) });
+  if (!res.ok) throw new Error(`ESPN Golf API ${res.status}`);
   const data = await res.json();
-  const text = data.content?.find(b => b.type === 'text')?.text || '';
-  const match = ('{' + text).match(/\{[\s\S]*\}/);
-  if (!match) throw new Error(`No JSON: ${text.slice(0, 120)}`);
-  return JSON.parse(match[0]);
+
+  // ESPN returns events array — find the active/most recent tournament
+  const events = data.events || [];
+  if (events.length === 0) return null;
+
+  // Prefer in-progress or most recently completed event
+  const event = events.find(e => e.status?.type?.state === 'in') || events[0];
+  if (!event) return null;
+
+  const tournamentName = event.name || event.shortName || '';
+  const roundDetail    = event.status?.type?.detail || event.status?.type?.description || '';
+  const comp           = event.competitions?.[0];
+  if (!comp) return null;
+
+  const competitors = comp.competitors || [];
+  if (competitors.length === 0) {
+    console.log('pga-card: ESPN returned 0 competitors. Raw event status:', JSON.stringify(event.status));
+    return null;
+  }
+
+  // Sort by position (numeric part of position display name, or use existing order)
+  const sorted = [...competitors].sort((a, b) => {
+    const posA = parseInt(a.status?.position?.id || a.sortOrder || '999', 10);
+    const posB = parseInt(b.status?.position?.id || b.sortOrder || '999', 10);
+    return posA - posB;
+  });
+
+  const players = sorted.slice(0, 10).map((c, i) => {
+    const name    = c.athlete?.displayName || c.displayName || 'Unknown';
+    // Score relative to par — ESPN may provide as 'score', 'toPar', or in linescores
+    const toPar   = c.score ?? c.toPar;
+    const posLabel = c.status?.position?.displayName || `${i + 1}`;
+    // Today's round score — last linescore entry
+    const scores   = c.linescores || [];
+    const todayRaw = scores.length > 0 ? scores[scores.length - 1].value : null;
+    return {
+      pos:   posLabel,
+      name,
+      score: toPar,
+      today: todayRaw,
+    };
+  });
+
+  return { tournament: tournamentName, round: roundDetail, players };
 }
 
 async function postToFacebook(message) {
@@ -38,17 +73,7 @@ async function postToFacebook(message) {
   return await res.json();
 }
 
-function fmtScore(n) {
-  if (n == null || n === '' || isNaN(Number(n))) return 'E';
-  const v = Number(n);
-  if (v === 0) return 'E';
-  return v > 0 ? `+${v}` : `${v}`;
-}
-
 exports.handler = async () => {
-  const anthropicKey = process.env.ANTHROPIC_API_KEY;
-  if (!anthropicKey) return { statusCode: 500, body: 'ANTHROPIC_API_KEY not set' };
-
   const now     = new Date();
   const dateStr = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'America/New_York' }).toUpperCase();
   const dateKey = `pga-${now.toISOString().slice(0, 10)}`;
@@ -63,23 +88,22 @@ exports.handler = async () => {
 
   let board;
   try {
-    board = await fetchLeaderboard(anthropicKey);
-    console.log(`pga-card: fetched ${board.players?.length || 0} players, tournament: ${board.tournament}`);
+    board = await fetchLeaderboard();
+    console.log(`pga-card: fetched ${board?.players?.length || 0} players — ${board?.tournament || 'no tournament'}`);
   } catch(e) {
     console.error('pga-card fetch failed:', e.message);
     return { statusCode: 500, body: `Fetch failed: ${e.message}` };
   }
 
-  if (!board.tournament || !board.players || board.players.length < 1) {
-    console.log('pga-card: no tournament active — skipping');
+  if (!board || !board.tournament || !board.players || board.players.length < 1) {
+    console.log('pga-card: no tournament data — skipping');
     return { statusCode: 200, body: 'No tournament' };
   }
 
-  const lines = board.players.slice(0, 10).map(p => {
-    const pos   = p.pos != null ? `T${p.pos}`.replace('T1 ', ' 1 ') : '?';
+  const lines = board.players.map(p => {
     const score = fmtScore(p.score);
-    const today = p.today != null ? ` (today: ${fmtScore(p.today)})` : '';
-    return `${String(p.pos).padStart(2)}. ${p.name}  ${score}${today}`;
+    const today = p.today != null ? ` (${fmtScore(p.today)})` : '';
+    return `${String(p.pos).padStart(3)}. ${p.name}  ${score}${today}`;
   });
 
   const message = `⛳ [PGA] LEADERBOARD | ${board.tournament} — ${board.round} | ${dateStr}\n\n${lines.join('\n')}\n\ntocmonkey.com\n\n#PGA #Golf #TOCMonkey`;

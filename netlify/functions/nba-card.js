@@ -1,28 +1,48 @@
-// NBA Scores — posts logo + text scores to Facebook
+// NBA Scores — pulls verified final scores from ESPN API, posts logo + text to Facebook
 const { getStore } = require('@netlify/blobs');
 
-async function fetchScores(anthropicKey) {
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-api-key': anthropicKey, 'anthropic-version': '2023-06-01' },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 800,
-      tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-      messages: [
-        { role: 'user', content: 'Search for last night\'s NBA final scores. Return ONLY raw JSON, no markdown:\n{"games":[{"away":"TEAM","awayScore":0,"home":"TEAM","homeScore":0,"ot":false}]}\nUse full team names. Cap at 12 games. If none, return {"games":[]}' },
-        { role: 'assistant', content: '{' },
-      ],
-    }),
-    signal: AbortSignal.timeout(30000),
-  });
-  if (!res.ok) throw new Error(`Anthropic API ${res.status}: ${await res.text()}`);
+// Returns yesterday's date in YYYYMMDD — last night's games
+function getYesterdayYMD() {
+  const d = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  return d.toISOString().slice(0, 10).replace(/-/g, '');
+}
+
+async function fetchScores() {
+  const ymd = getYesterdayYMD();
+  const url = `https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates=${ymd}`;
+  const res = await fetch(url, { signal: AbortSignal.timeout(15000) });
+  if (!res.ok) throw new Error(`ESPN API ${res.status}`);
   const data = await res.json();
-  const text = data.content?.find(b => b.type === 'text')?.text || '';
-  const match = ('{' + text).match(/\{[\s\S]*\}/);
-  if (!match) throw new Error(`No JSON: ${text.slice(0, 120)}`);
-  const parsed = JSON.parse(match[0]);
-  return Array.isArray(parsed.games) ? parsed.games : [];
+
+  const games = [];
+  for (const event of (data.events || [])) {
+    const comp = event.competitions?.[0];
+    if (!comp) continue;
+
+    // Validation: only include games ESPN marks as completed/final
+    if (!comp.status?.type?.completed) continue;
+
+    const home = comp.competitors?.find(c => c.homeAway === 'home');
+    const away = comp.competitors?.find(c => c.homeAway === 'away');
+    if (!home || !away) continue;
+
+    const homeScore = parseInt(home.score, 10);
+    const awayScore = parseInt(away.score, 10);
+    if (isNaN(homeScore) || isNaN(awayScore)) continue;
+
+    // OT detection: shortDetail is "Final/OT", "Final/2OT", etc.
+    const detail = comp.status.type.shortDetail || '';
+    const ot = detail.includes('/') ? detail.split('/')[1] : false;
+
+    games.push({
+      away: away.team.displayName,
+      awayScore,
+      home: home.team.displayName,
+      homeScore,
+      ot,
+    });
+  }
+  return games;
 }
 
 async function postToFacebook(message) {
@@ -39,11 +59,10 @@ async function postToFacebook(message) {
 }
 
 exports.handler = async () => {
-  const anthropicKey = process.env.ANTHROPIC_API_KEY;
-  if (!anthropicKey) return { statusCode: 500, body: 'ANTHROPIC_API_KEY not set' };
-
   const now     = new Date();
-  const dateStr = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'America/New_York' }).toUpperCase();
+  const dateStr = new Date(Date.now() - 24 * 60 * 60 * 1000)
+    .toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'America/New_York' })
+    .toUpperCase();
   const dateKey = `nba-${now.toISOString().slice(0, 10)}`;
 
   try {
@@ -56,22 +75,22 @@ exports.handler = async () => {
 
   let games;
   try {
-    games = await fetchScores(anthropicKey);
-    console.log(`nba-card: fetched ${games.length} games`);
+    games = await fetchScores();
+    console.log(`nba-card: fetched ${games.length} completed games`);
   } catch(e) {
     console.error('nba-card fetch failed:', e.message);
     return { statusCode: 500, body: `Fetch failed: ${e.message}` };
   }
 
   if (games.length < 1) {
-    console.log('nba-card: no games found — skipping');
+    console.log('nba-card: no completed games found — skipping');
     return { statusCode: 200, body: 'No games' };
   }
 
   const lines = games.map(g => {
-    const ot = g.ot && g.ot !== false ? ` (${g.ot === true ? 'OT' : g.ot})` : '';
-    const winner = g.awayScore > g.homeScore ? '→' : ' ';
-    const winner2 = g.homeScore > g.awayScore ? '→' : ' ';
+    const ot      = g.ot ? ` (${g.ot})` : '';
+    const winner  = g.awayScore > g.homeScore ? '>' : ' ';
+    const winner2 = g.homeScore > g.awayScore ? '<' : ' ';
     return `${winner} ${g.away} ${g.awayScore}  —  ${g.home} ${g.homeScore} ${winner2}${ot}`.trim();
   });
 

@@ -1,30 +1,67 @@
-// NCAA Men's Basketball Scores — posts logo + text scores to Facebook
-// AM slot (dedup key suffix: -am): overnight finals
-// PM slot (dedup key suffix: -pm): afternoon finals
+// NCAA Men's Basketball Scores — pulls verified final scores from ESPN API, posts logo + text to Facebook
+// AM slot (14:40 UTC / 9:40am ET): shows overnight finals from yesterday
+// PM slot (22:00 UTC / 6pm ET): shows today's afternoon finals
 const { getStore } = require('@netlify/blobs');
 
-async function fetchScores(anthropicKey) {
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-api-key': anthropicKey, 'anthropic-version': '2023-06-01' },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 1000,
-      tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-      messages: [
-        { role: 'user', content: 'Search for last night\'s NCAA Men\'s college basketball final scores. Return ONLY raw JSON, no markdown:\n{"games":[{"away":"TEAM","awayScore":0,"home":"TEAM","homeScore":0,"ot":false,"ranked":{"away":0,"home":0}}]}\nUse full school names. Include AP ranking if ranked (0 if unranked). Cap at 15 games. If none, return {"games":[]}' },
-        { role: 'assistant', content: '{' },
-      ],
-    }),
-    signal: AbortSignal.timeout(30000),
-  });
-  if (!res.ok) throw new Error(`Anthropic API ${res.status}: ${await res.text()}`);
+function getYesterdayYMD() {
+  const d = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  return d.toISOString().slice(0, 10).replace(/-/g, '');
+}
+
+function getTodayYMD() {
+  return new Date().toISOString().slice(0, 10).replace(/-/g, '');
+}
+
+async function fetchScores(ymd) {
+  const url = `https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard?dates=${ymd}&limit=200`;
+  const res = await fetch(url, { signal: AbortSignal.timeout(15000) });
+  if (!res.ok) throw new Error(`ESPN API ${res.status}`);
   const data = await res.json();
-  const text = data.content?.find(b => b.type === 'text')?.text || '';
-  const match = ('{' + text).match(/\{[\s\S]*\}/);
-  if (!match) throw new Error(`No JSON: ${text.slice(0, 120)}`);
-  const parsed = JSON.parse(match[0]);
-  return Array.isArray(parsed.games) ? parsed.games : [];
+
+  const games = [];
+  for (const event of (data.events || [])) {
+    const comp = event.competitions?.[0];
+    if (!comp) continue;
+
+    // Validation: only include games ESPN marks as completed/final
+    if (!comp.status?.type?.completed) continue;
+
+    const home = comp.competitors?.find(c => c.homeAway === 'home');
+    const away = comp.competitors?.find(c => c.homeAway === 'away');
+    if (!home || !away) continue;
+
+    const homeScore = parseInt(home.score, 10);
+    const awayScore = parseInt(away.score, 10);
+    if (isNaN(homeScore) || isNaN(awayScore)) continue;
+
+    // OT detection
+    const detail = comp.status.type.shortDetail || '';
+    const ot = detail.includes('/') ? detail.split('/')[1] : false;
+
+    // AP rankings — ESPN provides curatedRank.current (0 or unset = unranked)
+    const awayRank = away.curatedRank?.current > 0 ? away.curatedRank.current : 0;
+    const homeRank = home.curatedRank?.current > 0 ? home.curatedRank.current : 0;
+
+    games.push({
+      away: away.team.displayName,
+      awayScore,
+      awayRank,
+      home: home.team.displayName,
+      homeScore,
+      homeRank,
+      ot,
+    });
+  }
+
+  // Sort: ranked matchups first, then by total score descending
+  games.sort((a, b) => {
+    const aRanked = (a.awayRank > 0 || a.homeRank > 0) ? 1 : 0;
+    const bRanked = (b.awayRank > 0 || b.homeRank > 0) ? 1 : 0;
+    if (bRanked !== aRanked) return bRanked - aRanked;
+    return (b.awayScore + b.homeScore) - (a.awayScore + a.homeScore);
+  });
+
+  return games.slice(0, 15);
 }
 
 async function postToFacebook(message) {
@@ -41,14 +78,18 @@ async function postToFacebook(message) {
 }
 
 exports.handler = async () => {
-  const anthropicKey = process.env.ANTHROPIC_API_KEY;
-  if (!anthropicKey) return { statusCode: 500, body: 'ANTHROPIC_API_KEY not set' };
+  const now  = new Date();
+  const slot = now.getUTCHours() < 17 ? 'am' : 'pm';
+  const ymd  = slot === 'am' ? getYesterdayYMD() : getTodayYMD();
 
-  const now     = new Date();
-  const ymd     = now.toISOString().slice(0, 10);
-  const slot    = now.getUTCHours() < 17 ? 'am' : 'pm';
-  const dateStr = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'America/New_York' }).toUpperCase();
-  const dateKey = `ncaamb-${ymd}-${slot}`;
+  const gameDate = slot === 'am'
+    ? new Date(Date.now() - 24 * 60 * 60 * 1000)
+    : now;
+  const dateStr = gameDate
+    .toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'America/New_York' })
+    .toUpperCase();
+
+  const dateKey = `ncaamb-${now.toISOString().slice(0, 10)}-${slot}`;
 
   try {
     const store = getStore('sports-card-dedup');
@@ -60,24 +101,24 @@ exports.handler = async () => {
 
   let games;
   try {
-    games = await fetchScores(anthropicKey);
-    console.log(`ncaamb-card: fetched ${games.length} games`);
+    games = await fetchScores(ymd);
+    console.log(`ncaamb-card (${slot}): fetched ${games.length} completed games for ${ymd}`);
   } catch(e) {
     console.error('ncaamb-card fetch failed:', e.message);
     return { statusCode: 500, body: `Fetch failed: ${e.message}` };
   }
 
   if (games.length < 1) {
-    console.log('ncaamb-card: no games found — skipping');
+    console.log('ncaamb-card: no completed games found — skipping');
     return { statusCode: 200, body: 'No games' };
   }
 
   const lines = games.map(g => {
-    const ot      = g.ot && g.ot !== false ? ` (${g.ot === true ? 'OT' : g.ot})` : '';
-    const awayRnk = g.ranked?.away ? `(#${g.ranked.away}) ` : '';
-    const homeRnk = g.ranked?.home ? `(#${g.ranked.home}) ` : '';
-    const winner  = g.awayScore > g.homeScore ? '→' : ' ';
-    const winner2 = g.homeScore > g.awayScore ? '→' : ' ';
+    const ot      = g.ot ? ` (${g.ot})` : '';
+    const awayRnk = g.awayRank ? `(#${g.awayRank}) ` : '';
+    const homeRnk = g.homeRank ? `(#${g.homeRank}) ` : '';
+    const winner  = g.awayScore > g.homeScore ? '>' : ' ';
+    const winner2 = g.homeScore > g.awayScore ? '<' : ' ';
     return `${winner} ${awayRnk}${g.away} ${g.awayScore}  —  ${homeRnk}${g.home} ${g.homeScore} ${winner2}${ot}`.trim();
   });
 
