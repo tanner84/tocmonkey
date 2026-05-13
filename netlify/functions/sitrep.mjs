@@ -101,7 +101,9 @@ Only include sources if you actually used RSS articles. Copy URLs exactly. Start
       }
 
       if (!resp.ok) {
-        lastErr = `HTTP ${resp.status}`;
+        let detail = '';
+        try { const e = await resp.json(); detail = e?.error?.message || JSON.stringify(e); } catch(_) {}
+        lastErr = `HTTP ${resp.status}${detail ? ': ' + detail.slice(0, 120) : ''}`;
         continue;
       }
 
