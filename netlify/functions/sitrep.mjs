@@ -85,7 +85,7 @@ Only include sources if you actually used RSS articles. Copy URLs exactly. Start
           'anthropic-version': '2023-06-01'
         },
         body: JSON.stringify({
-          model: 'claude-haiku-4-5-20251001',
+          model: 'claude-haiku-4-5',
           max_tokens: 650,
           messages: [{ role: 'user', content: prompt }]
         })
@@ -131,7 +131,7 @@ Only include sources if you actually used RSS articles. Copy URLs exactly. Start
     if (stale?.text) {
       const ageMin = Math.floor((Date.now() - stale.ts) / 60000);
       return json({
-        text: stale.text + `\n\n// stale cache · ${ageMin}m old · API overloaded, retry soon`,
+        text: stale.text + `\n\n// stale cache · ${ageMin}m old · ${lastErr || 'API error'}, retry soon`,
         cached: true, stale: true
       });
     }
