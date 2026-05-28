@@ -1311,6 +1311,8 @@ const COCOMS=[
    {label:"JNIM / AQ-Sahel",flag:"⚔️",id:"jnim",cat:"nonstate"},
    {label:"ISIS-Sahel (ISGS)",flag:"⚔️",id:"isgs",cat:"nonstate"},
    {label:"Hafter LNA (Libya)",flag:"🏳️",id:"lna",cat:"nonstate"},
+   {label:"RSF (Sudan)",flag:"⚔️",id:"rsf",cat:"nonstate"},
+   {label:"SAF (Sudan)",flag:"🇸🇩",id:"saf",cat:"adversary"},
   ],
   orgs:{
    us:{hq:"HQ USAFRICOM — Kelley Barracks, Stuttgart, GE",flag:"🇺🇸",
@@ -1344,6 +1346,26 @@ const COCOMS=[
      ]},
     ],
     note:"Civil war since April 2023 between SAF and RSF. El Fasher is last SAF-held city in Darfur — UN warning of genocide. Wagner/Russia linked to RSF materiel supply."},
+   rsf:{hq:"Rapid Support Forces (RSF) — Mohamed Hamdan Dagalo 'Hemeti', Port Sudan / Darfur",flag:"⚔️",
+    components:[
+     {name:"RSF Ground Forces",type:"Paramilitary",units:[
+      {u:"RSF Main Force — Darfur / Khartoum theater",subs:["~100,000 fighters est.","Captured SAF armored vehicles — T-55, BMP-1/2","El Fasher siege — ongoing offensive vs. last SAF-held Darfur city","IED networks and technicals — DShK, ZU-23 mounted"]},
+      {u:"RSF — Port Sudan Logistics Hub",subs:["Rear command and resupply node","Wagner / Africa Corps arms pipeline via Libya","UAE financial facilitation — front companies, gold trade"]},
+      {u:"Gold Smuggling Network",subs:["Jebel Amir and Kondoros goldfields — RSF-controlled","~$1B+ per year estimated illicit gold revenue","Conduit: UAE (Dubai) via informal channels","State-crime nexus: RSF mines, moves, and launders proceeds"]},
+     ]},
+    ],
+    note:"RSF originated as Janjaweed militia; formalized under SAF before breaking away April 2023. UN Human Rights Council and ICC have documented mass atrocities in Darfur — formal genocide referral submitted. Wagner/Africa Corps and UAE provide materiel and financial lifelines insulating RSF from international pressure."},
+   saf:{hq:"Sudan Armed Forces (SAF) — General Abdel Fattah al-Burhan, Port Sudan (de facto capital)",flag:"🇸🇩",
+    components:[
+     {name:"SAF Conventional Ground Forces",type:"Government Military",units:[
+      {u:"SAF Ground Forces — heavily degraded",subs:["Khartoum lost — reconstituting in Port Sudan","Fragmented command, significant equipment losses to RSF","Coordinating with SLM/A militia factions in Darfur"]},
+      {u:"SLM/A Militia Factions (SAF-aligned)",subs:["Sudan Liberation Movement/Army splinters","Darfur coordination vs. RSF","Variable cohesion, locally recruited"]},
+     ]},
+     {name:"SAF Air Force",type:"AFFOR",units:[
+      {u:"SAF Air Force — strike operations",subs:["Su-24 Fencer — aging Soviet strike aircraft, sorties vs. RSF positions","MiG-29 Fulcrum — air superiority, limited ops","Mi-24 Hind — armed helicopter support","Shahed-series drones — Iranian supply via Egypt"]},
+     ]},
+    ],
+    note:"Al-Burhan heads Sovereignty Council — internationally recognized but authority limited to SAF-held territory. Port Sudan functions as de facto wartime capital. Egypt provides diplomatic cover and logistics; Iran supplying Shahed drones. UN Panel of Experts has documented SAF airstrikes on civilian areas including markets and hospitals. No near-term resolution indicators."},
    jnim:{hq:"Jama'at Nusrat al-Islam wal-Muslimin (JNIM) — Iyad Ag Ghaly, Sahel",flag:"🌍",
     components:[
      {name:"JNIM Military Structure",type:"COIN Adversary",units:[
