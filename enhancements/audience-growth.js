@@ -29,6 +29,39 @@
     return config;
   }
 
+  function findTopShell() {
+    const candidates = [...document.querySelectorAll('header,nav,[role="navigation"]')]
+      .map(el => ({ el, rect:el.getBoundingClientRect() }))
+      .filter(({ rect }) => rect.width >= 320 && rect.height >= 28 && rect.height <= 180 && rect.top < 160 && rect.bottom > 0)
+      .sort((a,b) => a.rect.top - b.rect.top || b.rect.width - a.rect.width);
+    return candidates[0]?.el || null;
+  }
+
+  function mountGlobalCta() {
+    if (!config || document.getElementById('tm-audience-global-follow')) return true;
+
+    const link = document.createElement('a');
+    link.id = 'tm-audience-global-follow';
+    link.href = trackedHref('global-follow', currentCocom());
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.setAttribute('aria-label', 'Follow or subscribe to TOC Monkey on Substack');
+    link.title = 'Follow TOC Monkey on Substack and subscribe to the Monthly SITREP';
+    link.innerHTML = '<span>FOLLOW</span><b>/ SUBSCRIBE</b><i>↗</i>';
+    link.addEventListener('click', () => { link.href = trackedHref('global-follow', currentCocom()); });
+
+    const topShell = findTopShell();
+    if (topShell) {
+      if (getComputedStyle(topShell).position === 'static') topShell.style.position = 'relative';
+      link.classList.add('tm-in-header');
+      topShell.appendChild(link);
+    } else {
+      link.classList.add('tm-global-fixed');
+      document.body.appendChild(link);
+    }
+    return true;
+  }
+
   function mountMapCta() {
     if (!config || document.getElementById('tm-audience-map-cta')) return true;
     const mapShell = document.querySelector('[data-tm-map-shell="true"]');
@@ -83,6 +116,7 @@
     let attempts = 0;
     const timer = setInterval(() => {
       attempts++;
+      mountGlobalCta();
       const mapReady = mountMapCta();
       mountDrawerCta();
       if (mapReady || attempts >= 80) {
@@ -92,6 +126,7 @@
     }, 125);
 
     const observer = new MutationObserver(() => {
+      mountGlobalCta();
       mountMapCta();
       mountDrawerCta();
     });
