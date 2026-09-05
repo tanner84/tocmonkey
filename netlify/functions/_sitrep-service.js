@@ -161,8 +161,7 @@ async function generateCocom(cocomId, { siteUrl, force = false, source = 'schedu
     }
   }
 
-  // If RSS is unavailable, do not overwrite a still-usable report. Preserve the
-  // last known good product and report the failed generation to the caller.
+  // If source collection is unavailable, do not overwrite a still-usable report.
   if (existing?.text && ageState(existing.ts).state !== 'EXPIRED') {
     return { skipped:true, reason:'rss-unavailable-preserved', report:existing, degraded:true, error:rssError };
   }
@@ -181,16 +180,16 @@ async function generateCocom(cocomId, { siteUrl, force = false, source = 'schedu
 }
 
 async function generateAll(options = {}) {
-  const results = [];
-  for (const cocomId of COCOMS) {
+  // Run the six AORs concurrently so the scheduled function is bounded by one
+  // model round-trip rather than six sequential round-trips.
+  return Promise.all(COCOMS.map(async cocomId => {
     try {
       const result = await generateCocom(cocomId, options);
-      results.push({ cocomId, ok:true, ...result });
+      return { cocomId, ok:true, ...result };
     } catch (error) {
-      results.push({ cocomId, ok:false, error:String(error.message || error).slice(0,240) });
+      return { cocomId, ok:false, error:String(error.message || error).slice(0,240) };
     }
-  }
-  return results;
+  }));
 }
 
 module.exports = {
