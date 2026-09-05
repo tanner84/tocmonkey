@@ -7,8 +7,14 @@ export default async (_request: Request, context: any) => {
   if (!html.includes('/enhancements/public-overrides.css')) {
     html = html.replace('</head>', '  <link rel="stylesheet" href="/enhancements/public-overrides.css">\n</head>');
   }
+  if (!html.includes('/enhancements/public-map-hotfix.css')) {
+    html = html.replace('</head>', '  <link rel="stylesheet" href="/enhancements/public-map-hotfix.css">\n</head>');
+  }
   if (!html.includes('/enhancements/public-enhancements.js')) {
     html = html.replace('</body>', '  <script src="/enhancements/public-enhancements.js" defer></script>\n</body>');
+  }
+  if (!html.includes('/enhancements/public-map-hotfix.js')) {
+    html = html.replace('</body>', '  <script src="/enhancements/public-map-hotfix.js" defer></script>\n</body>');
   }
 
   const headers = new Headers(response.headers);
