@@ -29,6 +29,20 @@
     return config;
   }
 
+  function controlText(el) {
+    return String(el?.textContent || '').replace(/\s+/g, ' ').trim().toUpperCase();
+  }
+
+  function findControl(label) {
+    const target = String(label || '').toUpperCase();
+    return [...document.querySelectorAll('a,button,[role="button"]')]
+      .filter(el => {
+        const rect = el.getBoundingClientRect();
+        return rect.width > 0 && rect.height > 0 && rect.top < 90;
+      })
+      .find(el => controlText(el).includes(target)) || null;
+  }
+
   function findTopShell() {
     const candidates = [...document.querySelectorAll('header,nav,[role="navigation"]')]
       .map(el => ({ el, rect:el.getBoundingClientRect() }))
@@ -37,28 +51,49 @@
     return candidates[0]?.el || null;
   }
 
-  function mountGlobalCta() {
-    if (!config || document.getElementById('tm-audience-global-follow')) return true;
-
-    const link = document.createElement('a');
-    link.id = 'tm-audience-global-follow';
-    link.href = trackedHref('global-follow', currentCocom());
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer';
-    link.setAttribute('aria-label', 'Follow or subscribe to TOC Monkey on Substack');
-    link.title = 'Follow TOC Monkey on Substack and subscribe to the Monthly SITREP';
-    link.innerHTML = '<span>FOLLOW</span><b>/ SUBSCRIBE</b><i>↗</i>';
-    link.addEventListener('click', () => { link.href = trackedHref('global-follow', currentCocom()); });
+  function placeGlobalCta(link) {
+    const wtf = findControl('WTF IS THIS');
+    if (wtf?.parentElement) {
+      link.classList.remove('tm-in-header','tm-global-fixed');
+      link.classList.add('tm-topbar-native');
+      if (link.nextElementSibling !== wtf || link.parentElement !== wtf.parentElement) {
+        wtf.insertAdjacentElement('beforebegin', link);
+      }
+      return true;
+    }
 
     const topShell = findTopShell();
     if (topShell) {
       if (getComputedStyle(topShell).position === 'static') topShell.style.position = 'relative';
+      link.classList.remove('tm-topbar-native','tm-global-fixed');
       link.classList.add('tm-in-header');
-      topShell.appendChild(link);
-    } else {
-      link.classList.add('tm-global-fixed');
-      document.body.appendChild(link);
+      if (link.parentElement !== topShell) topShell.appendChild(link);
+      return true;
     }
+
+    link.classList.remove('tm-topbar-native','tm-in-header');
+    link.classList.add('tm-global-fixed');
+    if (link.parentElement !== document.body) document.body.appendChild(link);
+    return false;
+  }
+
+  function mountGlobalCta() {
+    if (!config) return false;
+
+    let link = document.getElementById('tm-audience-global-follow');
+    if (!link) {
+      link = document.createElement('a');
+      link.id = 'tm-audience-global-follow';
+      link.href = trackedHref('global-follow', currentCocom());
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      link.setAttribute('aria-label', 'Follow or subscribe to TOC Monkey on Substack');
+      link.title = 'Follow TOC Monkey on Substack and subscribe to the Monthly SITREP';
+      link.innerHTML = '<span>FOLLOW</span><b>/ SUBSCRIBE</b><i>↗</i>';
+      link.addEventListener('click', () => { link.href = trackedHref('global-follow', currentCocom()); });
+    }
+
+    placeGlobalCta(link);
     return true;
   }
 
