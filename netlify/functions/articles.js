@@ -5,12 +5,12 @@
 
 const { getStore } = require("@netlify/blobs");
 
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "tocmonkey2025";
+// Never fall back to a password committed in source control. If the environment\n// variable is missing, admin operations fail closed instead of becoming public.\nconst ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "";
 const COCOMS = ['EUCOM', 'CENTCOM', 'INDOPACOM', 'AFRICOM', 'SOUTHCOM', 'NORTHCOM'];
 function getBlobKey(cocom) { return `articles-${cocom}`; }
 function checkAuth(event) {
   const auth = event.headers["x-admin-password"] || "";
-  return auth === ADMIN_PASSWORD;
+  return Boolean(ADMIN_PASSWORD) && auth === ADMIN_PASSWORD;
 }
 
 exports.handler = async function (event, context) {
@@ -18,7 +18,7 @@ exports.handler = async function (event, context) {
   const method = event.httpMethod;
 
   // ── GET ──────────────────────────────────────────────────────────────
-  if (method === "GET") {
+  if (method === "GET") {\n    // Dedicated login check. Public article reads cannot validate admin access.\n    if (event.queryStringParameters?.type === "authcheck") {\n      if (!ADMIN_PASSWORD) {\n        return { statusCode:503, body:JSON.stringify({error:"Admin access is not configured"}) };\n      }\n      return checkAuth(event)\n        ? { statusCode:200, headers:{"Content-Type":"application/json"}, body:JSON.stringify({ok:true}) }\n        : { statusCode:401, headers:{"Content-Type":"application/json"}, body:JSON.stringify({error:"Unauthorized"}) };\n    }
     // Org notes (admin only)
     if (event.queryStringParameters && event.queryStringParameters.type === "orgnotes") {
       if (!checkAuth(event)) return { statusCode:401, body:"[]" };
