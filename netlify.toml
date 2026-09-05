@@ -9,6 +9,11 @@
 [functions."scrapeArticles"]
   schedule = "0 6 * * *"
 
+# COCOM knowledge recent-reporting refresh — every 6 hours.
+# This updates runtime RSS signals only; baseline actor facts stay manually reviewed.
+[functions."knowledge-refresh"]
+  schedule = "35 */6 * * *"
+
 # SIGACT brief — every 4 hours, rotates through all 6 COCOMs (one per run)
 [functions."sigactbrief"]
   schedule = "0 */4 * * *"
