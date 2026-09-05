@@ -14,6 +14,23 @@
   box-shadow:0 6px 18px rgba(0,0,0,.42), 0 0 16px rgba(151,196,230,.12);
   white-space:nowrap;
 }
+#tm-audience-global-follow.tm-topbar-native {
+  position:static !important;
+  top:auto !important;
+  right:auto !important;
+  bottom:auto !important;
+  left:auto !important;
+  transform:none !important;
+  align-self:center;
+  flex:0 0 auto;
+  margin:0 7px;
+  padding:6px 10px;
+  border-color:#5e747a;
+  border-radius:2px;
+  background:rgba(13,18,19,.78);
+  box-shadow:none;
+  line-height:1;
+}
 #tm-audience-global-follow.tm-in-header {
   position:absolute;
   right:14px;
@@ -48,6 +65,10 @@
   border-color:#d8edf9;
   outline:none;
   box-shadow:0 7px 22px rgba(0,0,0,.5), 0 0 18px rgba(151,196,230,.22);
+}
+#tm-audience-global-follow.tm-topbar-native:hover,
+#tm-audience-global-follow.tm-topbar-native:focus-visible {
+  box-shadow:none;
 }
 
 #tm-audience-map-cta {
@@ -144,6 +165,12 @@
 #tm-audience-fallback b { font-size:9px; color:#eaf6ff; }
 
 @media (max-width:760px) {
+  #tm-audience-global-follow.tm-topbar-native {
+    position:static !important;
+    transform:none !important;
+    margin:0 4px;
+    padding:5px 7px;
+  }
   #tm-audience-global-follow.tm-in-header,
   #tm-audience-global-follow.tm-global-fixed {
     position:fixed;
