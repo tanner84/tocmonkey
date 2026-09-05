@@ -90,6 +90,15 @@
   function = "public-enhancements"
   path = "/index.html"
 
+# Private Control Room knowledge-review extension. Admin remains password gated.
+[[edge_functions]]
+  function = "admin-knowledge-review"
+  path = "/admin"
+
+[[edge_functions]]
+  function = "admin-knowledge-review"
+  path = "/admin.html"
+
 # Allow map tiles, Anthropic API, and external resources
 [[headers]]
   for = "/*"
