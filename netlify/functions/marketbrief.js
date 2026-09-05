@@ -1,197 +1,50 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// Market Brief — Netlify Scheduled Function
-// Schedule: weekdays at open bell (13:30 UTC / 9:30am EDT) via netlify.toml
-//           weekdays at close bell (20:30 UTC / 4:30pm EDT) via netlify.toml
-//
-// 1. Fetch live prices via Claude web_search tool
-// 2. Generate geopolitical brief via Claude Haiku
-// 3. POST to Facebook Page via Graph API
-//
-// Required env vars (Netlify dashboard → Environment Variables):
-//   ANTHROPIC_API_KEY        — already set
-//   FACEBOOK_PAGE_ID         — your Facebook Page numeric ID
-//   FACEBOOK_PAGE_ACCESS_TOKEN — long-lived Page access token
-// ─────────────────────────────────────────────────────────────────────────────
+// Market Brief — OpenAI-backed scheduled market summary.
+// marketbrief-open.js / marketbrief-close.js call this handler on the existing schedule.
+const { generateText } = require('./_openai');
 
-// ── Format a price line ───────────────────────────────────────────────────────
-function fmt(price, pct) {
-  const sign = pct >= 0 ? '+' : '';
-  return `$${price.toFixed(2)} (${sign}${pct.toFixed(2)}%)`;
+function fmt(price,pct){const sign=Number(pct)>=0?'+':'';return `$${Number(price).toFixed(2)} (${sign}${Number(pct).toFixed(2)}%)`;}
+function extractJson(text=''){const match=String(text).match(/\{[\s\S]*\}/);if(!match)throw new Error(`No JSON in OpenAI response: ${String(text).slice(0,140)}`);return JSON.parse(match[0]);}
+
+async function postToFacebook(message){
+  const pageId=process.env.FACEBOOK_PAGE_ID;
+  const token=process.env.FACEBOOK_PAGE_ACCESS_TOKEN||process.env.FACEBOOK_ACCESS_TOKEN;
+  if(!pageId||!token)throw new Error('Facebook env vars not set');
+  const res=await fetch(`https://graph.facebook.com/v19.0/${pageId}/feed`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message,access_token:token}),signal:AbortSignal.timeout(10000)});
+  if(!res.ok)throw new Error(`Facebook API ${res.status}: ${await res.text()}`);
+  return res.json();
 }
 
-// ── Post to Facebook ──────────────────────────────────────────────────────────
-async function postToFacebook(message) {
-  const pageId    = process.env.FACEBOOK_PAGE_ID;
-  const pageToken = process.env.FACEBOOK_PAGE_ACCESS_TOKEN || process.env.FACEBOOK_ACCESS_TOKEN;
-  if (!pageId || !pageToken) throw new Error('Facebook env vars not set');
-
-  const url = `https://graph.facebook.com/v19.0/${pageId}/feed`;
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message, access_token: pageToken }),
-    signal: AbortSignal.timeout(10000),
-  });
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`Facebook API ${res.status}: ${err}`);
-  }
-  return await res.json();
+async function fetchPrices(){
+  const prompt=`Use web search to find the most recent available market price and daily percent change for these instruments: WTI crude oil, Brent crude oil, U.S. natural gas, AAPL, MSFT, NVDA, GOOGL, PFE, JNJ, MRK. Prefer current-session or most recent official/major-market reporting. Return ONLY raw JSON with no markdown or commentary using keys WTI, BRENT, NAT_GAS, AAPL, MSFT, NVDA, GOOGL, PFE, JNJ, MRK and values {"price":number,"change":number,"asOf":"short source/time note"}. Omit any key you cannot verify. Do not estimate or reuse stale example values.`;
+  const result=await generateText({prompt,model:process.env.OPENAI_RESEARCH_MODEL||'gpt-5.6-terra',maxOutputTokens:900,reasoningEffort:'low',timeoutMs:45000,retries:1,tools:[{type:'web_search'}]});
+  return extractJson(result.text);
 }
 
-// ── Main handler ──────────────────────────────────────────────────────────────
-exports.handler = async function(event) {
-  const anthropicKey = process.env.ANTHROPIC_API_KEY;
-  if (!anthropicKey) return { statusCode: 500, body: 'ANTHROPIC_API_KEY not set' };
-
-  // Determine OPEN or CLOSE based on UTC hour
-  const utcHour = new Date().getUTCHours();
-  const bell = (utcHour >= 13 && utcHour <= 15) ? 'OPEN' : 'CLOSE';
-  const dateStr = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'America/New_York' }).toUpperCase();
-
-  // ── Fetch live prices via Claude web_search ───────────────────────────────
-  const priceResponse = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": anthropicKey,
-      "anthropic-version": "2023-06-01"
-    },
-    body: JSON.stringify({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 1000,
-      tools: [{ type: "web_search_20250305", name: "web_search" }],
-      messages: [{
-        role: "user",
-        content: `Search for today's most recent prices for: WTI crude oil, Brent crude,
-      natural gas, AAPL, MSFT, NVDA, GOOGL, PFE, JNJ, MRK.
-      Return ONLY raw JSON with no markdown, no backticks, no preamble, no commentary.
-      Use this exact format:
-      {"WTI": {"price": 94.46, "change": -5.28}, "AAPL": {"price": 227.50, "change": 1.24}}
-      If you cannot find a current price for a ticker, omit that key entirely.
-      All change values are daily percent change.`
-      }]
-    })
-  });
-
-  const priceData = await priceResponse.json();
-
-  // Extract text content from response, handling tool_use blocks
-  const textBlock = priceData.content && priceData.content.find(block => block.type === "text");
-  if (!textBlock) {
-    console.error("No text block in price response:", JSON.stringify(priceData.content));
-    return { statusCode: 500, body: 'No text block in price response' };
-  }
+exports.handler=async function(){
+  const utcHour=new Date().getUTCHours();
+  const bell=(utcHour>=13&&utcHour<=15)?'OPEN':'CLOSE';
+  const dateStr=new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'America/New_York'}).toUpperCase();
 
   let prices;
-  try {
-    prices = JSON.parse(textBlock.text.trim());
-  } catch (err) {
-    console.error("Price JSON parse failed. Raw response:", textBlock.text);
-    return { statusCode: 500, body: 'Price JSON parse failed' };
-  }
+  try{prices=await fetchPrices();}catch(e){return{statusCode:500,body:`OpenAI market research failed: ${e.message}`};}
+  const validated=Object.fromEntries(Object.entries(prices||{}).filter(([_,v])=>Number.isFinite(Number(v?.price))&&Number(v.price)>0&&Number.isFinite(Number(v?.change))));
+  if(Object.keys(validated).length<3)return{statusCode:500,body:'Insufficient verified market price data'};
 
-  // Validate — skip any ticker returning 0 or null
-  const validated = Object.fromEntries(
-    Object.entries(prices).filter(([_, v]) => v.price && v.price !== 0)
-  );
+  const lines=[];
+  if(validated.WTI)lines.push(`WTI: ${fmt(validated.WTI.price,validated.WTI.change)}`);
+  if(validated.BRENT)lines.push(`Brent: ${fmt(validated.BRENT.price,validated.BRENT.change)}`);
+  if(validated.NAT_GAS)lines.push(`Natural gas: ${fmt(validated.NAT_GAS.price,validated.NAT_GAS.change)}`);
+  const stockSymbols=['AAPL','MSFT','NVDA','GOOGL','PFE','JNJ','MRK'];
+  const stocks=stockSymbols.filter(s=>validated[s]).map(s=>({symbol:s,...validated[s]}));
+  const notable=[...stocks].sort((a,b)=>Math.abs(Number(b.change))-Math.abs(Number(a.change))).slice(0,4).map(s=>`${s.symbol} ${Number(s.change)>=0?'+':''}${Number(s.change).toFixed(2)}%`).join(' · ');
+  const sourceNotes=Object.entries(validated).map(([k,v])=>`${k}: ${v.asOf||'current web result'}`).join('\n');
 
-  if (Object.keys(validated).length < 3) {
-    console.error("Insufficient price data returned:", validated);
-    return { statusCode: 500, body: 'Insufficient price data' };
-  }
+  const prompt=`You are a market-intelligence writer for TOC Monkey. Write the ${bell==='OPEN'?'open':'close'} bell summary for ${dateStr}.\n\nVERIFIED PRICE DATA:\n${lines.join('\n')}\nStocks: ${stocks.map(s=>`${s.symbol} ${fmt(s.price,s.change)}`).join(' | ')||'unavailable'}\n\nSOURCE/TIMING NOTES:\n${sourceNotes}\n\nWrite exactly:\n📊 ${bell} BELL | ${dateStr}\n\n[2-3 terse sentences. Lead with the highest-confidence operationally significant signal. Explain a geopolitical driver only when supported by current reporting; otherwise describe the move without inventing a cause. For equities, prefer a discrete company catalyst if supported. Use exact percentages from the verified data.]\n\nNotable moves: ${notable||'n/a'}\n\n#Markets #Commodities #TOCMonkey\n\nNot investment advice.\n\nRules: do not estimate unavailable figures; do not invent causal links; hedge ambiguous context. Output only the post.`;
 
-  // ── Build price strings for prompt ───────────────────────────────────────
-  const g = (key, fallbackPrice) => validated[key] || { price: fallbackPrice, change: 0 };
+  let briefText;
+  try{briefText=(await generateText({prompt,model:process.env.OPENAI_SOCIAL_MODEL||'gpt-5.6-luna',maxOutputTokens:450,reasoningEffort:'low',retries:2})).text.trim();}
+  catch(e){return{statusCode:500,body:`OpenAI brief generation failed: ${e.message}`};}
 
-  const wti   = g('WTI',     78.42);
-  const brent = g('BRENT',   82.17);
-  const gas   = g('NAT_GAS', 2.84);
-
-  const stocks = ['AAPL','MSFT','NVDA','GOOGL','PFE','JNJ','MRK']
-    .map(sym => ({ symbol: sym, ...(validated[sym] || null) }))
-    .filter(s => s.price);
-
-  const techStocks   = stocks.filter(s => ['AAPL','MSFT','NVDA','GOOGL'].includes(s.symbol));
-  const pharmaStocks = stocks.filter(s => ['PFE','JNJ','MRK'].includes(s.symbol));
-
-  const techLine   = techStocks.map(s => `${s.symbol} ${fmt(s.price, s.change)}`).join(' | ');
-  const pharmaLine = pharmaStocks.map(s => `${s.symbol} ${fmt(s.price, s.change)}`).join(' | ');
-
-  const sorted = [...stocks].sort((a,b) => Math.abs(b.change) - Math.abs(a.change));
-  const notableStr = sorted.slice(0,4).map(s => `${s.symbol} ${s.change >= 0 ? '+' : ''}${s.change.toFixed(2)}%`).join(' · ');
-
-  // ── Build Claude prompt ───────────────────────────────────────────────────
-  const prompt = `You are a market-intelligence writer for TOC Monkey, a SITREP dashboard that maps financial signals to COCOM threat environments. You generate ${bell === 'OPEN' ? 'open bell' : 'close bell'} summaries that connect commodity and equity moves to geopolitical drivers by region.
-
-PRICE DATA FOR THIS SESSION:
-Oil (WTI): ${fmt(wti.price, wti.change)}
-Oil (Brent): ${fmt(brent.price, brent.change)}
-Natural Gas: ${fmt(gas.price, gas.change)}
-Big Tech (AAPL/MSFT/NVDA/GOOGL): ${techLine || 'unavailable'}
-Pharma (PFE/JNJ/MRK): ${pharmaLine || 'unavailable'}
-
-ACCURACY RULES — follow strictly:
-1. PRICE DATA — Never round or approximate percentage moves. Use exact figures from the source data above. If a figure is unavailable, omit it rather than estimate.
-2. CAUSAL ATTRIBUTION — Only assign a COCOM regional driver if there is a confirmed, reportable link between that AOR and the price move. Do not invent regional narratives to fill structural symmetry.
-3. BRENT vs WTI — When explaining spread behavior, attribute both to their actual drivers. If both moved on the same underlying event, say so. Divergence is a magnitude story, not necessarily a separate regional driver story.
-4. EQUITY CATALYSTS — Identify the primary intraday catalyst for notable movers. Do not default to macro/geopolitical framing when a discrete corporate event (earnings, conference, announcement) drove the move that session.
-5. DATE — This is the ${bell} BELL for the ${dateStr} trading session.
-6. FABRICATION PREVENTION — If geopolitical context is ambiguous or unconfirmed, use hedged language ("may reflect," "amid uncertainty around") rather than asserting causal linkage.
-
-Write a post formatted exactly like this:
-
-📊 ${bell} BELL | ${dateStr}
-
-[2-3 sentences. Lead with the highest-confidence, most operationally significant signal. WTI and Brent get separate causal sentences only if their drivers differ. Equity movers: cite the specific catalyst first, macro context second. Military intelligence analyst voice — terse, no editorial.]
-
-Notable moves: ${notableStr || 'n/a'}
-
-#Markets #Commodities #TOCMonkey
-
-Not investment advice.
-
-Output only the post text — no preamble, no explanation.`;
-
-  // ── Call Claude Haiku for the brief ───────────────────────────────────────
-  const aiRes = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': anthropicKey,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 400,
-      messages: [{ role: 'user', content: prompt }],
-    }),
-    signal: AbortSignal.timeout(20000),
-  });
-
-  if (!aiRes.ok) {
-    return { statusCode: 500, body: `Claude API error: ${aiRes.status}` };
-  }
-
-  const aiData = await aiRes.json();
-  const briefText = aiData?.content?.[0]?.text;
-  if (!briefText) {
-    return { statusCode: 500, body: 'No content from Claude' };
-  }
-
-  // ── Post to Facebook ──────────────────────────────────────────────────────
-  try {
-    const fbResult = await postToFacebook(briefText);
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ ok: true, fb_post_id: fbResult.id, bell, brief: briefText }),
-    };
-  } catch (fbErr) {
-    console.error('Facebook post failed:', fbErr.message);
-    console.log('Generated brief:\n', briefText);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ ok: false, error: fbErr.message, brief: briefText }),
-    };
-  }
+  try{const fb=await postToFacebook(briefText);return{statusCode:200,body:JSON.stringify({ok:true,fb_post_id:fb.id,bell,brief:briefText,provider:'openai'})};}
+  catch(e){return{statusCode:500,body:JSON.stringify({ok:false,error:e.message,brief:briefText,provider:'openai'})};}
 };
