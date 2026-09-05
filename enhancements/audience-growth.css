@@ -1,0 +1,111 @@
+/* TOC Monkey audience-growth layer */
+#tm-audience-map-cta {
+  position:absolute;
+  top:102px;
+  right:16px;
+  z-index:6999;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:7px 8px 7px 10px;
+  border:1px solid #4b5965;
+  border-radius:3px;
+  background:rgba(8,12,15,.92);
+  box-shadow:0 6px 18px rgba(0,0,0,.4);
+  backdrop-filter:blur(2px);
+  font-family:'Courier New',monospace;
+}
+.tm-audience-kicker {
+  color:#9eacb7;
+  font-size:9px;
+  font-weight:700;
+  letter-spacing:.7px;
+  white-space:nowrap;
+}
+.tm-audience-button,
+#tm-audience-drawer-cta a {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  border:1px solid #8aa7bd;
+  border-radius:2px;
+  background:#182631;
+  color:#eaf6ff;
+  padding:5px 7px;
+  text-decoration:none;
+  font:700 9px/1.1 'Courier New',monospace;
+  letter-spacing:.45px;
+  white-space:nowrap;
+}
+.tm-audience-button:hover,
+#tm-audience-drawer-cta a:hover {
+  background:#223746;
+  border-color:#c9e4f6;
+}
+
+#tm-audience-drawer-cta {
+  flex:0 0 auto;
+  display:flex;
+  gap:12px;
+  align-items:center;
+  padding:10px 14px;
+  border-top:1px solid #263039;
+  border-bottom:1px solid #263039;
+  background:#0d1419;
+  font-family:'Courier New',monospace;
+}
+#tm-audience-drawer-cta > div {
+  flex:1;
+  min-width:0;
+}
+#tm-audience-drawer-cta strong {
+  display:block;
+  color:#eef4f8;
+  font-size:10px;
+  letter-spacing:.4px;
+  margin-bottom:3px;
+}
+#tm-audience-drawer-cta span {
+  display:block;
+  color:#8796a2;
+  font-size:9px;
+  line-height:1.35;
+}
+
+#tm-audience-fallback {
+  position:fixed;
+  top:74px;
+  right:18px;
+  z-index:99989;
+  display:flex;
+  gap:8px;
+  align-items:center;
+  padding:7px 9px;
+  border:1px solid #4b5965;
+  border-radius:3px;
+  background:#0b1115;
+  color:#dfe7ed;
+  text-decoration:none;
+  font-family:'Courier New',monospace;
+  box-shadow:0 8px 22px rgba(0,0,0,.4);
+}
+#tm-audience-fallback span { font-size:9px; color:#8897a3; letter-spacing:.55px; }
+#tm-audience-fallback b { font-size:9px; color:#eaf6ff; }
+
+@media (max-width:760px) {
+  #tm-audience-map-cta {
+    top:auto;
+    right:10px;
+    bottom:58px;
+  }
+  .tm-audience-kicker { display:none; }
+  #tm-audience-drawer-cta {
+    align-items:flex-start;
+    flex-direction:column;
+  }
+  #tm-audience-fallback {
+    top:auto;
+    right:10px;
+    bottom:58px;
+  }
+}
