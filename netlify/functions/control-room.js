@@ -31,13 +31,31 @@ exports.handler = async function(event) {
 
   const now = new Date();
   const date = now.toISOString().slice(0, 10);
+  const configured = {
+    anthropic:Boolean(process.env.ANTHROPIC_API_KEY),
+    facebook:Boolean(process.env.FACEBOOK_PAGE_ID && (process.env.FACEBOOK_PAGE_ACCESS_TOKEN || process.env.FACEBOOK_ACCESS_TOKEN)),
+    acled:Boolean(process.env.ACLED_EMAIL && process.env.ACLED_KEY)
+  };
   let dedup;
   let sitreps;
   try {
     dedup = getStore('sitrep-dedup');
     sitreps = getStore('sitrep-cache');
   } catch (error) {
-    return json(200, { status:'DEGRADED', generatedAt:now.toISOString(), error:'Report storage unavailable', reports:[], sitreps:[] });
+    return json(200, {
+      status:'DEGRADED',
+      generatedAt:now.toISOString(),
+      error:'Report storage unavailable',
+      reports:REPORTS.map(report => ({
+        ...report,
+        posted:false,
+        completed:0,
+        expected:(report.keyPrefix === 'sigact' || report.keyPrefix === 'ocg') ? 6 : 1
+      })),
+      sitreps:COCOMS.map(cocom => ({ cocom, available:false, generatedAt:null, ageMinutes:null })),
+      configured,
+      summary:{ availableSitreps:0, totalSitreps:COCOMS.length, reportsPostedToday:0 }
+    });
   }
 
   const reportRows = [];
@@ -68,11 +86,6 @@ exports.handler = async function(event) {
     });
   }
 
-  const configured = {
-    anthropic:Boolean(process.env.ANTHROPIC_API_KEY),
-    facebook:Boolean(process.env.FACEBOOK_PAGE_ID && (process.env.FACEBOOK_PAGE_ACCESS_TOKEN || process.env.FACEBOOK_ACCESS_TOKEN)),
-    acled:Boolean(process.env.ACLED_EMAIL && process.env.ACLED_KEY)
-  };
   const availableSitreps = sitrepRows.filter(row => row.available).length;
   const status = configured.anthropic && availableSitreps ? 'NOMINAL' : 'DEGRADED';
 
