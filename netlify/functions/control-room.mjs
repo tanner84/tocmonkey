@@ -1,6 +1,5 @@
-const { getStore } = require('@netlify/blobs');
+import { getStore } from '@netlify/blobs';
 
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '';
 const COCOMS = ['EUCOM', 'CENTCOM', 'INDOPACOM', 'AFRICOM', 'SOUTHCOM', 'NORTHCOM'];
 const CURRENT_MIN = 360;
 const AGING_MIN = 720;
@@ -17,12 +16,21 @@ const REPORTS = [
   { id:'cocom-sitrep', name:'COCOM Map SITREPs', schedule:'Every 4 hours', keyPrefix:null },
 ];
 
-function json(statusCode, body) {
-  return { statusCode, headers:{ 'Content-Type':'application/json', 'Cache-Control':'private, no-store' }, body:JSON.stringify(body) };
+function env(name) {
+  try { return Netlify.env.get(name) || process.env[name] || ''; }
+  catch (_) { return process.env[name] || ''; }
 }
 
-function authorized(event) {
-  return Boolean(ADMIN_PASSWORD) && event.headers['x-admin-password'] === ADMIN_PASSWORD;
+function json(status, body) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { 'Content-Type':'application/json', 'Cache-Control':'private, no-store' },
+  });
+}
+
+function authorized(req) {
+  const password = env('ADMIN_PASSWORD');
+  return Boolean(password) && req.headers.get('x-admin-password') === password;
 }
 
 async function safeGet(store, key) {
@@ -37,22 +45,20 @@ function freshness(ageMinutes) {
   return 'EXPIRED';
 }
 
-exports.handler = async function(event) {
-  if (!authorized(event)) return json(401, { error:'Unauthorized' });
-  if (event.httpMethod !== 'GET') return json(405, { error:'Method not allowed' });
+export default async (req) => {
+  if (!authorized(req)) return json(401, { error:'Unauthorized' });
+  if (req.method !== 'GET') return json(405, { error:'Method not allowed' });
 
   const now = new Date();
   const date = now.toISOString().slice(0, 10);
-  const openaiConfigured = Boolean(process.env.OPENAI_API_KEY);
+  const openaiConfigured = Boolean(env('OPENAI_API_KEY'));
   const configured = {
     openai:openaiConfigured,
-    // Temporary compatibility alias for the existing monolithic admin UI.
-    // It still renders the generic `AI ✓` service indicator without requiring
-    // a direct rewrite of admin.html.
     anthropic:openaiConfigured,
-    facebook:Boolean(process.env.FACEBOOK_PAGE_ID && (process.env.FACEBOOK_PAGE_ACCESS_TOKEN || process.env.FACEBOOK_ACCESS_TOKEN)),
-    acled:Boolean(process.env.ACLED_EMAIL && process.env.ACLED_KEY)
+    facebook:Boolean(env('FACEBOOK_PAGE_ID') && (env('FACEBOOK_PAGE_ACCESS_TOKEN') || env('FACEBOOK_ACCESS_TOKEN'))),
+    acled:Boolean(env('ACLED_EMAIL') && env('ACLED_KEY')),
   };
+
   let dedup;
   let sitreps;
   try {
@@ -62,17 +68,28 @@ exports.handler = async function(event) {
     return json(200, {
       status:'DEGRADED',
       generatedAt:now.toISOString(),
-      aiProvider:{ name:'OpenAI', configured:openaiConfigured, defaultModel:process.env.OPENAI_MODEL || 'gpt-5.6-luna' },
+      aiProvider:{ name:'OpenAI', configured:openaiConfigured, defaultModel:env('OPENAI_MODEL') || 'gpt-5.6-luna' },
       error:'Report storage unavailable',
-      reports:REPORTS.map(report => ({
+      reports:REPORTS.map((report) => ({
         ...report,
         posted:false,
         completed:0,
-        expected:(report.keyPrefix === 'sigact' || report.keyPrefix === 'ocg') ? 6 : 1
+        expected:(report.keyPrefix === 'sigact' || report.keyPrefix === 'ocg') ? 6 : 1,
       })),
-      sitreps:COCOMS.map(cocom => ({ cocom, displayName:cocom === 'INDOPACOM' ? 'PACOM' : cocom, available:false, generatedAt:null, ageMinutes:null, freshness:'MISSING' })),
+      sitreps:COCOMS.map((cocom) => ({
+        cocom,
+        displayName:cocom === 'INDOPACOM' ? 'PACOM' : cocom,
+        available:false,
+        generatedAt:null,
+        ageMinutes:null,
+        freshness:'MISSING',
+        mode:null,
+        provider:null,
+        model:null,
+        sourceItemCount:0,
+      })),
       configured,
-      summary:{ availableSitreps:0, currentSitreps:0, totalSitreps:COCOMS.length, reportsPostedToday:0 }
+      summary:{ availableSitreps:0, currentSitreps:0, totalSitreps:COCOMS.length, reportsPostedToday:0 },
     });
   }
 
@@ -89,7 +106,12 @@ exports.handler = async function(event) {
       posted = Boolean(await safeGet(dedup, `${report.keyPrefix}-${date}`));
       completed = posted ? 1 : 0;
     }
-    reportRows.push({ ...report, posted, completed, expected:(report.keyPrefix === 'sigact' || report.keyPrefix === 'ocg') ? 6 : 1 });
+    reportRows.push({
+      ...report,
+      posted,
+      completed,
+      expected:(report.keyPrefix === 'sigact' || report.keyPrefix === 'ocg') ? 6 : 1,
+    });
   }
 
   const sitrepRows = [];
@@ -113,8 +135,8 @@ exports.handler = async function(event) {
     });
   }
 
-  const availableSitreps = sitrepRows.filter(row => row.available).length;
-  const currentSitreps = sitrepRows.filter(row => row.freshness === 'CURRENT').length;
+  const availableSitreps = sitrepRows.filter((row) => row.available).length;
+  const currentSitreps = sitrepRows.filter((row) => row.freshness === 'CURRENT').length;
   const status = openaiConfigured && currentSitreps >= 4 ? 'NOMINAL' : (availableSitreps ? 'DEGRADED' : 'OFFLINE');
 
   return json(200, {
@@ -123,12 +145,17 @@ exports.handler = async function(event) {
     aiProvider:{
       name:'OpenAI',
       configured:openaiConfigured,
-      defaultModel:process.env.OPENAI_MODEL || 'gpt-5.6-luna',
-      sitrepModel:process.env.OPENAI_SITREP_MODEL || process.env.OPENAI_MODEL || 'gpt-5.6-luna'
+      defaultModel:env('OPENAI_MODEL') || 'gpt-5.6-luna',
+      sitrepModel:env('OPENAI_SITREP_MODEL') || env('OPENAI_MODEL') || 'gpt-5.6-luna',
     },
     reports:reportRows,
     sitreps:sitrepRows,
     configured,
-    summary:{ availableSitreps, currentSitreps, totalSitreps:COCOMS.length, reportsPostedToday:reportRows.filter(row => row.posted).length }
+    summary:{
+      availableSitreps,
+      currentSitreps,
+      totalSitreps:COCOMS.length,
+      reportsPostedToday:reportRows.filter((row) => row.posted).length,
+    },
   });
 };
