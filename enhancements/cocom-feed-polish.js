@@ -3,22 +3,22 @@
 
   const TERMS = {
     EUCOM: [
-      'ukraine','ukrainian','kyiv','kiev','russia','russian','moscow','kremlin','nato','europe','european','baltic','poland','germany','france','britain','united kingdom','black sea','crimea','belarus','moldova','georgia','armenia','azerbaijan','balkans','serbia','kosovo','finland','sweden','norway','romania','bulgaria','kaliningrad'
+      'ukraine','ukrainian','kyiv','kiev','russia','russian','moscow','kremlin','nato','europe','european','baltic','poland','germany','france','britain','united kingdom','black sea','crimea','belarus','moldova','georgia','armenia','azerbaijan','balkans','serbia','kosovo','finland','sweden','norway','romania','bulgaria','kaliningrad','kyiv independent','politico europe','euronews','deutsche welle','rferl'
     ],
     CENTCOM: [
-      'iran','iranian','tehran','israel','israeli','gaza','hamas','palestin','hezbollah','houthi','yemen','iraq','iraqi','syria','syrian','jordan','lebanon','qatar','saudi','uae','emirates','bahrain','kuwait','oman','afghanistan','pakistan','red sea','hormuz','gulf of aden','bab el mandeb','centcom','irgc','quds force'
+      'iran','iranian','tehran','israel','israeli','gaza','hamas','palestin','hezbollah','houthi','yemen','iraq','iraqi','syria','syrian','jordan','lebanon','qatar','saudi','uae','emirates','bahrain','kuwait','oman','afghanistan','pakistan','red sea','hormuz','gulf of aden','bab el mandeb','centcom','irgc','quds force','middle east eye','al monitor','times of israel','jerusalem post','iran international','arab news','gulf news'
     ],
     INDOPACOM: [
-      'indo pacific','indo-pacific','pacific','china','chinese','beijing','taiwan','taipei','pla','south china sea','east china sea','philippines','philippine','manila','japan','japanese','tokyo','north korea','pyongyang','south korea','seoul','indonesia','vietnam','india','australia','guam','myanmar','burma','thailand','singapore','malaysia','cambodia','laos','aukus','quad','spratly','paracel','scarborough shoal','second thomas shoal'
+      'indo pacific','indo-pacific','pacific','china','chinese','beijing','taiwan','taipei','pla','south china sea','east china sea','philippines','philippine','manila','japan','japanese','tokyo','north korea','pyongyang','south korea','seoul','indonesia','vietnam','india','australia','guam','myanmar','burma','thailand','singapore','malaysia','cambodia','laos','aukus','quad','spratly','paracel','scarborough shoal','second thomas shoal','nikkei asia','south china morning post','rappler','japan times','taiwan news'
     ],
     AFRICOM: [
-      'africa','african','sudan','darfur','ethiopia','ethiopian','tigray','somalia','somali','kenya','sahel','mali','niger','burkina','chad','nigeria','mozambique','congo','drc','libya','algeria','morocco','tunisia','south africa','uganda','rwanda','cameroon','al shabaab','al-shabaab','jnim','boko haram','africa corps','horn of africa','gulf of guinea'
+      'africa','african','sudan','darfur','ethiopia','ethiopian','tigray','somalia','somali','kenya','sahel','mali','niger','burkina','chad','nigeria','mozambique','congo','drc','libya','algeria','morocco','tunisia','south africa','uganda','rwanda','cameroon','al shabaab','al-shabaab','jnim','boko haram','africa corps','horn of africa','gulf of guinea','allafrica','africanews','africa center'
     ],
     SOUTHCOM: [
-      'southcom','south america','latin america','caribbean','colombia','colombian','venezuela','venezuelan','brazil','brazilian','argentina','chile','peru','ecuador','bolivia','paraguay','uruguay','guyana','suriname','panama','cuba','haiti','dominican republic','jamaica','tren de aragua','farc','eln','clan del golfo','comando vermelho','pcc'
+      'southcom','south america','latin america','caribbean','colombia','colombian','venezuela','venezuelan','brazil','brazilian','argentina','chile','peru','ecuador','bolivia','paraguay','uruguay','guyana','suriname','panama','cuba','haiti','dominican republic','jamaica','tren de aragua','farc','eln','clan del golfo','comando vermelho','pcc','insight crime','mercopress'
     ],
     NORTHCOM: [
-      'northcom','norad','alaska','canada','canadian','mexico','mexican','arctic','homeland security','border patrol','cbp','ice raid','ice agents','us immigration','u.s. immigration','fentanyl','sinaloa','cjng','jalisco new generation','gulf cartel','national guard','northern command'
+      'northcom','norad','alaska','canada','canadian','mexico','mexican','arctic','homeland security','border patrol','cbp','ice raid','ice agents','us immigration','u.s. immigration','fentanyl','sinaloa','cjng','jalisco new generation','gulf cartel','national guard','northern command','arctic today','high north news','mexico news daily'
     ]
   };
 
@@ -68,11 +68,14 @@
     return normalizeCommand(topText) || 'EUCOM';
   }
 
-  function exactLabel(label) {
+  function labelElement(label) {
     const wanted = norm(label);
     return [...document.querySelectorAll('h1,h2,h3,h4,h5,div,span,strong')]
       .filter(visible)
-      .find(el => norm(textOf(el)) === wanted) || null;
+      .find(el => {
+        const value = norm(textOf(el));
+        return value === wanted || (value.startsWith(`${wanted} `) && value.length <= wanted.length + 34);
+      }) || null;
   }
 
   function panelFromLabel(labelEl) {
@@ -141,7 +144,7 @@
   }
 
   function filterSigacts() {
-    const label = exactLabel('SIGACTS');
+    const label = labelElement('SIGACTS');
     const panel = panelFromLabel(label);
     if (!panel) return false;
     panel.classList.add('tm-sigacts-scoped');
@@ -168,7 +171,7 @@
   }
 
   function markOsintDensity() {
-    const label = exactLabel('OSINT / RSS');
+    const label = labelElement('OSINT / RSS');
     const panel = panelFromLabel(label);
     if (!panel) return false;
     panel.classList.add('tm-osint-dense');
