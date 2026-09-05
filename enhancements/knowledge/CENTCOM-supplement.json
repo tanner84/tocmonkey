@@ -1,0 +1,224 @@
+{
+  "id": "CENTCOM-supplement",
+  "lastReviewed": "2026-09-04",
+  "references": [
+    {"label":"U.S. Central Command","url":"https://www.centcom.mil/"},
+    {"label":"State Department — Foreign Terrorist Organizations","url":"https://www.state.gov/foreign-terrorist-organizations/"},
+    {"label":"State Department — Country Reports on Terrorism","url":"https://www.state.gov/country-reports-on-terrorism-2/"},
+    {"label":"U.S. Treasury press releases","url":"https://home.treasury.gov/news/press-releases"},
+    {"label":"National Counterterrorism Center","url":"https://www.dni.gov/nctc/"}
+  ],
+  "actors": [
+    {
+      "id":"hamas",
+      "name":"Hamas / Izz ad-Din al-Qassam Brigades",
+      "type":"militia",
+      "country":"Palestinian Territories / Gaza",
+      "summary":"Palestinian Islamist movement with political, governance and armed components. Its military wing, the Izz ad-Din al-Qassam Brigades, has conducted rocket attacks, raids, tunnel-enabled operations and other armed activity against Israel.",
+      "capabilities":["rocket fires","tunnel networks","small-unit ground combat","UAS use","hostage operations","information operations"],
+      "systems":[
+        {"name":"Qassam rocket family","category":"short-range rockets","url":"https://en.wikipedia.org/wiki/Qassam_rocket"},
+        {"name":"Anti-tank guided missiles","category":"anti-armor weapons","url":"https://en.wikipedia.org/wiki/Anti-tank_guided_missile"},
+        {"name":"Commercial and improvised UAS","category":"unmanned aircraft","url":"https://en.wikipedia.org/wiki/Unmanned_aerial_vehicle"}
+      ],
+      "relationships":[
+        {"target":"idf","kind":"armed conflict"},
+        {"target":"irgc-quds-force","kind":"reported Iranian support relationship"},
+        {"target":"palestinian-islamic-jihad","kind":"operates in overlapping Gaza militant ecosystem"}
+      ],
+      "keywords":["Hamas","Harakat al-Muqawama al-Islamiyya","Izz ad-Din al-Qassam Brigades","Izz al-Din al-Qassam Brigades","Qassam Brigades","al Qassam","al-Qassam"],
+      "sources":[
+        {"label":"State Department — Foreign Terrorist Organizations","url":"https://www.state.gov/foreign-terrorist-organizations/"},
+        {"label":"National Counterterrorism Center","url":"https://www.dni.gov/nctc/"},
+        {"label":"U.S. Treasury press releases","url":"https://home.treasury.gov/news/press-releases"}
+      ]
+    },
+    {
+      "id":"palestinian-islamic-jihad",
+      "name":"Palestinian Islamic Jihad / al-Quds Brigades",
+      "type":"militia",
+      "country":"Palestinian Territories / Gaza",
+      "summary":"Palestinian militant organization centered on armed confrontation with Israel. Its military wing, the al-Quds Brigades, operates primarily in Gaza and the West Bank and has fielded rockets, small arms and other irregular-warfare capabilities.",
+      "capabilities":["rocket fires","small-unit attacks","IEDs","anti-armor weapons","clandestine networks"],
+      "systems":[
+        {"name":"Short-range rocket families","category":"indirect fire","url":"https://en.wikipedia.org/wiki/Palestinian_rocket_attacks_on_Israel"},
+        {"name":"Anti-tank guided missiles","category":"anti-armor weapons","url":"https://en.wikipedia.org/wiki/Anti-tank_guided_missile"}
+      ],
+      "relationships":[
+        {"target":"idf","kind":"armed conflict"},
+        {"target":"irgc-quds-force","kind":"reported Iranian support relationship"},
+        {"target":"hamas","kind":"operates in overlapping Gaza militant ecosystem"}
+      ],
+      "keywords":["Palestinian Islamic Jihad","PIJ","Islamic Jihad Palestine","al-Quds Brigades","Al Quds Brigades","Saraya al-Quds"],
+      "sources":[
+        {"label":"State Department — Foreign Terrorist Organizations","url":"https://www.state.gov/foreign-terrorist-organizations/"},
+        {"label":"National Counterterrorism Center","url":"https://www.dni.gov/nctc/"},
+        {"label":"U.S. Treasury press releases","url":"https://home.treasury.gov/news/press-releases"}
+      ]
+    },
+    {
+      "id":"asaib-ahl-al-haq",
+      "name":"Asa'ib Ahl al-Haq",
+      "type":"militia",
+      "country":"Iraq",
+      "summary":"Iraqi armed and political organization within the broader Popular Mobilization ecosystem. U.S. government reporting has described longstanding ties with Iran and the IRGC-Quds Force.",
+      "capabilities":["armed ground units","rocket attacks","UAS in affiliated networks","political-security networks","local mobilization"],
+      "systems":[
+        {"name":"122 mm rocket family","category":"indirect fire","url":"https://en.wikipedia.org/wiki/BM-21_Grad"},
+        {"name":"One-way attack UAS","category":"unmanned strike","url":"https://en.wikipedia.org/wiki/Unmanned_combat_aerial_vehicle"}
+      ],
+      "relationships":[
+        {"target":"irgc-quds-force","kind":"reported support relationship"},
+        {"target":"pmf-umbrella","kind":"part of broader PMF ecosystem"},
+        {"target":"islamic-resistance-iraq","kind":"overlapping Iran-aligned militia ecosystem"}
+      ],
+      "keywords":["Asaib Ahl al-Haq","Asa'ib Ahl al-Haq","AAH","League of the Righteous"],
+      "sources":[
+        {"label":"State Department — Foreign Terrorist Organizations","url":"https://www.state.gov/foreign-terrorist-organizations/"},
+        {"label":"U.S. Treasury press releases","url":"https://home.treasury.gov/news/press-releases"}
+      ]
+    },
+    {
+      "id":"harakat-hezbollah-al-nujaba",
+      "name":"Harakat Hezbollah al-Nujaba",
+      "type":"militia",
+      "country":"Iraq",
+      "summary":"Iraqi Iran-aligned militia and political movement active within the wider Popular Mobilization and resistance-faction environment, with a history of operations in Iraq and Syria.",
+      "capabilities":["armed ground units","rocket fires","UAS in affiliated networks","cross-border deployments","political-security networks"],
+      "systems":[
+        {"name":"Rocket artillery families","category":"indirect fire","url":"https://en.wikipedia.org/wiki/Rocket_artillery"},
+        {"name":"One-way attack UAS","category":"unmanned strike","url":"https://en.wikipedia.org/wiki/Unmanned_combat_aerial_vehicle"}
+      ],
+      "relationships":[
+        {"target":"irgc-quds-force","kind":"reported support relationship"},
+        {"target":"pmf-umbrella","kind":"part of broader PMF ecosystem"},
+        {"target":"islamic-resistance-iraq","kind":"associated resistance-faction ecosystem"}
+      ],
+      "keywords":["Harakat Hezbollah al-Nujaba","Harakat al-Nujaba","Nujaba Movement","HHN","al Nujaba"],
+      "sources":[
+        {"label":"U.S. Treasury press releases","url":"https://home.treasury.gov/news/press-releases"},
+        {"label":"State Department — Country Reports on Terrorism","url":"https://www.state.gov/country-reports-on-terrorism-2/"}
+      ]
+    },
+    {
+      "id":"badr-organization",
+      "name":"Badr Organization",
+      "type":"militia",
+      "country":"Iraq",
+      "summary":"Longstanding Iraqi political-military organization with deep roots in the post-2003 security and political system and a major presence in the broader Popular Mobilization environment.",
+      "capabilities":["organized ground forces","political influence","security-sector networks","local mobilization"],
+      "systems":[],
+      "relationships":[
+        {"target":"pmf-umbrella","kind":"major organization within broader PMF ecosystem"},
+        {"target":"irgc-quds-force","kind":"historic relationship reported in open sources"}
+      ],
+      "keywords":["Badr Organization","Badr Corps","Badr Brigade","Munazzamat Badr"],
+      "sources":[
+        {"label":"CIA World Factbook — Iraq","url":"https://www.cia.gov/the-world-factbook/countries/iraq/"},
+        {"label":"U.S. Treasury press releases","url":"https://home.treasury.gov/news/press-releases"}
+      ]
+    },
+    {
+      "id":"islamic-resistance-iraq",
+      "name":"Islamic Resistance in Iraq — umbrella networks",
+      "type":"militia",
+      "country":"Iraq",
+      "summary":"Public umbrella label used by multiple Iran-aligned Iraqi armed factions claiming attacks against U.S., coalition and Israeli targets. It is a fluid attribution label rather than a single conventional organization.",
+      "capabilities":["one-way attack UAS","rocket and missile attacks","distributed launch cells","information operations","cross-border attack claims"],
+      "systems":[
+        {"name":"One-way attack UAS","category":"unmanned strike","url":"https://en.wikipedia.org/wiki/Unmanned_combat_aerial_vehicle"},
+        {"name":"Short-range rocket and missile families","category":"indirect / precision fires","url":"https://missilethreat.csis.org/"}
+      ],
+      "relationships":[
+        {"target":"kataib-hezbollah","kind":"overlapping faction ecosystem"},
+        {"target":"asaib-ahl-al-haq","kind":"overlapping faction ecosystem"},
+        {"target":"harakat-hezbollah-al-nujaba","kind":"overlapping faction ecosystem"},
+        {"target":"irgc-quds-force","kind":"reported broader Iranian support ecosystem"}
+      ],
+      "keywords":["Islamic Resistance in Iraq","IRI militia Iraq","Iraqi resistance factions","Iraq resistance umbrella"],
+      "sources":[
+        {"label":"U.S. Central Command","url":"https://www.centcom.mil/"},
+        {"label":"U.S. Department of Defense","url":"https://www.defense.gov/"},
+        {"label":"U.S. Treasury press releases","url":"https://home.treasury.gov/news/press-releases"}
+      ]
+    },
+    {
+      "id":"iraqi-security-forces",
+      "name":"Iraqi Security Forces",
+      "type":"unit",
+      "country":"Iraq",
+      "summary":"Umbrella entry for Iraq's conventional defense and interior security institutions, including army, air, border and federal security elements operating alongside specialized counterterrorism forces.",
+      "capabilities":["ground maneuver","counterterrorism","border security","air support","internal security"],
+      "systems":[
+        {"name":"M1A1 Abrams","category":"main battle tank","url":"https://en.wikipedia.org/wiki/M1_Abrams"},
+        {"name":"F-16IQ","category":"multirole fighter","url":"https://en.wikipedia.org/wiki/General_Dynamics_F-16_Fighting_Falcon"}
+      ],
+      "relationships":[
+        {"target":"uscentcom","kind":"security cooperation / partnered operations"},
+        {"target":"isis-core-centcom","kind":"counter-ISIS operations"},
+        {"target":"pmf-umbrella","kind":"parallel state-recognized security ecosystem"}
+      ],
+      "keywords":["Iraqi Security Forces","ISF Iraq","Iraqi Army","Iraqi military","Iraqi Armed Forces"],
+      "sources":[
+        {"label":"CIA World Factbook — Iraq","url":"https://www.cia.gov/the-world-factbook/countries/iraq/"},
+        {"label":"U.S. Central Command","url":"https://www.centcom.mil/"}
+      ]
+    },
+    {
+      "id":"jordan-armed-forces",
+      "name":"Jordan Armed Forces — Arab Army",
+      "type":"unit",
+      "country":"Jordan",
+      "summary":"Jordan's armed forces and a longstanding U.S. security partner with ground, air, special-operations and border-security capabilities central to Levant and regional defense cooperation.",
+      "capabilities":["ground maneuver","fighter aviation","special operations","border security","air defense"],
+      "systems":[
+        {"name":"F-16 Fighting Falcon","category":"multirole fighter","url":"https://en.wikipedia.org/wiki/General_Dynamics_F-16_Fighting_Falcon"},
+        {"name":"Black Hawk family","category":"utility helicopter","url":"https://en.wikipedia.org/wiki/Sikorsky_UH-60_Black_Hawk"}
+      ],
+      "relationships":[{"target":"uscentcom","kind":"regional security partner"}],
+      "keywords":["Jordan Armed Forces","JAF Jordan","Arab Army Jordan","Jordan military"],
+      "sources":[
+        {"label":"Jordan Armed Forces","url":"https://www.jaf.mil.jo/"},
+        {"label":"CIA World Factbook — Jordan","url":"https://www.cia.gov/the-world-factbook/countries/jordan/"}
+      ]
+    },
+    {
+      "id":"saudi-armed-forces",
+      "name":"Saudi Armed Forces",
+      "type":"unit",
+      "country":"Saudi Arabia",
+      "summary":"Saudi Arabia's armed forces, including major air, land, naval and air-defense components, form a central Gulf military actor and U.S. security partner in the CENTCOM theater.",
+      "capabilities":["fighter aviation","integrated air and missile defense","ground maneuver","naval operations","long-range strike"],
+      "systems":[
+        {"name":"F-15SA Eagle","category":"strike fighter","url":"https://en.wikipedia.org/wiki/McDonnell_Douglas_F-15E_Strike_Eagle"},
+        {"name":"Patriot","category":"air and missile defense","url":"https://en.wikipedia.org/wiki/MIM-104_Patriot"},
+        {"name":"THAAD","category":"ballistic missile defense","url":"https://en.wikipedia.org/wiki/Terminal_High_Altitude_Area_Defense"}
+      ],
+      "relationships":[{"target":"uscentcom","kind":"regional security partner"}],
+      "keywords":["Saudi Armed Forces","Royal Saudi Air Force","Saudi military","RSAF"],
+      "sources":[
+        {"label":"CIA World Factbook — Saudi Arabia","url":"https://www.cia.gov/the-world-factbook/countries/saudi-arabia/"},
+        {"label":"U.S. Central Command","url":"https://www.centcom.mil/"}
+      ]
+    },
+    {
+      "id":"uae-armed-forces",
+      "name":"United Arab Emirates Armed Forces",
+      "type":"unit",
+      "country":"United Arab Emirates",
+      "summary":"UAE armed forces field advanced air, land, special-operations and air-defense capabilities and are an important Gulf security actor and U.S. defense partner.",
+      "capabilities":["fighter aviation","air and missile defense","ground maneuver","special operations","maritime security"],
+      "systems":[
+        {"name":"F-16E/F Desert Falcon","category":"multirole fighter","url":"https://en.wikipedia.org/wiki/General_Dynamics_F-16_Fighting_Falcon"},
+        {"name":"THAAD","category":"ballistic missile defense","url":"https://en.wikipedia.org/wiki/Terminal_High_Altitude_Area_Defense"},
+        {"name":"Patriot","category":"air and missile defense","url":"https://en.wikipedia.org/wiki/MIM-104_Patriot"}
+      ],
+      "relationships":[{"target":"uscentcom","kind":"regional security partner"}],
+      "keywords":["UAE Armed Forces","United Arab Emirates military","Emirati military","UAE military"],
+      "sources":[
+        {"label":"UAE Ministry of Defence","url":"https://mod.gov.ae/"},
+        {"label":"CIA World Factbook — United Arab Emirates","url":"https://www.cia.gov/the-world-factbook/countries/united-arab-emirates/"}
+      ]
+    }
+  ]
+}
