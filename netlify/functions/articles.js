@@ -64,12 +64,12 @@ exports.handler = async function (event, context) {
     }
   }
 
-  const store = getStore("tocmonkey");
-
   // ── All write ops require auth ────────────────────────────────────────
   if (!checkAuth(event)) {
     return { statusCode: 401, body: JSON.stringify({ error: "Unauthorized" }) };
   }
+
+  const store = getStore("tocmonkey");
 
   // ── POST public suggest (no auth — goes to pending queue) ───────────
   if (method === "POST" && event.queryStringParameters?.type === "suggest") {
