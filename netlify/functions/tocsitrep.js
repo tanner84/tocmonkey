@@ -1,330 +1,49 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// TOC SITREP — Netlify Scheduled Function
-// Schedule: daily at 18:00 UTC (2pm ET)
-//
-// Fetches RSS items for all 6 COCOMs concurrently, generates a transnational
-// organized crime daily briefing via Claude Haiku, verifies against sources,
-// and posts to Facebook Page.
-//
-// Required env vars:
-//   ANTHROPIC_API_KEY
-//   FACEBOOK_PAGE_ID
-//   FACEBOOK_PAGE_ACCESS_TOKEN or FACEBOOK_ACCESS_TOKEN
-//   URL  (auto-set by Netlify)
-// ─────────────────────────────────────────────────────────────────────────────
-
-// Per-COCOM OCG focus and geographic scope
+// TOC SITREP — daily transnational organized-crime briefing via OpenAI.
 const { getStore } = require('@netlify/blobs');
+const { generateText } = require('./_openai');
 
 const COCOM_OCG = {
-  EUCOM: {
-    aor: 'Europe and Eurasia',
-    focus: 'Russian organized crime (Bratva, Vory), FSB-OCG nexus, Eastern European trafficking networks, sanctions evasion, money laundering through European banks, Balkan crime groups',
-    actors: 'Solntsevskaya Bratva, Tambovskaya, Izmaylovskaya, Georgian Vory, Mogilevich, Kalashov, Deripaska, Kovalchuk',
-  },
-  CENTCOM: {
-    aor: 'Middle East and Central Asia',
-    focus: 'Iranian IRGC procurement and sanctions evasion, hawala money networks, Afghan opium/heroin supply chains, Gulf-based illicit finance, Hezbollah financial operations',
-    actors: 'IRGC Quds Force, Hezbollah finance wing, Afghan opium networks, hawala brokers',
-  },
-  INDOPACOM: {
-    aor: 'Indo-Pacific',
-    focus: 'Chinese Triad activity, North Korean state-sponsored cybercrime and crypto theft, Southeast Asian trafficking corridors, scam compounds, fentanyl precursor supply chains from China',
-    actors: '14K Triad, Bamboo Union, North Korean Lazarus Group, Cambodian/Myanmar scam operations',
-  },
-  NORTHCOM: {
-    aor: 'North America',
-    focus: 'Mexican cartel operations in the U.S. and at the border, fentanyl distribution networks, MS-13/domestic gang activity, cartel money laundering through U.S. financial system',
-    actors: 'Sinaloa Cartel, CJNG, Zetas remnants, Gulf Cartel, MS-13',
-  },
-  SOUTHCOM: {
-    aor: 'Latin America and Caribbean',
-    focus: 'South American cartel and gang activity, cocaine production and trafficking, Venezuelan crime-state nexus, Caribbean drug routes, guerrilla-OCG links',
-    actors: 'Tren de Aragua, FARC dissidents, PCC, Clan del Golfo, Maduro-linked networks',
-  },
-  AFRICOM: {
-    aor: 'Africa',
-    focus: 'West African cybercrime and fraud networks, Sahel smuggling corridors, natural resource trafficking (gold, diamonds, ivory), terror-OCG financing links',
-    actors: 'Black Axe, MEND remnants, Sahelian smuggling networks, Wagner Group commercial operations',
-  },
+  EUCOM:{aor:'Europe and Eurasia',focus:'Russian organized crime, Vory networks, Eastern European trafficking, sanctions evasion, money laundering, Balkan crime groups',actors:'Solntsevskaya Bratva, Tambovskaya, Izmaylovskaya, Georgian Vory, Mogilevich'},
+  CENTCOM:{aor:'Middle East and Central Asia',focus:'IRGC-linked procurement and sanctions evasion, hawala networks, Afghan narcotics, Gulf illicit finance, Hezbollah financial activity',actors:'IRGC-Quds Force, Hezbollah finance networks, Afghan narcotics networks, hawala brokers'},
+  INDOPACOM:{aor:'Indo-Pacific',focus:'Triad activity, North Korean cybercrime and crypto theft, Southeast Asian trafficking corridors, scam compounds, fentanyl precursor networks',actors:'14K Triad, Bamboo Union, Lazarus Group, Cambodian/Myanmar scam networks'},
+  NORTHCOM:{aor:'North America',focus:'Mexican cartel operations in Mexico and U.S. approaches, fentanyl distribution, cross-border trafficking, money laundering',actors:'Sinaloa Cartel, CJNG, Gulf Cartel, Northeast Cartel, MS-13'},
+  SOUTHCOM:{aor:'Latin America and Caribbean excluding Mexico',focus:'South American and Caribbean trafficking networks, cocaine production and transit, Venezuelan crime-state nexus, gangs and guerrilla-OCG links',actors:'Tren de Aragua, FARC dissidents, PCC, Clan del Golfo, Haitian gang coalitions'},
+  AFRICOM:{aor:'Africa',focus:'West African cybercrime/fraud, Sahel smuggling, natural-resource trafficking, terror-crime financing links, piracy and illicit logistics',actors:'Black Axe, Sahelian smuggling networks, gold trafficking networks, piracy networks'},
 };
 
-async function fetchRSSItems(cocom, siteUrl) {
-  const url = `${siteUrl}/.netlify/functions/rss?cocom=${cocom}`;
-  const res = await fetch(url, { signal: AbortSignal.timeout(15000) });
-  if (!res.ok) throw new Error(`RSS ${cocom} failed: ${res.status}`);
-  const items = await res.json();
-  return Array.isArray(items) ? items : [];
+function label(id){return id==='INDOPACOM'?'PACOM':id;}
+async function fetchRSSItems(cocom,siteUrl){const r=await fetch(`${siteUrl}/.netlify/functions/rss?cocom=${cocom}`,{signal:AbortSignal.timeout(15000)});if(!r.ok)throw new Error(`RSS ${cocom} failed: ${r.status}`);const d=await r.json();return Array.isArray(d)?d:[];}
+async function postToFacebook(message){const pageId=process.env.FACEBOOK_PAGE_ID;const token=process.env.FACEBOOK_PAGE_ACCESS_TOKEN||process.env.FACEBOOK_ACCESS_TOKEN;if(!pageId||!token)throw new Error('Facebook env vars not set');const r=await fetch(`https://graph.facebook.com/v19.0/${pageId}/feed`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message,access_token:token}),signal:AbortSignal.timeout(10000)});if(!r.ok)throw new Error(`Facebook API ${r.status}: ${await r.text()}`);return r.json();}
+function formatItems(items,max=15){return items.slice(0,max).map((it,i)=>`${i+1}. [${it.source||'SOURCE'}] ${it.title}${it.desc?' — '+it.desc.slice(0,120):''}`).join('\n')||'(no items)';}
+
+async function verifyPost(rawSource,generatedPost){
+  const aorLines=Object.entries(COCOM_OCG).map(([k,v])=>`- ${label(k)}: ${v.aor} — ${v.focus}`).join('\n');
+  const prompt=`You are a fact-checking editor for a public military OSINT and organized-crime dashboard.\nReview the TOC SITREP below.\n\nAOR RULES:\n${aorLines}\n\nDelete bullets assigned to the wrong AOR; delete claims not traceable to SOURCE MATERIAL; remove unsupported actor names, financial figures, casualty numbers, causal claims, alliance/intent/future-operation speculation. If a section has fewer than 2 verified current bullets, replace it only with a SPOTLIGHT clearly labeled as background and using the known-actor background supplied in SOURCE MATERIAL; never present background as a current event. Return only the corrected post.\n\nSOURCE MATERIAL:\n${rawSource}\n\nPOST TO VERIFY:\n${generatedPost}`;
+  const result=await generateText({prompt,model:process.env.OPENAI_VERIFY_MODEL||'gpt-5.6-terra',maxOutputTokens:1100,reasoningEffort:'low',retries:1});
+  return result.text.trim();
 }
 
-async function postToFacebook(message) {
-  const pageId    = process.env.FACEBOOK_PAGE_ID;
-  const pageToken = process.env.FACEBOOK_PAGE_ACCESS_TOKEN || process.env.FACEBOOK_ACCESS_TOKEN;
-  if (!pageId || !pageToken) throw new Error('Facebook env vars not set');
-  const res = await fetch(`https://graph.facebook.com/v19.0/${pageId}/feed`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message, access_token: pageToken }),
-    signal: AbortSignal.timeout(10000),
-  });
-  if (!res.ok) throw new Error(`Facebook API ${res.status}: ${await res.text()}`);
-  return await res.json();
-}
+exports.handler=async function(){
+  const siteUrl=(process.env.URL||'https://tocmonkey.com').replace(/\/$/,'');
+  const dateStr=new Date().toISOString().slice(0,10),dateKey=`tocsitrep-${dateStr}`;
+  try{const s=getStore('sitrep-dedup');if(await s.get(dateKey))return{statusCode:200,body:`Already posted for ${dateKey}`};}catch(e){console.warn('Dedup check failed:',e.message);}
 
-function formatItems(items, max = 15) {
-  return items.slice(0, max).map((it, i) =>
-    `${i+1}. [${it.source}] ${it.title}${it.desc ? ' — ' + it.desc.slice(0, 120) : ''}`
-  ).join('\n') || '(no items)';
-}
+  const ids=['EUCOM','CENTCOM','INDOPACOM','NORTHCOM','SOUTHCOM','AFRICOM'];
+  const settled=await Promise.allSettled(ids.map(id=>fetchRSSItems(id,siteUrl)));
+  const data={}; ids.forEach((id,i)=>data[id]=settled[i].status==='fulfilled'?settled[i].value:[]);
+  const texts={}; ids.forEach(id=>texts[id]=formatItems(data[id]));
+  const rawSource=ids.map(id=>`${label(id)}:\n${texts[id]}\nKNOWN BACKGROUND ACTORS: ${COCOM_OCG[id].actors}`).join('\n\n');
+  const aorBlock=ids.map(id=>`${label(id)} (${COCOM_OCG[id].aor}): ${COCOM_OCG[id].focus}`).join('\n');
+  const sections=ids.map(id=>`${label(id)}:\n${texts[id]}`).join('\n\n');
+  const prompt=`You are a transnational organized-crime analyst writing a daily public briefing.\n\nAOR AND FOCUS:\n${aorBlock}\n\nSOURCE ITEMS FROM THE LAST 24 HOURS:\n${sections}\n\nWrite:\n🕵️ TOC SITREP | ${dateStr} UTC\n\nUse one section for each AOR: EUCOM, CENTCOM, PACOM, NORTHCOM, SOUTHCOM, AFRICOM. In each section, lead each bullet with the specific actor/network and one terse factual sentence. Use only items from that AOR. If fewer than 2 real current items exist, use a clearly labeled SPOTLIGHT background block drawing only from the provided known-actor list, with no current operational claims.\n\n⚠️ All reporting derived from open-source media. Unverified. For situational awareness only. | tocmonkey.com\n\n#TOC #OSINT #OrganizedCrime #TOCMonkey\n\nRules: never move Mexico into SOUTHCOM; Mexico is NORTHCOM. Do not invent actors, quantities, outcomes, alliances, or causes. Consolidate duplicates. Max 4 current-event bullets per region. Output only the post.`;
 
-// ── Second-pass verification ──────────────────────────────────────────────────
-async function verifyPost(rawSource, generatedPost, anthropicKey) {
-  const aorLines = Object.entries(COCOM_OCG)
-    .map(([k, v]) => `- ${k}: ${v.aor} — ${v.focus}`)
-    .join('\n');
+  let draft;
+  try{draft=(await generateText({prompt,model:process.env.OPENAI_SOCIAL_MODEL||'gpt-5.6-luna',maxOutputTokens:1050,reasoningEffort:'low',retries:2})).text.trim();}
+  catch(e){return{statusCode:500,body:`OpenAI generation failed: ${e.message}`};}
+  if(!draft)return{statusCode:500,body:'No content from OpenAI'};
+  let finalText=draft;
+  try{finalText=(await verifyPost(rawSource,draft))||draft;}catch(e){console.error('OpenAI verification failed — using draft:',e.message);}
 
-  const verifyPrompt = `You are a fact-checking editor for a military OSINT and organized crime dashboard.
-Review the following TOC SITREP post and apply these rules strictly:
-
-AOR RULES — each section must stay within its geographic and thematic scope:
-${aorLines}
-
-1. Remove any bullet that attributes activity to the wrong COCOM AOR (e.g. a cartel bullet in the EUCOM section, or a Russian OCG bullet in the SOUTHCOM section).
-
-2. Every remaining bullet must be traceable to a specific headline or snippet in the source material. If a bullet cannot be matched to source material, delete it.
-
-3. Remove any bullet that:
-   - Names specific OCG actors, financial figures, or casualty numbers not present in source material
-   - Contains causal language not directly from the source
-   - Speculates about alliances, intent, or future operations not in source
-
-4. If a section has fewer than 2 verified bullets, replace it with a SPOTLIGHT block using only the known-actor background listed in the source. Do NOT invent current operational claims.
-
-5. Return the corrected post only. No commentary, no explanation of changes.
-
-SOURCE MATERIAL:
-${rawSource}
-
-POST TO VERIFY:
-${generatedPost}`;
-
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': anthropicKey,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 1000,
-      messages: [{ role: 'user', content: verifyPrompt }],
-    }),
-    signal: AbortSignal.timeout(25000),
-  });
-
-  if (!res.ok) throw new Error(`Verification API error: ${res.status}`);
-  const data = await res.json();
-  return data?.content?.[0]?.text?.trim() || null;
-}
-
-exports.handler = async function() {
-  const siteUrl = (process.env.URL || 'https://tocmonkey.com').replace(/\/$/, '');
-  const dateStr = new Date().toISOString().slice(0, 10);
-  const dateKey = `tocsitrep-${dateStr}`;
-
-  try {
-    const store    = getStore('sitrep-dedup');
-    const existing = await store.get(dateKey);
-    if (existing) {
-      console.log(`tocsitrep: already posted for ${dateKey} — skipping`);
-      return { statusCode: 200, body: `Already posted for ${dateKey}` };
-    }
-  } catch(e) {
-    console.warn('Blobs dedup check failed (non-fatal):', e.message);
-  }
-
-  // ── Fetch all 6 COCOMs concurrently ──────────────────────────────────────
-  const [eucomRes, centcomRes, indopacomRes, northcomRes, southcomRes, africomRes] =
-    await Promise.allSettled([
-      fetchRSSItems('EUCOM',     siteUrl),
-      fetchRSSItems('CENTCOM',   siteUrl),
-      fetchRSSItems('INDOPACOM', siteUrl),
-      fetchRSSItems('NORTHCOM',  siteUrl),
-      fetchRSSItems('SOUTHCOM',  siteUrl),
-      fetchRSSItems('AFRICOM',   siteUrl),
-    ]);
-
-  const eucom     = eucomRes.status     === 'fulfilled' ? eucomRes.value     : [];
-  const centcom   = centcomRes.status   === 'fulfilled' ? centcomRes.value   : [];
-  const indopacom = indopacomRes.status === 'fulfilled' ? indopacomRes.value : [];
-  const northcom  = northcomRes.status  === 'fulfilled' ? northcomRes.value  : [];
-  const southcom  = southcomRes.status  === 'fulfilled' ? southcomRes.value  : [];
-  const africom   = africomRes.status   === 'fulfilled' ? africomRes.value   : [];
-
-  const eucomText     = formatItems(eucom);
-  const centcomText   = formatItems(centcom);
-  const indopacomText = formatItems(indopacom);
-  const northcomText  = formatItems(northcom);
-  const southcomText  = formatItems(southcom);
-  const africomText   = formatItems(africom);
-
-  const rawSource = [
-    `EUCOM:\n${eucomText}`,
-    `CENTCOM:\n${centcomText}`,
-    `INDOPACOM:\n${indopacomText}`,
-    `NORTHCOM:\n${northcomText}`,
-    `SOUTHCOM:\n${southcomText}`,
-    `AFRICOM:\n${africomText}`,
-  ].join('\n\n');
-
-  // Build AOR focus lines for the prompt
-  const aorBlock = Object.entries(COCOM_OCG)
-    .map(([k, v]) => `${k} (${v.aor}): ${v.focus}`)
-    .join('\n');
-
-  const prompt = `You are a transnational organized crime (TOC) analyst writing a daily briefing for a geopolitical awareness page.
-
-AOR AND FOCUS PER SECTION — each section must stay within its geographic scope:
-${aorBlock}
-
-Given these news items from the last 24 hours organized by COCOM region:
-
-EUCOM:
-${eucomText}
-
-CENTCOM:
-${centcomText}
-
-INDOPACOM:
-${indopacomText}
-
-NORTHCOM:
-${northcomText}
-
-SOUTHCOM:
-${southcomText}
-
-AFRICOM:
-${africomText}
-
-Write a post formatted exactly like this:
-
-🕵️ TOC SITREP | ${dateStr} UTC
-
-🔵 EUCOM
-- [OCG/actor] — [one sentence, factual, terse]
-- [OCG/actor] — [one sentence, factual, terse]
-
-🟡 CENTCOM
-- [OCG/actor] — [one sentence, factual, terse]
-- [OCG/actor] — [one sentence, factual, terse]
-
-🔴 INDOPACOM
-- [OCG/actor] — [one sentence, factual, terse]
-
-🟠 NORTHCOM
-- [OCG/actor] — [one sentence, factual, terse]
-- [OCG/actor] — [one sentence, factual, terse]
-- [OCG/actor] — [one sentence, factual, terse]
-
-🟤 SOUTHCOM
-- [OCG/actor] — [one sentence, factual, terse]
-- [OCG/actor] — [one sentence, factual, terse]
-
-⚫ AFRICOM
-- [OCG/actor] — [one sentence, factual, terse]
-
-FALLBACK RULE — if fewer than 2 real news items exist for a region, replace that region's bullets with a SPOTLIGHT block:
-
-🔦 SPOTLIGHT | [REGION]
-[OCG or figure name] — [3-4 sentences of background: structure, known operations, current threat posture. Draw from documented OSINT only. No speculation.]
-
-Known actors for fallback reference:
-${Object.entries(COCOM_OCG).map(([k, v]) => `${k}: ${v.actors}`).join('\n')}
-
-⚠️ All reporting derived from open-source media. Unverified. For situational awareness only. | tocmonkey.com
-
-#TOC #OSINT #OrganizedCrime #TOCMonkey
-
-Rules:
-- Each section MUST only use items from its own AOR source list. Do not pull cartel news into EUCOM or Russian OCG news into SOUTHCOM.
-- Name the specific OCG or actor first on every bullet — never lead with a country name.
-- Use only what is stated in the source headlines. Do not invent actors, quantities, or outcomes.
-- No adjectives, no editorial, no speculation beyond documented reporting.
-- Consolidate duplicate reports into one bullet. Max 4 bullets per region.
-- FSB-OCG nexus is a first-class data point — flag it explicitly when documented in source.
-Output only the post text — no preamble, no explanation.`;
-
-  // ── Call Claude Haiku — Step 1: Generation ────────────────────────────────
-  const anthropicKey = process.env.ANTHROPIC_API_KEY;
-  if (!anthropicKey) return { statusCode: 500, body: 'ANTHROPIC_API_KEY not set' };
-
-  const aiRes = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': anthropicKey,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 900,
-      messages: [{ role: 'user', content: prompt }],
-    }),
-    signal: AbortSignal.timeout(25000),
-  });
-
-  if (!aiRes.ok) return { statusCode: 500, body: `Claude API error: ${aiRes.status}` };
-
-  const aiData = await aiRes.json();
-  const draftText = aiData?.content?.[0]?.text?.trim();
-  if (!draftText) return { statusCode: 500, body: 'No content from Claude' };
-
-  console.log('TOC SITREP DRAFT (pre-verification):\n', draftText);
-
-  // ── Step 2: Verification ──────────────────────────────────────────────────
-  let finalText = draftText;
-  try {
-    const verified = await verifyPost(rawSource, draftText, anthropicKey);
-    if (verified) {
-      finalText = verified;
-      if (draftText !== finalText) {
-        console.log('TOC SITREP VERIFIED (post-verification):\n', finalText);
-        console.log('⚠️ Verification made changes to the draft.');
-      } else {
-        console.log('✓ Verification: no changes.');
-      }
-    } else {
-      console.warn('Verification returned empty — using draft.');
-    }
-  } catch(verifyErr) {
-    console.error('Verification failed — using draft:', verifyErr.message);
-  }
-
-  // ── Post to Facebook ──────────────────────────────────────────────────────
-  try {
-    const fbResult = await postToFacebook(finalText);
-    const postId   = fbResult.id || fbResult.post_id || 'unknown';
-    console.log(`TOC SITREP posted: ${postId}`);
-
-    try {
-      const store = getStore('sitrep-dedup');
-      await store.set(dateKey, postId);
-    } catch(e) {
-      console.warn('Blobs dedup write failed (non-fatal):', e.message);
-    }
-
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ ok: true, fb_post_id: postId, brief: finalText }),
-    };
-  } catch(fbErr) {
-    console.error('Facebook post failed:', fbErr.message);
-    console.log('Generated brief:\n', finalText);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ ok: false, error: fbErr.message, brief: finalText }),
-    };
-  }
+  try{const fb=await postToFacebook(finalText);const postId=fb.id||fb.post_id||'unknown';try{await getStore('sitrep-dedup').set(dateKey,postId);}catch(e){console.warn('Dedup write failed:',e.message);}return{statusCode:200,body:JSON.stringify({ok:true,fb_post_id:postId,brief:finalText,provider:'openai'})};}
+  catch(e){return{statusCode:500,body:JSON.stringify({ok:false,error:e.message,brief:finalText,provider:'openai'})};}
 };
