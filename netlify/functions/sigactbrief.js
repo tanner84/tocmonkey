@@ -1,281 +1,105 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// SIGACT Brief — Netlify Scheduled Function
-// Schedule: every 4 hours (0 */4 * * *)
-//
-// Each run picks one COCOM based on UTC hour window:
-//   00-03 → EUCOM     04-07 → CENTCOM    08-11 → INDOPACOM
-//   12-15 → AFRICOM   16-19 → SOUTHCOM   20-23 → NORTHCOM
-//
-// 1. Fetches live RSS items for that COCOM (calls own /rss function)
-// 2. Generates SIGACT UPDATE post via Claude Haiku
-// 3. Runs second-pass verification against source material
-// 4. POSTs to Facebook Page
-//
-// Required env vars:
-//   ANTHROPIC_API_KEY
-//   FACEBOOK_PAGE_ID
-//   FACEBOOK_PAGE_ACCESS_TOKEN
-//   URL  (auto-set by Netlify — the site's deploy URL)
-// ─────────────────────────────────────────────────────────────────────────────
-
+// SIGACT Brief — scheduled every 4 hours, one COCOM per run.
+// OpenAI-backed generation + verification; Facebook publishing unchanged.
 const { getStore } = require('@netlify/blobs');
+const { generateText } = require('./_openai');
 
-// UTC hour → COCOM rotation (4-hour windows)
 const COCOM_ROTATION = [
-  {
-    cocom: 'EUCOM', full: 'U.S. European Command', hours: [0,1,2,3],
-    focus: 'Ukraine conflict, Eastern European security, NATO posture, Balkans, Baltic states, European defense industry, Russian military activity',
-    exclude: 'Do NOT include items from the Middle East, Africa, or Asia — those belong to other COCOMs.',
-  },
-  {
-    cocom: 'CENTCOM', full: 'U.S. Central Command', hours: [4,5,6,7],
-    focus: 'Middle East conflicts, Iraq, Syria, Iran, Yemen, Afghanistan, Central Asia, Red Sea/Arabian Gulf security, Israel-Gaza',
-    exclude: 'Do NOT include items from Europe, Sub-Saharan Africa, or Asia-Pacific.',
-  },
-  {
-    cocom: 'INDOPACOM', full: 'U.S. Indo-Pacific Command', hours: [8,9,10,11],
-    focus: 'South China Sea, Taiwan Strait, North Korea, Indo-Pacific military activity, Southeast Asia security, Australia/Japan/South Korea alliances',
-    exclude: 'Do NOT include items from Europe, Middle East, or Africa.',
-  },
-  {
-    cocom: 'AFRICOM', full: 'U.S. Africa Command', hours: [12,13,14,15],
-    focus: 'Sahel instability, Horn of Africa, West Africa coups/terror, East Africa maritime security, sub-Saharan conflicts, Wagner/Russian activity in Africa',
-    exclude: 'Do NOT include items from Europe, Middle East, or Asia.',
-  },
-  {
-    cocom: 'SOUTHCOM', full: 'U.S. Southern Command', hours: [16,17,18,19],
-    focus: 'Latin America and Caribbean security, Venezuela, Colombia, Mexico cartels, Haiti, narcotrafficking, regional elections and instability',
-    exclude: 'Do NOT include items from Europe, Middle East, Africa, or Asia.',
-  },
-  {
-    cocom: 'NORTHCOM', full: 'U.S. Northern Command', hours: [20,21,22,23],
-    focus: 'North American homeland security, U.S.-Canada-Mexico border, Arctic sovereignty, NORAD activity, domestic military readiness, cyber threats to U.S. infrastructure',
-    exclude: 'Do NOT include items outside North America or the Arctic region.',
-  },
+  { cocom:'EUCOM', full:'U.S. European Command', hours:[0,1,2,3], focus:'Ukraine conflict, Eastern European security, NATO posture, Balkans, Baltic states, European defense industry, Russian military activity', exclude:'Do NOT include items from the Middle East, Africa, or Asia — those belong to other COCOMs.' },
+  { cocom:'CENTCOM', full:'U.S. Central Command', hours:[4,5,6,7], focus:'Middle East conflicts, Iraq, Syria, Iran, Yemen, Afghanistan, Central Asia, Red Sea/Arabian Gulf security, Israel-Gaza', exclude:'Do NOT include items from Europe, Sub-Saharan Africa, or Asia-Pacific.' },
+  { cocom:'INDOPACOM', full:'U.S. Indo-Pacific Command', hours:[8,9,10,11], focus:'South China Sea, Taiwan Strait, North Korea, Indo-Pacific military activity, Southeast Asia security, Australia/Japan/South Korea alliances', exclude:'Do NOT include items from Europe, Middle East, or Africa.' },
+  { cocom:'AFRICOM', full:'U.S. Africa Command', hours:[12,13,14,15], focus:'Sahel instability, Horn of Africa, West Africa coups/terror, East Africa maritime security, sub-Saharan conflicts, Russian activity in Africa', exclude:'Do NOT include items from Europe, Middle East, or Asia.' },
+  { cocom:'SOUTHCOM', full:'U.S. Southern Command', hours:[16,17,18,19], focus:'Latin America and Caribbean security, Venezuela, Colombia, Haiti, narcotrafficking, regional instability', exclude:'Do NOT include items from Europe, Middle East, Africa, or Asia. Mexico belongs to NORTHCOM, not SOUTHCOM.' },
+  { cocom:'NORTHCOM', full:'U.S. Northern Command', hours:[20,21,22,23], focus:'North American homeland security, U.S.-Canada-Mexico approaches, Arctic sovereignty, NORAD activity, domestic military readiness, cyber threats to U.S. infrastructure', exclude:'Do NOT include items outside North America or the Arctic region.' },
 ];
 
-function getCocomForHour(utcHour) {
-  return COCOM_ROTATION.find(c => c.hours.includes(utcHour)) || COCOM_ROTATION[0];
-}
+function getCocomForHour(hour) { return COCOM_ROTATION.find(c => c.hours.includes(hour)) || COCOM_ROTATION[0]; }
+function publicCocom(id) { return id === 'INDOPACOM' ? 'PACOM' : id; }
 
-
-// ── Fetch RSS items for COCOM via own function ────────────────────────────────
 async function fetchRSSItems(cocom, siteUrl) {
-  const url = `${siteUrl}/.netlify/functions/rss?cocom=${cocom}`;
-  const res = await fetch(url, { signal: AbortSignal.timeout(15000) });
+  const res = await fetch(`${siteUrl}/.netlify/functions/rss?cocom=${cocom}`, { signal:AbortSignal.timeout(15000) });
   if (!res.ok) throw new Error(`RSS fetch failed: ${res.status}`);
   const items = await res.json();
   return Array.isArray(items) ? items : [];
 }
 
-// ── Post to Facebook ──────────────────────────────────────────────────────────
 async function postToFacebook(message) {
-  const pageId    = process.env.FACEBOOK_PAGE_ID;
+  const pageId = process.env.FACEBOOK_PAGE_ID;
   const pageToken = process.env.FACEBOOK_PAGE_ACCESS_TOKEN || process.env.FACEBOOK_ACCESS_TOKEN;
   if (!pageId || !pageToken) throw new Error('Facebook env vars not set');
   const res = await fetch(`https://graph.facebook.com/v19.0/${pageId}/feed`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message, access_token: pageToken }),
-    signal: AbortSignal.timeout(10000),
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({message, access_token:pageToken}), signal:AbortSignal.timeout(10000)
   });
   if (!res.ok) throw new Error(`Facebook API ${res.status}: ${await res.text()}`);
-  return await res.json();
+  return res.json();
 }
 
-// ── Second-pass verification ──────────────────────────────────────────────────
-async function verifyPost(rawSource, generatedPost, cocom, focus, exclude, anthropicKey) {
-  const verifyPrompt = `You are a fact-checking editor for a military OSINT dashboard.
-Review the following SIGACT post for ${cocom} and apply these rules strictly:
-
-AOR FOCUS: ${focus}
-GEOGRAPHIC RULE: ${exclude}
-
-1. Remove any bullet that covers events outside the ${cocom} AOR. If a bullet describes events in the Middle East, Africa, Asia, etc. and this is a EUCOM post — delete it. Apply the same logic for all COCOMs.
-
-2. Every remaining bullet must be traceable to a specific headline or snippet in the source material. If a bullet cannot be matched, delete it.
-
-3. Remove any bullet that contains:
-   - Casualty numbers not explicitly stated in source headlines
-   - Unit names, ship names, commander names, or locations not present in source material
-   - Causal language not directly from the source (e.g. 'resulting in', 'causing', 'leading to')
-   - Any speculation about intent, outcome, or next steps
-
-4. If fewer than 2 bullets remain after review, respond with only: SKIP
-
-5. Return the corrected post only. No commentary, no explanation of changes.
-
-SOURCE MATERIAL:
-${rawSource}
-
-POST TO VERIFY:
-${generatedPost}`;
-
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': anthropicKey,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 500,
-      messages: [{ role: 'user', content: verifyPrompt }],
-    }),
-    signal: AbortSignal.timeout(20000),
+async function verifyPost(rawSource, generatedPost, cocom, focus, exclude) {
+  const prompt = `You are a fact-checking editor for a public military OSINT dashboard.\nReview the following SIGACT post for ${publicCocom(cocom)} and apply these rules strictly.\n\nAOR FOCUS: ${focus}\nGEOGRAPHIC RULE: ${exclude}\n\n1. Remove any bullet outside the AOR.\n2. Every remaining bullet must be traceable to a headline/snippet in SOURCE MATERIAL.\n3. Remove casualty numbers, unit/ship/commander names, locations, causal claims, intent, outcomes, or next steps not explicitly supported by SOURCE MATERIAL.\n4. If fewer than 2 bullets remain, return exactly SKIP.\n5. Return only the corrected post.\n\nSOURCE MATERIAL:\n${rawSource}\n\nPOST TO VERIFY:\n${generatedPost}`;
+  const result = await generateText({
+    prompt,
+    model:process.env.OPENAI_VERIFY_MODEL || 'gpt-5.6-terra',
+    maxOutputTokens:550,
+    reasoningEffort:'low',
+    retries:1,
   });
-
-  if (!res.ok) throw new Error(`Verification API error: ${res.status}`);
-  const data = await res.json();
-  return data?.content?.[0]?.text?.trim() || null;
+  return result.text.trim();
 }
 
-// ── Main handler ──────────────────────────────────────────────────────────────
 exports.handler = async function() {
-  const utcHour = new Date().getUTCHours();
-  const { cocom, full, focus, exclude } = getCocomForHour(utcHour);
+  const { cocom, full, focus, exclude } = getCocomForHour(new Date().getUTCHours());
+  const label = publicCocom(cocom);
   const timestamp = new Date().toISOString().replace('T',' ').slice(0,16);
-  const dateKey   = `sigact-${cocom}-${new Date().toISOString().slice(0,10)}`;
-
+  const dateKey = `sigact-${cocom}-${new Date().toISOString().slice(0,10)}`;
   const siteUrl = (process.env.URL || 'https://tocmonkey.com').replace(/\/$/, '');
 
-  // ── Dedup — one post per COCOM per day ────────────────────────────────────
   try {
-    const store    = getStore('sitrep-dedup');
-    const existing = await store.get(dateKey);
-    if (existing) {
-      console.log(`sigactbrief ${cocom}: already posted for ${dateKey} — skipping`);
-      return { statusCode: 200, body: `Already posted for ${dateKey}` };
-    }
-  } catch(e) {
-    console.warn('Blobs dedup check failed (non-fatal):', e.message);
-  }
+    const store = getStore('sitrep-dedup');
+    if (await store.get(dateKey)) return { statusCode:200, body:`Already posted for ${dateKey}` };
+  } catch(e) { console.warn('Blobs dedup check failed (non-fatal):', e.message); }
 
-  // ── Fetch RSS items ───────────────────────────────────────────────────────
-  let items = [];
+  let items;
+  try { items = await fetchRSSItems(cocom, siteUrl); }
+  catch(e) { return { statusCode:500, body:`RSS fetch failed: ${e.message}` }; }
+
+  const top = items.slice(0,20);
+  if (!top.length) return { statusCode:200, body:'No RSS items — skipping post' };
+  const itemsText = top.map((it,i) => `${i+1}. [${it.source || 'SOURCE'}] ${it.title}${it.desc ? ' — ' + it.desc.slice(0,120) : ''}`).join('\n');
+
+  const prompt = `You are a military OSINT analyst writing a public SIGACT update for a geopolitical awareness page.\n\nAOR: ${full} (${label})\nFOCUS TOPICS: ${focus}\nSTRICT GEOGRAPHIC RULE: ${exclude}\n\nRAW RSS HEADLINES/SNIPPETS:\n${itemsText}\n\nWrite exactly:\n\n🔴 SIGACT UPDATE | ${label} | ${timestamp} UTC\n\n- [location] — [one factual, terse sentence]\n(3-6 items max)\n\n⚠️ DISCLAIMER: All reporting is derived from open-source media. Not verified by primary sources. For situational awareness only.\n\n#OSINT #${label} #TOCMonkey\n\nRules: only include in-AOR items; no speculation/editorial/invented context; use only source-stated details; return exactly SKIP if there is truly nothing relevant. Output only the post.`;
+
+  let draftText;
   try {
-    items = await fetchRSSItems(cocom, siteUrl);
-  } catch(e) {
-    console.error('RSS fetch error:', e.message);
-    return { statusCode: 500, body: `RSS fetch failed: ${e.message}` };
+    const generated = await generateText({
+      prompt,
+      model:process.env.OPENAI_SOCIAL_MODEL || 'gpt-5.6-luna',
+      maxOutputTokens:550,
+      reasoningEffort:'low',
+      retries:2,
+    });
+    draftText = generated.text.trim();
+  } catch (error) {
+    console.error(`SIGACT ${label} OpenAI generation failed:`, error.message);
+    return { statusCode:500, body:`OpenAI generation failed: ${error.message}` };
   }
 
-  // Take top 20 most recent items — Claude will select the most relevant
-  const top = items.slice(0, 20);
-  if (top.length === 0) {
-    return { statusCode: 200, body: 'No RSS items — skipping post' };
-  }
+  if (!draftText || draftText === 'SKIP') return { statusCode:200, body:`Skipped ${label} — insufficient relevant items` };
 
-  const itemsText = top.map((it, i) =>
-    `${i+1}. [${it.source}] ${it.title}${it.desc ? ' — ' + it.desc.slice(0, 120) : ''}`
-  ).join('\n');
-
-  // ── Build Claude prompt ───────────────────────────────────────────────────
-  const prompt = `You are a military OSINT analyst writing a public SIGACT update for a geopolitical awareness page.
-
-AOR: ${full} (${cocom})
-FOCUS TOPICS: ${focus}
-STRICT GEOGRAPHIC RULE: ${exclude}
-
-Given these raw RSS headlines and snippets:
-${itemsText}
-
-Write a SIGACT UPDATE post formatted exactly like this:
-
-🔴 SIGACT UPDATE | ${cocom} | ${timestamp} UTC
-
-- [location] — [one sentence, factual, terse]
-- [location] — [one sentence, factual, terse]
-(3-6 items max)
-
-⚠️ DISCLAIMER: All reporting is derived from open-source media. Not verified by primary sources. For situational awareness only.
-
-#OSINT #${cocom} #TOCMonkey
-
-Rules:
-- Only include items that fall within the ${cocom} AOR. Discard any items outside that geographic scope.
-- No speculation. No editorial. No invented details. Locations first.
-- Use only what is stated in the source headlines — do not add context, causes, or outcomes not in the source.
-- Only respond with exactly SKIP if there is truly nothing relevant within the AOR.
-Output only the post text — no preamble, no explanation.`;
-
-  // ── Call Claude Haiku — Step 1: Generation ────────────────────────────────
-  const anthropicKey = process.env.ANTHROPIC_API_KEY;
-  if (!anthropicKey) return { statusCode: 500, body: 'ANTHROPIC_API_KEY not set' };
-
-  const aiRes = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': anthropicKey,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 500,
-      messages: [{ role: 'user', content: prompt }],
-    }),
-    signal: AbortSignal.timeout(20000),
-  });
-
-  if (!aiRes.ok) return { statusCode: 500, body: `Claude API error: ${aiRes.status}` };
-
-  const aiData = await aiRes.json();
-  const draftText = aiData?.content?.[0]?.text?.trim();
-
-  if (!draftText || draftText === 'SKIP') {
-    console.log(`SIGACT ${cocom}: Claude returned SKIP — insufficient relevant items`);
-    return { statusCode: 200, body: `Skipped ${cocom} — insufficient relevant items` };
-  }
-
-  console.log(`SIGACT ${cocom} DRAFT (pre-verification):\n`, draftText);
-
-  // ── Step 2: Verification ──────────────────────────────────────────────────
   let finalText = draftText;
   try {
-    const verified = await verifyPost(itemsText, draftText, cocom, focus, exclude, anthropicKey);
-    if (verified === 'SKIP') {
-      console.log(`SIGACT ${cocom}: verification rejected all bullets (out-of-AOR or unverifiable) — skipping`);
-      return { statusCode: 200, body: `Skipped ${cocom} — failed verification` };
-    } else if (verified) {
-      finalText = verified;
-      if (draftText !== finalText) {
-        console.log(`SIGACT ${cocom} VERIFIED (post-verification):\n`, finalText);
-        console.log('⚠️ Verification made changes to the draft.');
-      } else {
-        console.log('✓ Verification: no changes.');
-      }
-    } else {
-      console.warn('Verification returned empty — using draft.');
-    }
-  } catch(verifyErr) {
-    console.error('Verification failed — using draft:', verifyErr.message);
+    const verified = await verifyPost(itemsText, draftText, cocom, focus, exclude);
+    if (verified === 'SKIP') return { statusCode:200, body:`Skipped ${label} — failed verification` };
+    if (verified) finalText = verified;
+  } catch (error) {
+    console.error('OpenAI verification failed — using draft:', error.message);
   }
 
-  // ── Post to Facebook ──────────────────────────────────────────────────────
   try {
     const fbResult = await postToFacebook(finalText);
-    const postId   = fbResult.id || fbResult.post_id || 'unknown';
-    console.log(`SIGACT ${cocom} posted: ${postId}`);
-
-    try {
-      const store = getStore('sitrep-dedup');
-      await store.set(dateKey, postId);
-    } catch(e) {
-      console.warn('Blobs dedup write failed (non-fatal):', e.message);
-    }
-
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ ok: true, cocom, fb_post_id: postId, brief: finalText }),
-    };
-  } catch(fbErr) {
-    console.error('Facebook post failed:', fbErr.message);
-    console.log('Final brief:\n', finalText);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ ok: false, cocom, error: fbErr.message, brief: finalText }),
-    };
+    const postId = fbResult.id || fbResult.post_id || 'unknown';
+    try { await getStore('sitrep-dedup').set(dateKey, postId); } catch(e) { console.warn('Dedup write failed:', e.message); }
+    return { statusCode:200, body:JSON.stringify({ok:true,cocom:label,fb_post_id:postId,brief:finalText,provider:'openai'}) };
+  } catch (error) {
+    return { statusCode:500, body:JSON.stringify({ok:false,cocom:label,error:error.message,brief:finalText,provider:'openai'}) };
   }
 };
