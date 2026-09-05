@@ -28,41 +28,55 @@ function normalizeCommand(value = '') {
   return id;
 }
 
+async function readJSON(storeName, key, fallback) {
+  try {
+    const store = getStore(storeName);
+    const value = await store.get(key, { type:'json' });
+    return value ?? fallback;
+  } catch (_) {
+    return fallback;
+  }
+}
+
 exports.handler = async function(event) {
-  if (event.httpMethod !== 'GET') return json(405, { error: 'Method not allowed' }, 'no-store');
+  if (event.httpMethod !== 'GET') return json(405, { error:'Method not allowed' }, 'no-store');
 
   const requested = normalizeCommand(event.queryStringParameters?.command || '');
   if (!requested) {
     return json(200, {
-      version: MANIFEST.version,
-      updated: MANIFEST.updated,
-      disclaimer: MANIFEST.disclaimer,
-      methodology: MANIFEST.methodology,
-      commands: MANIFEST.commands
+      version:MANIFEST.version,
+      updated:MANIFEST.updated,
+      disclaimer:MANIFEST.disclaimer,
+      methodology:MANIFEST.methodology,
+      commands:MANIFEST.commands
     });
   }
-  if (!COMMANDS[requested]) return json(400, { error: 'Invalid COCOM' }, 'no-store');
+  if (!COMMANDS[requested]) return json(400, { error:'Invalid COCOM' }, 'no-store');
 
-  let runtime = null;
-  try {
-    const store = getStore('cocom-knowledge-runtime');
-    runtime = await store.get('latest', { type: 'json' });
-  } catch (_) {}
+  const [runtime, approved] = await Promise.all([
+    readJSON('cocom-knowledge-runtime', 'latest', null),
+    readJSON('cocom-knowledge-overrides', 'approved', {})
+  ]);
 
   const command = JSON.parse(JSON.stringify(COMMANDS[requested]));
   const signalMap = runtime?.actors || {};
-  command.actors = command.actors.map(actor => ({
-    ...actor,
-    recentSignals: Array.isArray(signalMap[`${requested}:${actor.id}`]) ? signalMap[`${requested}:${actor.id}`] : []
-  }));
+  command.actors = command.actors.map(actor => {
+    const actorKey = `${requested}:${actor.id}`;
+    const approvedUpdate = approved?.[actorKey] || null;
+    return {
+      ...actor,
+      approvedUpdate,
+      recentSignals:Array.isArray(signalMap[actorKey]) ? signalMap[actorKey] : []
+    };
+  });
 
   return json(200, {
-    version: MANIFEST.version,
-    updated: MANIFEST.updated,
-    runtimeUpdated: runtime?.generatedAt || null,
-    runtimeItemCount: runtime?.sourceItemCount || 0,
-    disclaimer: MANIFEST.disclaimer,
-    methodology: MANIFEST.methodology,
+    version:MANIFEST.version,
+    updated:MANIFEST.updated,
+    runtimeUpdated:runtime?.generatedAt || null,
+    runtimeItemCount:runtime?.sourceItemCount || 0,
+    disclaimer:MANIFEST.disclaimer,
+    methodology:MANIFEST.methodology,
     command
   });
 };
