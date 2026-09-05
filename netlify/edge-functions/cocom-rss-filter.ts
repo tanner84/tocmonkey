@@ -35,6 +35,16 @@ function relevant(item:any, command:string) {
   });
 }
 
+function jsonResponse(payload:any, source:Response, headersOverride?:Headers) {
+  const headers = headersOverride || new Headers(source.headers);
+  headers.delete('content-length');
+  return new Response(JSON.stringify(payload), {
+    status:source.status,
+    statusText:source.statusText,
+    headers
+  });
+}
+
 export default async (request:Request, context:any) => {
   const url = new URL(request.url);
   const command = normalizeCommand(url.searchParams.get('cocom') || '');
@@ -47,7 +57,7 @@ export default async (request:Request, context:any) => {
   let payload:any;
   try { payload = await response.json(); }
   catch (_) { return response; }
-  if (!Array.isArray(payload)) return new Response(JSON.stringify(payload), response);
+  if (!Array.isArray(payload)) return jsonResponse(payload, response);
 
   const filtered = payload.filter(item => relevant(item, command));
   const headers = new Headers(response.headers);
@@ -56,9 +66,5 @@ export default async (request:Request, context:any) => {
   headers.set('X-TOCMonkey-COCOM-Filter', command === 'INDOPACOM' ? 'PACOM' : command);
   headers.set('X-TOCMonkey-Filtered-Items', String(filtered.length));
 
-  return new Response(JSON.stringify(filtered), {
-    status:response.status,
-    statusText:response.statusText,
-    headers
-  });
+  return jsonResponse(filtered, response, headers);
 };
