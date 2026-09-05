@@ -9,6 +9,9 @@ const COMMANDS = {
   SOUTHCOM: require('../../enhancements/knowledge/SOUTHCOM.json'),
   NORTHCOM: require('../../enhancements/knowledge/NORTHCOM.json')
 };
+const SUPPLEMENTS = {
+  CENTCOM: require('../../enhancements/knowledge/CENTCOM-supplement.json')
+};
 
 function json(statusCode, body, cache = 'public, max-age=300, stale-while-revalidate=600') {
   return {
@@ -38,6 +41,30 @@ async function readJSON(storeName, key, fallback) {
   }
 }
 
+function mergeSupplement(command, supplement) {
+  if (!supplement) return command;
+  const knownActorIds = new Set((command.actors || []).map(actor => actor.id));
+  const knownRefs = new Set((command.references || []).map(ref => `${ref.label}|${ref.url}`));
+
+  for (const actor of supplement.actors || []) {
+    if (!knownActorIds.has(actor.id)) {
+      command.actors.push(actor);
+      knownActorIds.add(actor.id);
+    }
+  }
+  for (const ref of supplement.references || []) {
+    const key = `${ref.label}|${ref.url}`;
+    if (!knownRefs.has(key)) {
+      command.references.push(ref);
+      knownRefs.add(key);
+    }
+  }
+  if (supplement.lastReviewed && (!command.lastReviewed || supplement.lastReviewed > command.lastReviewed)) {
+    command.lastReviewed = supplement.lastReviewed;
+  }
+  return command;
+}
+
 exports.handler = async function(event) {
   if (event.httpMethod !== 'GET') return json(405, { error:'Method not allowed' }, 'no-store');
 
@@ -58,7 +85,10 @@ exports.handler = async function(event) {
     readJSON('cocom-knowledge-overrides', 'approved', {})
   ]);
 
-  const command = JSON.parse(JSON.stringify(COMMANDS[requested]));
+  const command = mergeSupplement(
+    JSON.parse(JSON.stringify(COMMANDS[requested])),
+    SUPPLEMENTS[requested] ? JSON.parse(JSON.stringify(SUPPLEMENTS[requested])) : null
+  );
   const signalMap = runtime?.actors || {};
   command.actors = command.actors.map(actor => {
     const actorKey = `${requested}:${actor.id}`;
@@ -76,7 +106,7 @@ exports.handler = async function(event) {
 
   return json(200, {
     version:MANIFEST.version,
-    updated:MANIFEST.updated,
+    updated:command.lastReviewed || MANIFEST.updated,
     runtimeUpdated:runtime?.generatedAt || null,
     runtimeItemCount:runtime?.sourceItemCount || 0,
     disclaimer:MANIFEST.disclaimer,
