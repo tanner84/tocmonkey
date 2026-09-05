@@ -314,7 +314,7 @@ function doLogin() {
   if (!pw) return;
   adminPassword = pw;
   // Test auth with the API
-  fetch('/.netlify/functions/articles', {
+  fetch('/.netlify/functions/articles?type=authcheck', {
     headers: { 'x-admin-password': pw }
   }).then(async res => {
     if (res.ok) {
