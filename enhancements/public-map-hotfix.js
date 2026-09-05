@@ -5,37 +5,42 @@
     return String(el?.textContent || '').replace(/\s+/g, ' ').trim().toUpperCase();
   }
 
-  function candidateScore(el) {
-    if (!el || el === document.body || el.closest?.('#tm-knowledge-drawer')) return -1;
-    const rect = el.getBoundingClientRect();
-    if (rect.width < 360 || rect.height < 220) return -1;
+  function controlHits(el) {
     const text = buttonText(el);
-    const hits = CONTROL_LABELS.reduce((n, label) => n + (text.includes(label) ? 1 : 0), 0);
-    const mapSignals = el.querySelectorAll('svg,canvas,[class*="map" i],[id*="map" i]').length;
-    return hits * 100 + Math.min(mapSignals, 4) * 20 + Math.min(rect.width * rect.height / 100000, 20);
+    return CONTROL_LABELS.reduce((n, label) => n + (text.includes(label) ? 1 : 0), 0);
+  }
+
+  function isPlausibleMapShell(el) {
+    if (!el || el === document.body || el.closest?.('#tm-knowledge-drawer')) return false;
+    const rect = el.getBoundingClientRect();
+    if (rect.width < 360 || rect.height < 220) return false;
+    return controlHits(el) >= 3;
   }
 
   function findMapShell() {
     const buttons = [...document.querySelectorAll('button')];
     const ring = buttons.find(btn => buttonText(btn).includes('RINGS'));
-    const candidates = [];
 
+    // Prefer the closest large ancestor that owns the map-control row. This avoids
+    // accidentally mounting to a broad page wrapper that also contains the controls.
     if (ring) {
       let node = ring.parentElement;
       let depth = 0;
-      while (node && node !== document.body && depth < 8) {
-        candidates.push(node);
+      while (node && node !== document.body && depth < 10) {
+        if (isPlausibleMapShell(node)) return node;
         node = node.parentElement;
         depth++;
       }
     }
 
-    document.querySelectorAll('[id*="map" i],[class*="map" i]').forEach(el => candidates.push(el));
-    const unique = [...new Set(candidates)];
-    return unique
-      .map(el => ({ el, score:candidateScore(el) }))
-      .filter(item => item.score >= 200)
-      .sort((a,b) => b.score - a.score)[0]?.el || null;
+    // Fallback for future map markup changes: choose the smallest visible map-like
+    // element that is large enough to function as the map surface.
+    const mapLike = [...document.querySelectorAll('[id*="map" i],[class*="map" i]')]
+      .filter(el => !el.closest('#tm-knowledge-drawer'))
+      .map(el => ({ el, rect:el.getBoundingClientRect() }))
+      .filter(item => item.rect.width >= 360 && item.rect.height >= 220)
+      .sort((a,b) => (a.rect.width * a.rect.height) - (b.rect.width * b.rect.height));
+    return mapLike[0]?.el || null;
   }
 
   function mountLauncher() {
