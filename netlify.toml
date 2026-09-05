@@ -90,6 +90,12 @@
   function = "public-enhancements"
   path = "/index.html"
 
+# Filter globally sourced RSS items by requested COCOM before they reach
+# visible SIGACT panes or downstream scheduled products.
+[[edge_functions]]
+  function = "cocom-rss-filter"
+  path = "/.netlify/functions/rss"
+
 # Private Control Room knowledge-review extension. Admin remains password gated.
 [[edge_functions]]
   function = "admin-knowledge-review"

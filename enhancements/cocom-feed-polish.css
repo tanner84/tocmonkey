@@ -1,0 +1,102 @@
+/* COCOM-scoped SIGACTS + denser OSINT/RSS cards. */
+.tm-sigacts-scoped .tm-sigact-row[data-tm-aor-match="false"] {
+  display:none !important;
+}
+
+.tm-sigacts-scoped .tm-sigact-list {
+  overflow-y:auto !important;
+  overscroll-behavior:contain;
+  scroll-behavior:smooth;
+  scrollbar-width:thin;
+}
+
+.tm-sigacts-scoped .tm-sigact-row[data-tm-aor-match="true"] {
+  scroll-snap-align:start;
+}
+
+.tm-osint-dense .tm-osint-dense-list {
+  overflow-y:auto !important;
+  overscroll-behavior:contain;
+  scroll-behavior:smooth;
+  scroll-snap-type:y proximity;
+  scrollbar-width:thin;
+}
+
+.tm-osint-dense .tm-osint-dense-card {
+  box-sizing:border-box !important;
+  min-height:0 !important;
+  max-height:122px !important;
+  overflow:hidden !important;
+  padding-top:8px !important;
+  padding-bottom:8px !important;
+  margin-top:0 !important;
+  margin-bottom:0 !important;
+  scroll-snap-align:start;
+}
+
+.tm-osint-dense .tm-osint-dense-card,
+.tm-osint-dense .tm-osint-dense-card * {
+  line-height:1.3 !important;
+}
+
+.tm-osint-dense .tm-osint-dense-card h1,
+.tm-osint-dense .tm-osint-dense-card h2,
+.tm-osint-dense .tm-osint-dense-card h3,
+.tm-osint-dense .tm-osint-dense-card h4,
+.tm-osint-dense .tm-osint-dense-card strong,
+.tm-osint-dense .tm-osint-dense-card b {
+  font-size:14px !important;
+  line-height:1.2 !important;
+}
+
+.tm-osint-dense .tm-osint-dense-card p,
+.tm-osint-dense .tm-osint-dense-card [class*="text" i],
+.tm-osint-dense .tm-osint-dense-card [class*="body" i],
+.tm-osint-dense .tm-osint-dense-card [class*="content" i] {
+  font-size:12px !important;
+  line-height:1.35 !important;
+  margin-top:4px !important;
+  margin-bottom:4px !important;
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:3;
+  overflow:hidden;
+}
+
+.tm-osint-dense .tm-osint-dense-card img,
+.tm-osint-dense .tm-osint-dense-card [class*="avatar" i] {
+  width:42px !important;
+  height:42px !important;
+  min-width:42px !important;
+  min-height:42px !important;
+}
+
+.tm-osint-dense .tm-osint-dense-card [class*="engage" i],
+.tm-osint-dense .tm-osint-dense-card [class*="metric" i],
+.tm-osint-dense .tm-osint-dense-card [class*="action" i] {
+  font-size:10px !important;
+  margin-top:3px !important;
+}
+
+@media (max-width:760px) {
+  .tm-osint-dense .tm-osint-dense-card {
+    max-height:108px !important;
+    padding-top:6px !important;
+    padding-bottom:6px !important;
+  }
+  .tm-osint-dense .tm-osint-dense-card h1,
+  .tm-osint-dense .tm-osint-dense-card h2,
+  .tm-osint-dense .tm-osint-dense-card h3,
+  .tm-osint-dense .tm-osint-dense-card h4,
+  .tm-osint-dense .tm-osint-dense-card strong,
+  .tm-osint-dense .tm-osint-dense-card b {
+    font-size:13px !important;
+  }
+  .tm-osint-dense .tm-osint-dense-card p,
+  .tm-osint-dense .tm-osint-dense-card [class*="text" i],
+  .tm-osint-dense .tm-osint-dense-card [class*="body" i],
+  .tm-osint-dense .tm-osint-dense-card [class*="content" i] {
+    font-size:11px !important;
+    -webkit-line-clamp:2;
+  }
+}
