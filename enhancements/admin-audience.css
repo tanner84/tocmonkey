@@ -1,0 +1,25 @@
+/* Private Control Room audience-growth extension */
+#audience-growth .ag-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; margin-bottom:10px; }
+#audience-growth .ag-card { background:var(--deep); border:1px solid var(--border); padding:11px; border-radius:4px; min-width:0; }
+#audience-growth .ag-label { color:var(--tFade); font-size:9px; letter-spacing:.65px; margin-bottom:5px; }
+#audience-growth .ag-value { color:var(--tHi); font-size:21px; font-weight:bold; line-height:1; }
+#audience-growth .ag-sub { color:var(--tMute); font-size:9px; margin-top:5px; line-height:1.35; }
+#audience-growth .ag-toolbar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:10px; }
+#audience-growth .ag-toolbar .ag-note { color:var(--tFade); font-size:10px; margin-left:auto; }
+#audience-growth .ag-columns { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+#audience-growth .ag-panel { background:var(--deep); border:1px solid var(--border); padding:11px; border-radius:4px; }
+#audience-growth .ag-panel h4 { color:var(--tMute); font-size:9px; letter-spacing:.75px; margin:0 0 9px; }
+#audience-growth .ag-row { display:grid; grid-template-columns:minmax(100px,1fr) minmax(80px,2fr) auto; gap:8px; align-items:center; margin:6px 0; }
+#audience-growth .ag-name { color:var(--tMid); font-size:10px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+#audience-growth .ag-track { height:7px; border:1px solid #323a42; background:#07090b; overflow:hidden; }
+#audience-growth .ag-fill { height:100%; background:#66798a; min-width:2px; }
+#audience-growth .ag-count { color:var(--tHi); font-size:10px; text-align:right; }
+#audience-growth .ag-empty { color:var(--tFade); font-size:10px; padding:8px 0; }
+#audience-growth .ag-foot { color:var(--tFade); font-size:9px; line-height:1.5; margin-top:10px; }
+#audience-growth .ag-link { color:#a8d7f4; text-decoration:none; }
+#audience-growth .ag-link:hover { text-decoration:underline; }
+@media (max-width:800px) {
+  #audience-growth .ag-grid { grid-template-columns:1fr 1fr; }
+  #audience-growth .ag-columns { grid-template-columns:1fr; }
+  #audience-growth .ag-toolbar .ag-note { width:100%; margin-left:0; }
+}
