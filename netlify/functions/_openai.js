@@ -21,6 +21,8 @@ async function generateText({
   reasoningEffort = 'low',
   timeoutMs = 30000,
   retries = 2,
+  tools = null,
+  include = null,
 }) {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
@@ -33,27 +35,31 @@ async function generateText({
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
       if (attempt) await new Promise(r => setTimeout(r, attempt * 1200));
+      const payload = {
+        model,
+        input: prompt,
+        max_output_tokens: maxOutputTokens,
+        reasoning: { effort: reasoningEffort },
+        store: false,
+      };
+      if (Array.isArray(tools) && tools.length) payload.tools = tools;
+      if (Array.isArray(include) && include.length) payload.include = include;
+
       const response = await fetch('https://api.openai.com/v1/responses', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${apiKey}`,
         },
-        body: JSON.stringify({
-          model,
-          input: prompt,
-          max_output_tokens: maxOutputTokens,
-          reasoning: { effort: reasoningEffort },
-          store: false,
-        }),
+        body: JSON.stringify(payload),
         signal: AbortSignal.timeout(timeoutMs),
       });
 
       if (!response.ok) {
         let detail = '';
         try {
-          const payload = await response.json();
-          detail = payload?.error?.message || payload?.message || '';
+          const body = await response.json();
+          detail = body?.error?.message || body?.message || '';
         } catch (_) {}
         const err = new Error(`OpenAI API ${response.status}${detail ? `: ${detail.slice(0, 180)}` : ''}`);
         err.status = response.status;
@@ -72,6 +78,7 @@ async function generateText({
         model: data.model || model,
         responseId: data.id || null,
         usage: data.usage || null,
+        raw: data,
       };
     } catch (error) {
       lastError = error;
