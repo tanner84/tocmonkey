@@ -14,6 +14,11 @@
 [functions."knowledge-refresh"]
   schedule = "35 */6 * * *"
 
+# Public map SITREP generation — every 4 hours, backend-only.
+# Visitors only read sitrep-cache and never trigger paid AI generation.
+[functions."sitrep-generate"]
+  schedule = "15 */4 * * *"
+
 # SIGACT brief — every 4 hours, rotates through all 6 COCOMs (one per run)
 [functions."sigactbrief"]
   schedule = "0 */4 * * *"
@@ -35,7 +40,7 @@
 [functions."ocgbrief"]
   schedule = "0 2,6,10,15,19,23 * * *"
 
-# ADIZ Brief — daily airspace snapshot, two-stage pipeline (Sonnet+web_search → Haiku→FB)
+# ADIZ Brief — daily airspace snapshot
 [functions."adizbrief"]
   schedule = "0 7 * * *"
 
@@ -99,11 +104,11 @@
   function = "admin-knowledge-review"
   path = "/admin.html"
 
-# Allow map tiles, Anthropic API, and external resources
+# Allow map tiles and external public data resources used by the browser.
 [[headers]]
   for = "/*"
   [headers.values]
-    Content-Security-Policy = "default-src 'self'; connect-src 'self' https://bsky.social https://api.bsky.app https://nitter.privacydev.net https://nitter.poast.org https://nitter.cz https://api.anthropic.com https://*.tile.openstreetmap.org https://acleddata.com https://metals-api.com https://www.alphavantage.co https://api.eia.gov https://www.fpri.org https://www.foreignaffairs.com https://warontherocks.com https://www.rand.org https://www.rusi.org https://cepa.org https://www.cna.org https://en.wikipedia.org https://graph.facebook.com; img-src 'self' data: https:; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' data:; frame-src 'self'; object-src 'none';"
+    Content-Security-Policy = "default-src 'self'; connect-src 'self' https://bsky.social https://api.bsky.app https://nitter.privacydev.net https://nitter.poast.org https://nitter.cz https://*.tile.openstreetmap.org https://acleddata.com https://metals-api.com https://www.alphavantage.co https://api.eia.gov https://www.fpri.org https://www.foreignaffairs.com https://warontherocks.com https://www.rand.org https://www.rusi.org https://cepa.org https://www.cna.org https://en.wikipedia.org https://graph.facebook.com; img-src 'self' data: https:; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' data:; frame-src 'self'; object-src 'none';"
 
 # Ensure functions are accessible
 [[headers]]
