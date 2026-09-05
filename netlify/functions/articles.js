@@ -62,6 +62,11 @@ exports.handler = async function (event, context) {
     }
   }
 
+  // ── All write ops require auth ────────────────────────────────────────
+  if (!checkAuth(event)) {
+    return { statusCode: 401, body: JSON.stringify({ error: "Unauthorized" }) };
+  }
+
   // ── POST public suggest (no auth — goes to pending queue) ───────────
   if (method === "POST" && event.queryStringParameters?.type === "suggest") {
     try {
@@ -74,11 +79,6 @@ exports.handler = async function (event, context) {
     } catch(e) {
       return { statusCode:500, body:JSON.stringify({error:e.message}) };
     }
-  }
-
-  // ── All remaining write ops require auth ────────────────────────────
-  if (!checkAuth(event)) {
-    return { statusCode: 401, body: JSON.stringify({ error: "Unauthorized" }) };
   }
 
   // ── POST ─────────────────────────────────────────────────────────────
