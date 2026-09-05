@@ -16,7 +16,6 @@ function checkAuth(event) {
 }
 
 exports.handler = async function (event, context) {
-  const store = getStore("tocmonkey");
   const method = event.httpMethod;
 
   // ── GET ──────────────────────────────────────────────────────────────
@@ -30,6 +29,9 @@ exports.handler = async function (event, context) {
         ? { statusCode:200, headers:{"Content-Type":"application/json"}, body:JSON.stringify({ok:true}) }
         : { statusCode:401, headers:{"Content-Type":"application/json"}, body:JSON.stringify({error:"Unauthorized"}) };
     }
+    // Initialize storage only after the storage-free authentication check.
+    const store = getStore("tocmonkey");
+
     // Org notes (admin only)
     if (event.queryStringParameters && event.queryStringParameters.type === "orgnotes") {
       if (!checkAuth(event)) return { statusCode:401, body:"[]" };
@@ -61,6 +63,8 @@ exports.handler = async function (event, context) {
       return { statusCode: 200, headers: { "Content-Type": "application/json" }, body: JSON.stringify([]) };
     }
   }
+
+  const store = getStore("tocmonkey");
 
   // ── All write ops require auth ────────────────────────────────────────
   if (!checkAuth(event)) {
