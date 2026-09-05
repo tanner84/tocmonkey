@@ -1,7 +1,10 @@
 import { getStore } from "@netlify/blobs";
 
-const CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes
+// Public traffic may reuse a report for six hours, preventing page views
+// from becoming an unbounded stream of paid AI requests.
+const CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 const MAX_RETRIES  = 3;
+const COCOMS = new Set(['EUCOM', 'CENTCOM', 'INDOPACOM', 'AFRICOM', 'SOUTHCOM', 'NORTHCOM']);
 
 export default async (req) => {
   const ANTHROPIC_KEY = Netlify.env.get('ANTHROPIC_API_KEY');
@@ -14,14 +17,22 @@ export default async (req) => {
   try { body = await req.json(); }
   catch(e) { return new Response('Bad JSON', { status: 400 }); }
 
-  const { cocomId = 'UNKNOWN', cocomFull = 'Unknown Command', zones = [], feedItems = [], forceRefresh = false } = body;
+  const { cocomId = 'UNKNOWN', cocomFull = 'Unknown Command', zones = [], feedItems = [] } = body;
+  if (!COCOMS.has(cocomId)) {
+    return new Response(JSON.stringify({ error: 'Invalid COCOM' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
   const cacheKey = `sitrep-${cocomId}`;
 
-  // ── Check Netlify Blobs cache (skip if forceRefresh) ─────────────────────
+  // ── Always honor the shared cache ────────────────────────────────────────
+  // Public callers cannot bypass it. Explicit regeneration will belong to
+  // the authenticated Control Room.
   try {
     const store = getStore('sitrep-cache');
     const cached = await store.get(cacheKey, { type: 'json' });
-    if (!forceRefresh && cached && cached.text && cached.ts && (Date.now() - cached.ts) < CACHE_TTL_MS) {
+    if (cached && cached.text && cached.ts && (Date.now() - cached.ts) < CACHE_TTL_MS) {
       // Return cached sitrep with age indicator
       const ageMin = Math.floor((Date.now() - cached.ts) / 60000);
       const text = cached.text + `\n\n// cached · ${ageMin}m ago`;
@@ -148,9 +159,21 @@ Only include sources if you actually used RSS articles. Copy URLs exactly. Start
 function json(obj) {
   return new Response(JSON.stringify(obj), {
     status: 200,
-    headers: { 'Content-Type': 'application/json' }
+    headers: {
+      'Content-Type': 'application/json',
+      'Cache-Control': 'private, no-store'
+    }
   });
 }
+
+// Netlify applies this limit before the function executes.
+export const config = {
+  rateLimit: {
+    windowLimit: 20,
+    windowSize: 60,
+    aggregateBy: ['domain', 'ip']
+  }
+};
 
 function sleep(ms) {
   return new Promise(r => setTimeout(r, ms));
