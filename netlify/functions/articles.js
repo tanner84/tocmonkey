@@ -5,7 +5,9 @@
 
 const { getStore } = require("@netlify/blobs");
 
-// Never fall back to a password committed in source control. If the environment\n// variable is missing, admin operations fail closed instead of becoming public.\nconst ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "";
+// Never fall back to a password committed in source control. If the environment
+// variable is missing, admin operations fail closed instead of becoming public.
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "";
 const COCOMS = ['EUCOM', 'CENTCOM', 'INDOPACOM', 'AFRICOM', 'SOUTHCOM', 'NORTHCOM'];
 function getBlobKey(cocom) { return `articles-${cocom}`; }
 function checkAuth(event) {
@@ -18,7 +20,16 @@ exports.handler = async function (event, context) {
   const method = event.httpMethod;
 
   // ── GET ──────────────────────────────────────────────────────────────
-  if (method === "GET") {\n    // Dedicated login check. Public article reads cannot validate admin access.\n    if (event.queryStringParameters?.type === "authcheck") {\n      if (!ADMIN_PASSWORD) {\n        return { statusCode:503, body:JSON.stringify({error:"Admin access is not configured"}) };\n      }\n      return checkAuth(event)\n        ? { statusCode:200, headers:{"Content-Type":"application/json"}, body:JSON.stringify({ok:true}) }\n        : { statusCode:401, headers:{"Content-Type":"application/json"}, body:JSON.stringify({error:"Unauthorized"}) };\n    }
+  if (method === "GET") {
+    // Dedicated login check. Public article reads cannot validate admin access.
+    if (event.queryStringParameters?.type === "authcheck") {
+      if (!ADMIN_PASSWORD) {
+        return { statusCode:503, body:JSON.stringify({error:"Admin access is not configured"}) };
+      }
+      return checkAuth(event)
+        ? { statusCode:200, headers:{"Content-Type":"application/json"}, body:JSON.stringify({ok:true}) }
+        : { statusCode:401, headers:{"Content-Type":"application/json"}, body:JSON.stringify({error:"Unauthorized"}) };
+    }
     // Org notes (admin only)
     if (event.queryStringParameters && event.queryStringParameters.type === "orgnotes") {
       if (!checkAuth(event)) return { statusCode:401, body:"[]" };
@@ -51,11 +62,6 @@ exports.handler = async function (event, context) {
     }
   }
 
-  // ── All write ops require auth ────────────────────────────────────────
-  if (!checkAuth(event)) {
-    return { statusCode: 401, body: JSON.stringify({ error: "Unauthorized" }) };
-  }
-
   // ── POST public suggest (no auth — goes to pending queue) ───────────
   if (method === "POST" && event.queryStringParameters?.type === "suggest") {
     try {
@@ -68,6 +74,11 @@ exports.handler = async function (event, context) {
     } catch(e) {
       return { statusCode:500, body:JSON.stringify({error:e.message}) };
     }
+  }
+
+  // ── All remaining write ops require auth ────────────────────────────
+  if (!checkAuth(event)) {
+    return { statusCode: 401, body: JSON.stringify({ error: "Unauthorized" }) };
   }
 
   // ── POST ─────────────────────────────────────────────────────────────
