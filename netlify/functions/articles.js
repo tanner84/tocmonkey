@@ -16,7 +16,6 @@ function checkAuth(event) {
 }
 
 exports.handler = async function (event, context) {
-  const store = getStore("tocmonkey");
   const method = event.httpMethod;
 
   // ── GET ──────────────────────────────────────────────────────────────
@@ -30,6 +29,9 @@ exports.handler = async function (event, context) {
         ? { statusCode:200, headers:{"Content-Type":"application/json"}, body:JSON.stringify({ok:true}) }
         : { statusCode:401, headers:{"Content-Type":"application/json"}, body:JSON.stringify({error:"Unauthorized"}) };
     }
+    // Initialize storage only after the storage-free authentication check.
+    const store = getStore("tocmonkey");
+
     // Org notes (admin only)
     if (event.queryStringParameters && event.queryStringParameters.type === "orgnotes") {
       if (!checkAuth(event)) return { statusCode:401, body:"[]" };
@@ -66,6 +68,8 @@ exports.handler = async function (event, context) {
   if (!checkAuth(event)) {
     return { statusCode: 401, body: JSON.stringify({ error: "Unauthorized" }) };
   }
+
+  const store = getStore("tocmonkey");
 
   // ── POST public suggest (no auth — goes to pending queue) ───────────
   if (method === "POST" && event.queryStringParameters?.type === "suggest") {
