@@ -63,8 +63,12 @@ exports.handler = async function(event) {
   command.actors = command.actors.map(actor => {
     const actorKey = `${requested}:${actor.id}`;
     const approvedUpdate = approved?.[actorKey] || null;
+    const approvedText = approvedUpdate?.value
+      ? ` APPROVED ANALYST UPDATE (${String(approvedUpdate.approvedAt || '').slice(0,10)}): ${approvedUpdate.value}`
+      : '';
     return {
       ...actor,
+      summary:`${actor.summary}${approvedText}`,
       approvedUpdate,
       recentSignals:Array.isArray(signalMap[actorKey]) ? signalMap[actorKey] : []
     };
