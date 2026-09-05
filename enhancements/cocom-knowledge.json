@@ -1,52 +1,38 @@
 {
-  "version":"2026-09-04.1",
-  "updated":"2026-09-04",
-  "disclaimer":"Open-source research index. Organization status, equipment, leadership, alignment and relationships can change. Follow linked sources before relying on an entry.",
-  "commands":{
-    "EUCOM":{"displayName":"EUCOM","focus":"Europe, Russia, Black Sea, Arctic approaches and NATO's eastern flank","actors":[
-      {"name":"U.S. Army Europe and Africa","type":"unit","country":"United States","summary":"Army service component supporting U.S. land forces, exercises and partner integration across the European theater.","capabilities":["land forces","theater sustainment","multinational exercises"],"sources":[{"label":"USAREUR-AF","url":"https://www.europeafrica.army.mil/"}]},
-      {"name":"NATO Allied Command Operations","type":"advisory","country":"NATO","summary":"Operational command structure for NATO deterrence, defense planning and military operations.","capabilities":["multinational command","air-land-maritime integration","collective defense"],"sources":[{"label":"NATO ACO / SHAPE","url":"https://shape.nato.int/"}]},
-      {"name":"Russian Armed Forces — western strategic direction","type":"unit","country":"Russia","summary":"Research umbrella for Russian forces oriented toward western Russia, Belarus, Ukraine and NATO-facing axes.","capabilities":["ground maneuver","long-range fires","integrated air defense","electronic warfare"],"sources":[{"label":"CIA World Factbook — Russia","url":"https://www.cia.gov/the-world-factbook/countries/russia/"},{"label":"ISW","url":"https://www.understandingwar.org/"}]},
-      {"name":"Russian state-linked expeditionary / proxy networks","type":"militia","country":"Russia-linked","summary":"Open-source umbrella for state-linked armed and security networks with Wagner legacy relationships and expeditionary activity.","capabilities":["expeditionary security","training/advising","armed proxy activity"],"sources":[{"label":"U.S. Treasury sanctions programs","url":"https://ofac.treasury.gov/sanctions-programs-and-country-information"}]},
-      {"name":"Eurasian sanctions-evasion networks","type":"organized-crime","country":"Transnational","summary":"Broker, logistics and finance networks used to evade sanctions and export controls across Europe and Eurasia.","capabilities":["illicit finance","procurement","transshipment"],"sources":[{"label":"U.S. Treasury press releases","url":"https://home.treasury.gov/news/press-releases"},{"label":"OCCRP","url":"https://www.occrp.org/"}]}
-    ]},
-    "CENTCOM":{"displayName":"CENTCOM","focus":"Middle East, Gulf, Levant, Iran, Iraq, Syria, Yemen and adjacent approaches","actors":[
-      {"name":"U.S. Central Command","type":"unit","country":"United States","summary":"Geographic combatant command responsible for U.S. military operations across the CENTCOM area of responsibility.","capabilities":["joint command","air and missile defense","maritime security","partner integration"],"sources":[{"label":"CENTCOM","url":"https://www.centcom.mil/"}]},
-      {"name":"Islamic Revolutionary Guard Corps","type":"unit","country":"Iran","summary":"Iranian military organization with conventional, missile, maritime and external-operations components.","capabilities":["ballistic missiles","UAS","naval forces","external operations"],"sources":[{"label":"CIA World Factbook — Iran","url":"https://www.cia.gov/the-world-factbook/countries/iran/"},{"label":"U.S. Treasury Iran sanctions","url":"https://ofac.treasury.gov/sanctions-programs-and-country-information/iran-sanctions"}]},
-      {"name":"IRGC-Quds Force aligned militia networks","type":"militia","country":"Regional / Iran-aligned","summary":"Umbrella entry for armed groups receiving varying degrees of Iranian support across Iraq, Syria, Lebanon and Yemen.","capabilities":["rockets and missiles","UAS","irregular warfare","political influence"],"sources":[{"label":"State Department terrorism reports","url":"https://www.state.gov/country-reports-on-terrorism-2/"},{"label":"U.S. Treasury","url":"https://home.treasury.gov/news/press-releases"}]},
-      {"name":"ISIS / Islamic State networks","type":"militia","country":"Transnational","summary":"Decentralized extremist network retaining cells and affiliates across parts of Iraq, Syria and the wider region.","capabilities":["insurgent attacks","terrorism","clandestine logistics","propaganda"],"sources":[{"label":"National Counterterrorism Center","url":"https://www.dni.gov/nctc/"},{"label":"State Department terrorism reports","url":"https://www.state.gov/country-reports-on-terrorism-2/"}]},
-      {"name":"Captagon and regional smuggling networks","type":"organized-crime","country":"Levant / Gulf routes","summary":"Cross-border trafficking networks moving synthetic drugs, weapons, cash and contraband through Levantine and Gulf corridors.","capabilities":["drug trafficking","cross-border logistics","money laundering"],"sources":[{"label":"UNODC","url":"https://www.unodc.org/"},{"label":"OCCRP","url":"https://www.occrp.org/"}]}
-    ]},
-    "INDOPACOM":{"displayName":"PACOM","focus":"Indo-Pacific, Taiwan Strait, Korean Peninsula, South China Sea and first/second island chains","actors":[
-      {"name":"U.S. Indo-Pacific Command","type":"unit","country":"United States","summary":"Geographic combatant command responsible for U.S. military operations across the Indo-Pacific. TOC Monkey uses PACOM as the public-facing shorthand.","capabilities":["joint command","maritime operations","air operations","alliance integration"],"sources":[{"label":"USINDOPACOM","url":"https://www.pacom.mil/"}]},
-      {"name":"People's Liberation Army Eastern Theater Command","type":"unit","country":"China","summary":"PLA theater command oriented toward China's eastern seaboard and Taiwan-related contingencies.","capabilities":["joint fires","air operations","naval operations","amphibious forces","information support"],"sources":[{"label":"DoD China Military Power Report","url":"https://www.defense.gov/Spotlights/China-Military-Power-Report/"},{"label":"CIA World Factbook — China","url":"https://www.cia.gov/the-world-factbook/countries/china/"}]},
-      {"name":"People's Armed Forces Maritime Militia","type":"militia","country":"China","summary":"State-supported maritime militia ecosystem operating alongside coast guard and naval forces in contested waters.","capabilities":["maritime presence","coercion","surveillance","gray-zone operations"],"sources":[{"label":"China Military Power Report","url":"https://www.defense.gov/Spotlights/China-Military-Power-Report/"},{"label":"CSIS AMTI","url":"https://amti.csis.org/"}]},
-      {"name":"Korean People's Army","type":"unit","country":"North Korea","summary":"North Korea's armed forces, including large ground forces, missile units, special operations and air-defense elements.","capabilities":["ballistic missiles","artillery","special operations","air defense"],"sources":[{"label":"CIA World Factbook — North Korea","url":"https://www.cia.gov/the-world-factbook/countries/korea-north/"}]},
-      {"name":"Mekong / Golden Triangle criminal networks","type":"organized-crime","country":"Southeast Asia","summary":"Transnational networks associated with narcotics, online scam compounds, human trafficking and illicit finance across mainland Southeast Asia.","capabilities":["cyber-enabled fraud","human trafficking","drug trafficking","money laundering"],"sources":[{"label":"UNODC Southeast Asia","url":"https://www.unodc.org/roseap/"},{"label":"INTERPOL","url":"https://www.interpol.int/"}]},
-      {"name":"Regional defense advisory and security partnerships","type":"advisory","country":"Allied / partner","summary":"Bilateral and multilateral defense-cooperation frameworks connecting the United States, Japan, Australia, Philippines, South Korea and other partners.","capabilities":["training","interoperability","access and basing","information sharing"],"sources":[{"label":"USINDOPACOM","url":"https://www.pacom.mil/"},{"label":"U.S. Department of Defense","url":"https://www.defense.gov/"}]}
-    ]},
-    "AFRICOM":{"displayName":"AFRICOM","focus":"African continent, coastal approaches, Sahel, Horn of Africa and major transnational security corridors","actors":[
-      {"name":"U.S. Africa Command","type":"unit","country":"United States","summary":"Geographic combatant command coordinating U.S. military activity and security cooperation in Africa.","capabilities":["security cooperation","joint operations","partner capacity building"],"sources":[{"label":"AFRICOM","url":"https://www.africom.mil/"}]},
-      {"name":"Sudanese Armed Forces","type":"unit","country":"Sudan","summary":"Sudan's national armed forces and one principal belligerent in the Sudan conflict.","capabilities":["ground forces","air power","artillery"],"sources":[{"label":"CIA World Factbook — Sudan","url":"https://www.cia.gov/the-world-factbook/countries/sudan/"}]},
-      {"name":"Rapid Support Forces","type":"militia","country":"Sudan","summary":"Paramilitary force and principal belligerent in Sudan with extensive regional commercial and armed relationships.","capabilities":["mobile ground forces","paramilitary operations","regional networks"],"sources":[{"label":"U.S. State Department — Sudan","url":"https://www.state.gov/countries-areas/sudan/"},{"label":"UN Sudan","url":"https://sudan.un.org/"}]},
-      {"name":"al-Shabaab","type":"militia","country":"Somalia / East Africa","summary":"Al-Qaida-aligned militant organization operating primarily in Somalia with regional attack capability.","capabilities":["insurgency","terrorism","IEDs","extortion"],"sources":[{"label":"National Counterterrorism Center","url":"https://www.dni.gov/nctc/"},{"label":"AFRICOM","url":"https://www.africom.mil/"}]},
-      {"name":"Sahel jihadist networks","type":"militia","country":"Sahel","summary":"Umbrella entry for al-Qaida- and Islamic-State-aligned armed networks operating across parts of the central Sahel.","capabilities":["insurgency","terrorism","cross-border mobility"],"sources":[{"label":"State Department terrorism reports","url":"https://www.state.gov/country-reports-on-terrorism-2/"},{"label":"UN Security Council reports","url":"https://www.un.org/securitycouncil/content/reports-secretary-general"}]},
-      {"name":"West and Central African trafficking networks","type":"organized-crime","country":"Transnational","summary":"Networks involved in narcotics, fuel, weapons, wildlife, migrant smuggling and illicit finance across regional corridors.","capabilities":["smuggling","illicit finance","cross-border logistics"],"sources":[{"label":"UNODC West and Central Africa","url":"https://www.unodc.org/westandcentralafrica/"},{"label":"INTERPOL","url":"https://www.interpol.int/"}]}
-    ]},
-    "SOUTHCOM":{"displayName":"SOUTHCOM","focus":"Central America, South America, Caribbean and transnational routes into the Western Hemisphere","actors":[
-      {"name":"U.S. Southern Command","type":"unit","country":"United States","summary":"Geographic combatant command responsible for U.S. military engagement across Central America, South America and the Caribbean.","capabilities":["joint command","security cooperation","counter-threat networks","humanitarian support"],"sources":[{"label":"SOUTHCOM","url":"https://www.southcom.mil/"}]},
-      {"name":"Colombian Armed Forces","type":"unit","country":"Colombia","summary":"Major regional military partner with extensive counterinsurgency and counternarcotics experience.","capabilities":["ground forces","air mobility","riverine operations","counterinsurgency"],"sources":[{"label":"CIA World Factbook — Colombia","url":"https://www.cia.gov/the-world-factbook/countries/colombia/"}]},
-      {"name":"ELN","type":"militia","country":"Colombia / Venezuela borderlands","summary":"Colombian guerrilla organization with cross-border presence and involvement in illicit economies.","capabilities":["insurgency","kidnapping","extortion","cross-border movement"],"sources":[{"label":"State Department terrorism reports","url":"https://www.state.gov/country-reports-on-terrorism-2/"}]},
-      {"name":"FARC dissident structures","type":"militia","country":"Colombia","summary":"Multiple armed dissident networks that rejected or split from the peace process and remain active in illicit economies and rural conflict.","capabilities":["irregular warfare","narcotics protection","extortion"],"sources":[{"label":"U.S. State Department — Colombia","url":"https://www.state.gov/countries-areas/colombia/"}]},
-      {"name":"Sinaloa Cartel","type":"organized-crime","country":"Mexico / transnational","summary":"Major transnational criminal organization involved in narcotics production, trafficking and associated illicit finance.","capabilities":["drug trafficking","logistics","money laundering","armed enforcement"],"sources":[{"label":"DEA","url":"https://www.dea.gov/"},{"label":"U.S. Treasury","url":"https://home.treasury.gov/news/press-releases"}]},
-      {"name":"CJNG","type":"organized-crime","country":"Mexico / transnational","summary":"Major transnational criminal organization involved in drug trafficking, weapons acquisition, illicit finance and violent competition.","capabilities":["drug trafficking","armed enforcement","money laundering","international logistics"],"sources":[{"label":"DEA","url":"https://www.dea.gov/"},{"label":"U.S. Treasury","url":"https://home.treasury.gov/news/press-releases"}]}
-    ]},
-    "NORTHCOM":{"displayName":"NORTHCOM","focus":"United States, Canada, Mexico approaches, homeland defense and continental aerospace / maritime warning","actors":[
-      {"name":"U.S. Northern Command","type":"unit","country":"United States","summary":"Geographic combatant command responsible for homeland defense and defense support of civil authorities.","capabilities":["homeland defense","aerospace warning","maritime warning","civil support"],"sources":[{"label":"NORTHCOM","url":"https://www.northcom.mil/"}]},
-      {"name":"NORAD","type":"advisory","country":"United States / Canada","summary":"Binational command providing aerospace warning, aerospace control and maritime warning for North America.","capabilities":["aerospace warning","aerospace control","maritime warning"],"sources":[{"label":"NORAD","url":"https://www.norad.mil/"}]},
-      {"name":"Mexican Armed Forces","type":"unit","country":"Mexico","summary":"Mexican Army, Air Force and Navy forces conducting national defense and extensive internal-security missions.","capabilities":["ground forces","maritime security","air operations","internal security"],"sources":[{"label":"CIA World Factbook — Mexico","url":"https://www.cia.gov/the-world-factbook/countries/mexico/"}]},
-      {"name":"Transnational fentanyl supply networks","type":"organized-crime","country":"North America / transnational","summary":"Distributed precursor, production, brokerage, transport and finance networks supporting illicit synthetic-opioid markets.","capabilities":["precursor procurement","drug production","cross-border trafficking","money laundering"],"sources":[{"label":"DEA","url":"https://www.dea.gov/"},{"label":"U.S. Treasury","url":"https://home.treasury.gov/news/press-releases"}]},
-      {"name":"Arctic security and warning partnerships","type":"advisory","country":"United States / Canada / partners","summary":"Research entry for evolving continental and Arctic-domain warning, surveillance and defense cooperation.","capabilities":["domain awareness","aerospace warning","Arctic operations"],"sources":[{"label":"NORTHCOM","url":"https://www.northcom.mil/"},{"label":"NORAD","url":"https://www.norad.mil/"}]}
-    ]}
+  "version": "2026-09-04.2",
+  "updated": "2026-09-04",
+  "disclaimer": "Open-source research index. Organization status, equipment, leadership, alignment and relationships can change. Follow linked primary and authoritative sources before relying on an entry.",
+  "methodology": "TOC Monkey separates durable baseline profiles from automatically refreshed recent-reporting signals. Baseline profiles are source-linked and manually reviewed; the refresh job only attaches recent open-source reporting and never rewrites baseline facts automatically.",
+  "commands": {
+    "EUCOM": {
+      "displayName": "EUCOM",
+      "focus": "Europe, Russia, Black Sea, Arctic approaches and NATO's eastern flank",
+      "file": "/enhancements/knowledge/EUCOM.json"
+    },
+    "CENTCOM": {
+      "displayName": "CENTCOM",
+      "focus": "Middle East, Gulf, Levant, Iran, Iraq, Syria, Yemen and adjacent approaches",
+      "file": "/enhancements/knowledge/CENTCOM.json"
+    },
+    "INDOPACOM": {
+      "displayName": "PACOM",
+      "focus": "Indo-Pacific, Taiwan Strait, Korean Peninsula, South China Sea and first/second island chains",
+      "file": "/enhancements/knowledge/INDOPACOM.json"
+    },
+    "AFRICOM": {
+      "displayName": "AFRICOM",
+      "focus": "African continent, coastal approaches, Sahel, Horn of Africa and major transnational security corridors",
+      "file": "/enhancements/knowledge/AFRICOM.json"
+    },
+    "SOUTHCOM": {
+      "displayName": "SOUTHCOM",
+      "focus": "Central America, South America and the Caribbean, excluding Mexico",
+      "file": "/enhancements/knowledge/SOUTHCOM.json"
+    },
+    "NORTHCOM": {
+      "displayName": "NORTHCOM",
+      "focus": "United States, Canada, Mexico approaches, homeland defense and continental aerospace / maritime warning",
+      "file": "/enhancements/knowledge/NORTHCOM.json"
+    }
   }
 }
