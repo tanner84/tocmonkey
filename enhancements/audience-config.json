@@ -1,0 +1,19 @@
+{
+  "version": "2026-09-04.1",
+  "brand": "TOC Monkey",
+  "newsletterName": "TOC Monkey Monthly SITREP",
+  "substack": {
+    "profileUrl": "https://substack.com/@tocmonkey",
+    "handle": "tocmonkey"
+  },
+  "campaign": {
+    "utmSource": "tocmonkey",
+    "utmMedium": "website",
+    "utmCampaign": "monthly_sitrep"
+  },
+  "cta": {
+    "headline": "MONTHLY SITREP",
+    "button": "SUBSCRIBE",
+    "description": "One email. The significant changes across the AORs, actors, systems and networks TOC Monkey is tracking."
+  }
+}
