@@ -163,6 +163,21 @@ html, body { min-height: 100%; background: var(--bg); color: var(--tHi); font-fa
 .source-status { font-size: 8px; display: flex; align-items: center; gap: 4px; }
 .status-dot    { width: 5px; height: 5px; border-radius: 50%; }
 
+
+/* ── CONTROL ROOM ── */
+.command-bar { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; margin-bottom:14px; }
+.command-card { background:var(--deep); border:1px solid var(--border); border-radius:4px; padding:12px; min-height:74px; }
+.command-label { color:var(--tMute); font-size:12px; letter-spacing:1px; margin-bottom:7px; }
+.command-value { color:var(--tHi); font-size:18px; font-weight:bold; line-height:1.2; }
+.command-meta { color:var(--tFade); font-size:12px; margin-top:5px; }
+.ops-table { width:100%; border-collapse:collapse; background:var(--deep); border:1px solid var(--border); }
+.ops-table th { color:var(--tMute); font-size:12px; text-align:left; padding:9px 10px; border-bottom:1px solid var(--border); }
+.ops-table td { color:var(--tMid); font-size:13px; padding:9px 10px; border-bottom:1px solid #30363d; }
+.ops-table tr:last-child td { border-bottom:0; }
+.ops-ok { color:#4ade80; font-weight:bold; }
+.ops-warn { color:var(--amber); font-weight:bold; }
+@media (max-width:700px) { .command-bar { grid-template-columns:1fr 1fr; } .ops-table { display:block; overflow-x:auto; } }
+
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 </style>
 </head>
@@ -194,6 +209,26 @@ html, body { min-height: 100%; background: var(--bg); color: var(--tHi); font-fa
   </div>
 
   <div id="admin-body">
+
+
+    <!-- CONTROL ROOM -->
+    <div class="section" id="control-room">
+      <div class="section-title">
+        CONTROL ROOM
+        <button class="btn-secondary" onclick="loadControlRoom()">REFRESH STATUS</button>
+      </div>
+      <div class="command-bar">
+        <div class="command-card"><div class="command-label">SYSTEM</div><div class="command-value" id="cr-system">CHECKING</div><div class="command-meta" id="cr-updated">—</div></div>
+        <div class="command-card"><div class="command-label">SITREPS AVAILABLE</div><div class="command-value" id="cr-sitreps">—</div><div class="command-meta">Shared six-hour cache</div></div>
+        <div class="command-card"><div class="command-label">REPORTS POSTED</div><div class="command-value" id="cr-posted">—</div><div class="command-meta">Scheduled workflows today</div></div>
+        <div class="command-card"><div class="command-label">AI / SOCIAL</div><div class="command-value" id="cr-services">—</div><div class="command-meta">Configuration check</div></div>
+      </div>
+      <table class="ops-table" aria-label="Automated report status">
+        <thead><tr><th>REPORT</th><th>SCHEDULE</th><th>TODAY</th><th>STATUS</th></tr></thead>
+        <tbody id="cr-report-rows"><tr><td colspan="4">Loading report status…</td></tr></tbody>
+      </table>
+      <div style="color:var(--tFade);font-size:12px;margin-top:8px">Generation and publishing remain automatic. Manual controls will be enabled after draft creation is separated from publishing.</div>
+    </div>
 
     <!-- ADD ARTICLE -->
     <div class="section">
@@ -363,7 +398,32 @@ let ARTICLES = [];
 let RSS_ITEMS = [];
 
 async function loadAll() {
-  await Promise.all([loadArticles(), loadRSS(), checkAPIHealth(), loadOrgNotes(), loadACLEDAdmin()]);
+  await Promise.all([loadControlRoom(), loadArticles(), loadRSS(), checkAPIHealth(), loadOrgNotes(), loadACLEDAdmin()]);
+}
+
+async function loadControlRoom() {
+  const rows = document.getElementById('cr-report-rows');
+  try {
+    const r = await fetch('/.netlify/functions/control-room', { headers:{ 'x-admin-password':adminPassword } });
+    if (!r.ok) throw new Error('Status unavailable');
+    const data = await r.json();
+    const system = document.getElementById('cr-system');
+    system.textContent = data.status === 'NOMINAL' ? 'ALL NOMINAL' : 'DEGRADED';
+    system.className = 'command-value ' + (data.status === 'NOMINAL' ? 'ops-ok' : 'ops-warn');
+    document.getElementById('cr-updated').textContent = 'Updated ' + new Date(data.generatedAt).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+    document.getElementById('cr-sitreps').textContent = `${data.summary.availableSitreps}/${data.summary.totalSitreps}`;
+    document.getElementById('cr-posted').textContent = data.summary.reportsPostedToday;
+    document.getElementById('cr-services').textContent = `${data.configured.anthropic ? 'AI ✓' : 'AI ✕'} · ${data.configured.facebook ? 'FB ✓' : 'FB ✕'}`;
+    rows.innerHTML = data.reports.map(report => `<tr>
+      <td>${report.name}</td><td>${report.schedule}</td>
+      <td>${report.completed}/${report.expected}</td>
+      <td class="${report.posted ? 'ops-ok' : 'ops-warn'}">${report.posted ? 'POSTED' : 'PENDING'}</td>
+    </tr>`).join('');
+  } catch (error) {
+    document.getElementById('cr-system').textContent = 'STATUS ERROR';
+    document.getElementById('cr-system').className = 'command-value ops-warn';
+    rows.innerHTML = `<tr><td colspan="4" class="ops-warn">${error.message}</td></tr>`;
+  }
 }
 
 // ── API HEALTH ─────────────────────────────────────────────────────────────
