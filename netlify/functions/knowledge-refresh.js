@@ -8,6 +8,9 @@ const COMMANDS = {
   SOUTHCOM: require('../../enhancements/knowledge/SOUTHCOM.json'),
   NORTHCOM: require('../../enhancements/knowledge/NORTHCOM.json')
 };
+const SUPPLEMENTS = {
+  CENTCOM: require('../../enhancements/knowledge/CENTCOM-supplement.json')
+};
 
 const MAX_SIGNALS_PER_ACTOR = 5;
 const SIGNAL_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
@@ -121,6 +124,18 @@ function proposalFromSignal(commandId, actor, signal, approved) {
   };
 }
 
+function actorsForCommand(commandId, command) {
+  const actors = [...(command.actors || [])];
+  const seen = new Set(actors.map(actor => actor.id));
+  for (const actor of SUPPLEMENTS[commandId]?.actors || []) {
+    if (!seen.has(actor.id)) {
+      actors.push(actor);
+      seen.add(actor.id);
+    }
+  }
+  return actors;
+}
+
 async function fetchRss() {
   const base = (process.env.DEPLOY_PRIME_URL || process.env.URL || 'https://tocmonkey.com').replace(/\/$/, '');
   const controller = new AbortController();
@@ -175,7 +190,7 @@ exports.handler = async function() {
 
   for (const [commandId, command] of Object.entries(COMMANDS)) {
     const commandItems = recent.filter(item => itemCommandMatches(item, commandId));
-    for (const actor of command.actors || []) {
+    for (const actor of actorsForCommand(commandId, command)) {
       const keywords = [actor.name, ...(actor.keywords || [])].filter(Boolean);
       const matches = commandItems
         .map(item => ({ item, text: normalize(`${item.title || item.text || ''} ${item.desc || item.description || item.summary || ''}`) }))
