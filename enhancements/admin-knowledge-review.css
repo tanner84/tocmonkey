@@ -1,0 +1,34 @@
+/* Private Control Room knowledge-review extension */
+#knowledge-review .kr-toolbar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:10px; }
+#knowledge-review .kr-status { color:var(--tFade); font-size:11px; margin-left:auto; }
+#knowledge-review .kr-counts { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:10px; }
+#knowledge-review .kr-chip { border:1px solid var(--border); background:var(--deep); color:var(--tMid); padding:5px 7px; font-size:10px; }
+#knowledge-review .kr-list { display:grid; gap:10px; }
+#knowledge-review .kr-card { background:var(--deep); border:1px solid var(--border); padding:12px; border-radius:4px; }
+#knowledge-review .kr-card[data-confidence="HIGH"] { border-left:3px solid #4ade80; }
+#knowledge-review .kr-card[data-confidence="MEDIUM"] { border-left:3px solid var(--amber); }
+#knowledge-review .kr-head { display:flex; gap:10px; align-items:flex-start; margin-bottom:9px; }
+#knowledge-review .kr-head-main { flex:1; min-width:0; }
+#knowledge-review .kr-title { color:var(--tHi); font-weight:bold; font-size:13px; line-height:1.3; }
+#knowledge-review .kr-meta { color:var(--tFade); font-size:10px; margin-top:4px; }
+#knowledge-review .kr-confidence { border:1px solid var(--border); padding:4px 6px; font-size:9px; font-weight:bold; white-space:nowrap; }
+#knowledge-review .kr-confidence.high { color:#4ade80; }
+#knowledge-review .kr-confidence.medium { color:var(--amber); }
+#knowledge-review .kr-reason { color:var(--tMid); font-size:11px; line-height:1.45; margin:8px 0; }
+#knowledge-review .kr-source { margin:7px 0 10px; font-size:10px; }
+#knowledge-review .kr-source a { color:#8ec8ff; text-decoration:none; }
+#knowledge-review .kr-source a:hover { text-decoration:underline; }
+#knowledge-review .kr-compare { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+#knowledge-review .kr-pane { border:1px solid #303840; background:#080a0c; padding:9px; min-width:0; }
+#knowledge-review .kr-pane-label { color:var(--tMute); font-size:9px; letter-spacing:.7px; margin-bottom:5px; }
+#knowledge-review .kr-pane-text { color:var(--tMid); font-size:10px; line-height:1.45; overflow-wrap:anywhere; }
+#knowledge-review .kr-actions { display:flex; gap:8px; margin-top:10px; }
+#knowledge-review .kr-approve { background:#173c27; color:#c9f7d6; border:1px solid #2f7650; }
+#knowledge-review .kr-reject { background:#3b191b; color:#ffd0d0; border:1px solid #7d3438; }
+#knowledge-review .kr-action { padding:6px 9px; font-family:var(--mono); font-size:10px; cursor:pointer; border-radius:2px; }
+#knowledge-review .kr-action:disabled { opacity:.5; cursor:not-allowed; }
+#knowledge-review .kr-empty { color:var(--tFade); font-size:11px; padding:14px; border:1px dashed var(--border); }
+@media (max-width:700px) {
+  #knowledge-review .kr-compare { grid-template-columns:1fr; }
+  #knowledge-review .kr-status { width:100%; margin-left:0; }
+}

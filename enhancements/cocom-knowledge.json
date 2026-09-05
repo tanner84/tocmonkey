@@ -1,0 +1,38 @@
+{
+  "version": "2026-09-04.2",
+  "updated": "2026-09-04",
+  "disclaimer": "Open-source research index. Organization status, equipment, leadership, alignment and relationships can change. Follow linked primary and authoritative sources before relying on an entry.",
+  "methodology": "TOC Monkey separates durable baseline profiles from automatically refreshed recent-reporting signals. Baseline profiles are source-linked and manually reviewed; the refresh job only attaches recent open-source reporting and never rewrites baseline facts automatically.",
+  "commands": {
+    "EUCOM": {
+      "displayName": "EUCOM",
+      "focus": "Europe, Russia, Black Sea, Arctic approaches and NATO's eastern flank",
+      "file": "/enhancements/knowledge/EUCOM.json"
+    },
+    "CENTCOM": {
+      "displayName": "CENTCOM",
+      "focus": "Middle East, Gulf, Levant, Iran, Iraq, Syria, Yemen and adjacent approaches",
+      "file": "/enhancements/knowledge/CENTCOM.json"
+    },
+    "INDOPACOM": {
+      "displayName": "PACOM",
+      "focus": "Indo-Pacific, Taiwan Strait, Korean Peninsula, South China Sea and first/second island chains",
+      "file": "/enhancements/knowledge/INDOPACOM.json"
+    },
+    "AFRICOM": {
+      "displayName": "AFRICOM",
+      "focus": "African continent, coastal approaches, Sahel, Horn of Africa and major transnational security corridors",
+      "file": "/enhancements/knowledge/AFRICOM.json"
+    },
+    "SOUTHCOM": {
+      "displayName": "SOUTHCOM",
+      "focus": "Central America, South America and the Caribbean, excluding Mexico",
+      "file": "/enhancements/knowledge/SOUTHCOM.json"
+    },
+    "NORTHCOM": {
+      "displayName": "NORTHCOM",
+      "focus": "United States, Canada, Mexico approaches, homeland defense and continental aerospace / maritime warning",
+      "file": "/enhancements/knowledge/NORTHCOM.json"
+    }
+  }
+}

@@ -1,0 +1,183 @@
+{
+  "id": "EUCOM",
+  "displayName": "EUCOM",
+  "focus": "Europe, Russia, Black Sea, Arctic approaches and NATO's eastern flank",
+  "lastReviewed": "2026-09-04",
+  "references": [
+    {"label":"U.S. European Command","url":"https://www.eucom.mil/"},
+    {"label":"NATO Allied Command Operations / SHAPE","url":"https://shape.nato.int/"},
+    {"label":"CIA World Factbook — Europe","url":"https://www.cia.gov/the-world-factbook/europe/"},
+    {"label":"Institute for the Study of War","url":"https://www.understandingwar.org/"},
+    {"label":"RUSI","url":"https://www.rusi.org/"}
+  ],
+  "actors": [
+    {
+      "id":"useucom",
+      "name":"U.S. European Command",
+      "type":"unit",
+      "country":"United States",
+      "summary":"Geographic combatant command responsible for U.S. military operations, deterrence and alliance integration across the European theater.",
+      "capabilities":["joint command and control","theater posture","NATO integration","multidomain operations"],
+      "systems":[],
+      "relationships":[{"target":"usareur-af","kind":"component"},{"target":"usafe-afafrica","kind":"component"},{"target":"naveur-navaf","kind":"component"},{"target":"nato-aco","kind":"allied command relationship"}],
+      "keywords":["European Command","EUCOM","USEUCOM"],
+      "sources":[{"label":"USEUCOM","url":"https://www.eucom.mil/"}]
+    },
+    {
+      "id":"usareur-af",
+      "name":"U.S. Army Europe and Africa",
+      "type":"unit",
+      "country":"United States",
+      "summary":"Army service component supporting land forces, theater sustainment, exercises and partner integration across Europe and Africa.",
+      "capabilities":["land component command","theater sustainment","air and missile defense integration","multinational exercises"],
+      "systems":[{"name":"M1 Abrams","category":"main battle tank","url":"https://en.wikipedia.org/wiki/M1_Abrams"},{"name":"M142 HIMARS","category":"rocket artillery","url":"https://en.wikipedia.org/wiki/M142_HIMARS"},{"name":"Patriot","category":"air and missile defense","url":"https://en.wikipedia.org/wiki/MIM-104_Patriot"}],
+      "relationships":[{"target":"useucom","kind":"service component"},{"target":"nato-aco","kind":"alliance integration"}],
+      "keywords":["USAREUR-AF","U.S. Army Europe","Army Europe and Africa"],
+      "sources":[{"label":"USAREUR-AF","url":"https://www.europeafrica.army.mil/"}]
+    },
+    {
+      "id":"usafe-afafrica",
+      "name":"U.S. Air Forces in Europe – Air Forces Africa",
+      "type":"unit",
+      "country":"United States",
+      "summary":"Air component supporting U.S. and allied air operations, deterrence, air policing and theater access across Europe and Africa.",
+      "capabilities":["air superiority","strike","ISR","air mobility","integrated air and missile defense"],
+      "systems":[{"name":"F-35A Lightning II","category":"multirole fighter","url":"https://en.wikipedia.org/wiki/Lockheed_Martin_F-35_Lightning_II"},{"name":"F-16 Fighting Falcon","category":"multirole fighter","url":"https://en.wikipedia.org/wiki/General_Dynamics_F-16_Fighting_Falcon"},{"name":"MQ-9 Reaper","category":"remotely piloted aircraft","url":"https://en.wikipedia.org/wiki/General_Atomics_MQ-9_Reaper"}],
+      "relationships":[{"target":"useucom","kind":"service component"},{"target":"nato-aco","kind":"NATO air integration"}],
+      "keywords":["USAFE","Air Forces Europe","Air Forces Africa"],
+      "sources":[{"label":"USAFE-AFAFRICA","url":"https://www.usafe.af.mil/"}]
+    },
+    {
+      "id":"naveur-navaf",
+      "name":"U.S. Naval Forces Europe-Africa / U.S. Sixth Fleet",
+      "type":"unit",
+      "country":"United States",
+      "summary":"Naval component and numbered fleet supporting maritime security, deterrence and allied naval integration from the Atlantic through the Mediterranean and Black Sea approaches.",
+      "capabilities":["surface warfare","subsurface warfare","maritime air defense","amphibious operations","sea control"],
+      "systems":[{"name":"Arleigh Burke-class destroyer","category":"guided-missile destroyer","url":"https://en.wikipedia.org/wiki/Arleigh_Burke-class_destroyer"},{"name":"Tomahawk","category":"land-attack cruise missile","url":"https://en.wikipedia.org/wiki/Tomahawk_(missile)"}],
+      "relationships":[{"target":"useucom","kind":"service component"},{"target":"nato-aco","kind":"allied maritime integration"}],
+      "keywords":["NAVEUR","NAVAF","Sixth Fleet","6th Fleet"],
+      "sources":[{"label":"U.S. Naval Forces Europe-Africa / Sixth Fleet","url":"https://www.c6f.navy.mil/"}]
+    },
+    {
+      "id":"nato-aco",
+      "name":"NATO Allied Command Operations / SHAPE",
+      "type":"unit",
+      "country":"NATO",
+      "summary":"NATO strategic operational command responsible for planning and executing alliance military operations and collective defense activities.",
+      "capabilities":["multinational command and control","collective defense planning","air-land-maritime integration","deterrence posture"],
+      "systems":[],
+      "relationships":[{"target":"useucom","kind":"allied command relationship"},{"target":"nato-landcom","kind":"subordinate NATO command"}],
+      "keywords":["SHAPE","Allied Command Operations","NATO ACO"],
+      "sources":[{"label":"SHAPE","url":"https://shape.nato.int/"}]
+    },
+    {
+      "id":"nato-landcom",
+      "name":"NATO Allied Land Command",
+      "type":"unit",
+      "country":"NATO",
+      "summary":"NATO land-domain command focused on land-force readiness, interoperability and command of land operations when assigned.",
+      "capabilities":["multinational land command","corps integration","readiness certification","collective defense"],
+      "systems":[],
+      "relationships":[{"target":"nato-aco","kind":"subordinate NATO command"}],
+      "keywords":["LANDCOM","Allied Land Command"],
+      "sources":[{"label":"NATO LANDCOM","url":"https://lc.nato.int/"}]
+    },
+    {
+      "id":"ukraine-armed-forces",
+      "name":"Armed Forces of Ukraine",
+      "type":"unit",
+      "country":"Ukraine",
+      "summary":"Ukraine's national armed forces conducting large-scale defense operations and adapting rapidly across land, air, maritime, unmanned and long-range strike domains.",
+      "capabilities":["large-scale land warfare","long-range fires","unmanned systems","integrated air defense","maritime denial"],
+      "systems":[{"name":"Patriot","category":"air defense","url":"https://en.wikipedia.org/wiki/MIM-104_Patriot"},{"name":"NASAMS","category":"air defense","url":"https://en.wikipedia.org/wiki/NASAMS"},{"name":"HIMARS","category":"rocket artillery","url":"https://en.wikipedia.org/wiki/M142_HIMARS"}],
+      "relationships":[{"target":"nato-aco","kind":"partner interoperability"}],
+      "keywords":["Armed Forces of Ukraine","Ukrainian Armed Forces","AFU"],
+      "sources":[{"label":"Ukraine Ministry of Defence","url":"https://mod.gov.ua/en"},{"label":"ISW","url":"https://www.understandingwar.org/"}]
+    },
+    {
+      "id":"russia-leningrad-md",
+      "name":"Russian Leningrad Military District",
+      "type":"adversary",
+      "country":"Russia",
+      "summary":"Russian military district re-established for the northwestern strategic direction, including forces oriented toward Finland, the Baltic region and approaches to St. Petersburg.",
+      "capabilities":["ground maneuver","artillery and missiles","air defense","electronic warfare","mobilization"],
+      "systems":[{"name":"Iskander-M","category":"short-range ballistic missile","url":"https://missilethreat.csis.org/missile/ss-26-2/"},{"name":"S-400","category":"air defense","url":"https://en.wikipedia.org/wiki/S-400_missile_system"},{"name":"T-90M","category":"main battle tank","url":"https://en.wikipedia.org/wiki/T-90"}],
+      "relationships":[{"target":"russia-baltic-fleet","kind":"adjacent joint force"},{"target":"belarus-armed-forces","kind":"regional military cooperation"}],
+      "keywords":["Leningrad Military District","LMD","Ленинградский военный округ"],
+      "sources":[{"label":"CIA World Factbook — Russia","url":"https://www.cia.gov/the-world-factbook/countries/russia/"},{"label":"ISW","url":"https://www.understandingwar.org/"}]
+    },
+    {
+      "id":"russia-moscow-md",
+      "name":"Russian Moscow Military District",
+      "type":"adversary",
+      "country":"Russia",
+      "summary":"Russian military district covering the central-western strategic direction and supporting force generation and operations toward Ukraine and NATO's eastern flank.",
+      "capabilities":["ground maneuver","long-range fires","air defense","electronic warfare","force generation"],
+      "systems":[{"name":"Iskander-M","category":"short-range ballistic missile","url":"https://missilethreat.csis.org/missile/ss-26-2/"},{"name":"Tornado-S","category":"multiple rocket launcher","url":"https://en.wikipedia.org/wiki/9A52-4_Tornado"},{"name":"S-300/S-400 family","category":"air defense","url":"https://en.wikipedia.org/wiki/S-400_missile_system"}],
+      "relationships":[{"target":"belarus-armed-forces","kind":"regional military cooperation"}],
+      "keywords":["Moscow Military District","MMD","Московский военный округ"],
+      "sources":[{"label":"CIA World Factbook — Russia","url":"https://www.cia.gov/the-world-factbook/countries/russia/"},{"label":"ISW","url":"https://www.understandingwar.org/"}]
+    },
+    {
+      "id":"russia-baltic-fleet",
+      "name":"Russian Baltic Fleet",
+      "type":"adversary",
+      "country":"Russia",
+      "summary":"Russian naval formation based around Kaliningrad and the Gulf of Finland with surface, submarine, coastal-defense, aviation and marine forces.",
+      "capabilities":["sea denial","coastal defense","naval strike","mine warfare","amphibious operations"],
+      "systems":[{"name":"Kalibr","category":"cruise missile family","url":"https://missilethreat.csis.org/missile/ss-n-30a/"},{"name":"Bastion-P / P-800 Oniks","category":"coastal anti-ship missile","url":"https://en.wikipedia.org/wiki/K-300P_Bastion-P"}],
+      "relationships":[{"target":"russia-leningrad-md","kind":"joint regional force"}],
+      "keywords":["Baltic Fleet","Балтийский флот"],
+      "sources":[{"label":"CIA World Factbook — Russia","url":"https://www.cia.gov/the-world-factbook/countries/russia/"},{"label":"RUSI","url":"https://www.rusi.org/"}]
+    },
+    {
+      "id":"belarus-armed-forces",
+      "name":"Belarusian Armed Forces",
+      "type":"adversary",
+      "country":"Belarus",
+      "summary":"Belarusian military forces closely integrated with Russian regional defense planning and hosting Russian military activity and systems.",
+      "capabilities":["mechanized ground forces","air defense","rocket artillery","electronic warfare","host-nation support"],
+      "systems":[{"name":"S-300/S-400 family","category":"air defense","url":"https://en.wikipedia.org/wiki/S-400_missile_system"},{"name":"Polonez","category":"multiple rocket launcher","url":"https://en.wikipedia.org/wiki/Polonez_(multiple_rocket_launcher)"}],
+      "relationships":[{"target":"russia-leningrad-md","kind":"regional military cooperation"},{"target":"russia-moscow-md","kind":"regional military cooperation"}],
+      "keywords":["Belarusian Armed Forces","Belarus military","Belarus army"],
+      "sources":[{"label":"CIA World Factbook — Belarus","url":"https://www.cia.gov/the-world-factbook/countries/belarus/"}]
+    },
+    {
+      "id":"russian-proxy-sabotage-networks",
+      "name":"Russian state-linked proxy and sabotage networks",
+      "type":"militia",
+      "country":"Russia-linked / transnational",
+      "summary":"Umbrella research entry for deniable state-linked operatives, proxy facilitators and security networks implicated in coercive, sabotage or influence activity across Europe. Specific attribution should be checked against named official investigations.",
+      "capabilities":["deniable logistics","recruitment","sabotage support","influence operations","procurement"],
+      "systems":[],
+      "relationships":[{"target":"eurasian-sanctions-evasion","kind":"overlapping logistics and procurement ecosystem"}],
+      "keywords":["Russian sabotage","Russian proxy network","GRU network","state-linked sabotage"],
+      "sources":[{"label":"U.S. Treasury press releases","url":"https://home.treasury.gov/news/press-releases"},{"label":"EU sanctions map","url":"https://www.sanctionsmap.eu/"},{"label":"Bellingcat","url":"https://www.bellingcat.com/"}]
+    },
+    {
+      "id":"balkan-oc-networks",
+      "name":"Western Balkan organized-crime networks",
+      "type":"organized-crime",
+      "country":"Southeast Europe / transnational",
+      "summary":"Transnational criminal networks involved in cocaine trafficking, weapons, migrant smuggling, illicit finance and logistics connecting Europe with global supply routes.",
+      "capabilities":["drug trafficking","maritime logistics","money laundering","weapons trafficking","migrant smuggling"],
+      "systems":[],
+      "relationships":[],
+      "keywords":["Balkan cartel","Western Balkan organized crime","Balkan trafficking network"],
+      "sources":[{"label":"Europol — Serious and Organised Crime","url":"https://www.europol.europa.eu/crime-areas/serious-and-organised-crime"},{"label":"GI-TOC","url":"https://globalinitiative.net/"},{"label":"OCCRP","url":"https://www.occrp.org/"}]
+    },
+    {
+      "id":"eurasian-sanctions-evasion",
+      "name":"Eurasian sanctions-evasion and defense-procurement networks",
+      "type":"organized-crime",
+      "country":"Transnational",
+      "summary":"Broker, shell-company, finance and transshipment networks used to move restricted technology, components and funds through third countries into sanctioned defense and security ecosystems.",
+      "capabilities":["illicit procurement","shell companies","trade-based money laundering","transshipment","cryptocurrency and finance facilitation"],
+      "systems":[],
+      "relationships":[{"target":"russian-proxy-sabotage-networks","kind":"potentially overlapping facilitation ecosystem"}],
+      "keywords":["sanctions evasion Russia","Russian procurement network","export control evasion","dual use procurement"],
+      "sources":[{"label":"U.S. Treasury sanctions","url":"https://ofac.treasury.gov/sanctions-programs-and-country-information"},{"label":"U.S. Commerce BIS enforcement","url":"https://www.bis.gov/enforcement"},{"label":"OCCRP","url":"https://www.occrp.org/"}]
+    }
+  ]
+}
