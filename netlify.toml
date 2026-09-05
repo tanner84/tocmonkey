@@ -75,6 +75,16 @@
   to   = "/admin.html"
   status = 200
 
+# Modular public enhancement layer. This avoids rewriting the ~3 MB index.html
+# for every public UI/data update.
+[[edge_functions]]
+  function = "public-enhancements"
+  path = "/"
+
+[[edge_functions]]
+  function = "public-enhancements"
+  path = "/index.html"
+
 # Allow map tiles, Anthropic API, and external resources
 [[headers]]
   for = "/*"
