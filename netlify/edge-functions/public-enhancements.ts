@@ -4,6 +4,15 @@ export default async (_request: Request, context: any) => {
   if (!contentType.includes('text/html')) return response;
 
   let html = await response.text();
+
+  // Bust the legacy 8-hour browser/CDN cache key for the market ticker.
+  // The new ticker backend serves only verified or last-verified values; using a
+  // versioned URL prevents browsers from reusing the old placeholder response.
+  html = html.replace(
+    "fetch('/.netlify/functions/ticker')",
+    "fetch('/.netlify/functions/ticker?v=verified-market-v2', { cache:'no-store' })"
+  );
+
   if (!html.includes('/enhancements/public-overrides.css')) {
     html = html.replace('</head>', '  <link rel="stylesheet" href="/enhancements/public-overrides.css">\n</head>');
   }
