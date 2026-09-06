@@ -32,12 +32,15 @@
   const shortLabel = type => TYPE_SHORT[type] || label(type);
 
   async function load(commandId) {
-    if (!commandId) return [];
+    if (!commandId) return { actors:[], coverage:null };
     if (cache.has(commandId)) return cache.get(commandId);
     const promise = fetch(`/.netlify/functions/cocom-knowledge?command=${encodeURIComponent(commandId)}`, { cache:'no-store' })
       .then(r => r.ok ? r.json() : Promise.reject(new Error(`Task Org ${r.status}`)))
-      .then(data => Array.isArray(data?.command?.actors) ? data.command.actors : [])
-      .catch(() => []);
+      .then(data => ({
+        actors:Array.isArray(data?.command?.actors) ? data.command.actors : [],
+        coverage:data?.coverage || null
+      }))
+      .catch(() => ({ actors:[], coverage:null }));
     cache.set(commandId, promise);
     return promise;
   }
@@ -58,7 +61,19 @@
     select.value = available.includes(current) || current === 'all' ? current : 'all';
   }
 
-  function syncStats(drawer, actors) {
+  function coveragePrefix(drawer, coverage) {
+    if (!coverage) return '';
+    const selectedCountry = drawer.querySelector('#tm-k-country')?.value || 'all';
+    if (selectedCountry !== 'all') {
+      const row = (coverage.countries || []).find(item => item.country === selectedCountry);
+      if (row) return `<span>OOB ${esc(row.status)} ${row.score}/${row.total}</span>`;
+    }
+    const s = coverage.summary || {};
+    if (s.countries) return `<span>OOB ${s.comprehensive || 0} COMP · ${s.developed || 0} DEV · ${s.basic || 0} BASIC · ${s.indexOnly || 0} INDEX</span>`;
+    return '';
+  }
+
+  function syncStats(drawer, actors, coverage) {
     const stats = drawer.querySelector('.tm-k-stats');
     if (!stats || !actors.length) return;
     const counts = new Map();
@@ -70,7 +85,7 @@
       if (ai !== -1 || bi !== -1) return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
       return shortLabel(a).localeCompare(shortLabel(b));
     });
-    const html = `<span>${shown}/${actors.length} SHOWN</span>` + ordered
+    const html = coveragePrefix(drawer, coverage) + `<span>${shown}/${actors.length} SHOWN</span>` + ordered
       .map(type => `<span>${counts.get(type)} ${esc(shortLabel(type))}</span>`).join('');
     if (stats.innerHTML !== html) stats.innerHTML = html;
   }
@@ -89,9 +104,9 @@
     const commandId = drawer.querySelector('#tm-k-command')?.value;
     if (!commandId) return;
     if (force) cache.delete(commandId);
-    const actors = await load(commandId);
-    syncTypeOptions(drawer, actors);
-    syncStats(drawer, actors);
+    const payload = await load(commandId);
+    syncTypeOptions(drawer, payload.actors);
+    syncStats(drawer, payload.actors, payload.coverage);
     rewriteLabels(drawer);
   }
 
@@ -99,8 +114,8 @@
     cancelAnimationFrame(raf);
     raf = requestAnimationFrame(async () => {
       const commandId = drawer.querySelector('#tm-k-command')?.value;
-      const actors = commandId ? await load(commandId) : [];
-      syncStats(drawer, actors);
+      const payload = commandId ? await load(commandId) : { actors:[], coverage:null };
+      syncStats(drawer, payload.actors, payload.coverage);
       rewriteLabels(drawer);
     });
   }
