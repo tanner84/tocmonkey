@@ -73,19 +73,26 @@
     return '';
   }
 
+  function contextualActors(drawer, actors) {
+    const selectedCountry = drawer.querySelector('#tm-k-country')?.value || 'all';
+    if (selectedCountry === 'all') return actors;
+    return actors.filter(actor => actor.country === selectedCountry);
+  }
+
   function syncStats(drawer, actors, coverage) {
     const stats = drawer.querySelector('.tm-k-stats');
-    if (!stats || !actors.length) return;
+    if (!stats) return;
+    const context = contextualActors(drawer, actors);
     const counts = new Map();
-    actors.forEach(actor => counts.set(actor.type, (counts.get(actor.type) || 0) + 1));
+    context.forEach(actor => counts.set(actor.type, (counts.get(actor.type) || 0) + 1));
     const list = drawer.querySelector('.tm-k-list');
-    const shown = list && !list.hidden ? list.querySelectorAll('.tm-k-card').length : actors.length;
+    const shown = list && !list.hidden ? list.querySelectorAll('.tm-k-card').length : context.length;
     const ordered = [...counts.keys()].sort((a,b) => {
       const ai = TYPE_ORDER.indexOf(a), bi = TYPE_ORDER.indexOf(b);
       if (ai !== -1 || bi !== -1) return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
       return shortLabel(a).localeCompare(shortLabel(b));
     });
-    const html = coveragePrefix(drawer, coverage) + `<span>${shown}/${actors.length} SHOWN</span>` + ordered
+    const html = coveragePrefix(drawer, coverage) + `<span>${shown}/${context.length} SHOWN</span>` + ordered
       .map(type => `<span>${counts.get(type)} ${esc(shortLabel(type))}</span>`).join('');
     if (stats.innerHTML !== html) stats.innerHTML = html;
   }
@@ -129,6 +136,9 @@
     const search = drawer.querySelector('#tm-k-search');
     command?.addEventListener('change', () => setTimeout(() => sync(drawer), 80));
     type?.addEventListener('change', () => setTimeout(() => schedule(drawer), 0));
+    country?.addEventListener('change', () => {
+      if (country.value !== 'all' && type && type.value !== 'all') type.value = 'all';
+    }, true);
     country?.addEventListener('change', () => setTimeout(() => schedule(drawer), 0));
     search?.addEventListener('input', () => setTimeout(() => schedule(drawer), 0));
     observer = new MutationObserver(() => schedule(drawer));
