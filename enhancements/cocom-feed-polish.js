@@ -52,6 +52,16 @@
   }
 
   function activeCommand() {
+    // The main AOR heading (e.g. "CENTCOM — U.S. Central Command") is the
+    // most reliable state signal and avoids unrelated .active/.selected UI.
+    const aorHeading = [...document.querySelectorAll('h1,h2,h3,h4,h5,div,span')]
+      .filter(visible)
+      .filter(el => el.getBoundingClientRect().top < 230)
+      .map(textOf)
+      .find(t => /^(EUCOM|CENTCOM|PACOM|INDOPACOM|AFRICOM|SOUTHCOM|NORTHCOM)\s*[—-]\s*U\.S\./i.test(t));
+    const headingCommand = normalizeCommand(aorHeading);
+    if (headingCommand) return headingCommand;
+
     const preferred = [...document.querySelectorAll('[aria-selected="true"],.active,.selected,.cocom-active,.tab-active')]
       .filter(visible)
       .filter(el => el.getBoundingClientRect().top < 180);
@@ -91,14 +101,23 @@
     return null;
   }
 
+  function rowCandidates(listEl, labelEl) {
+    if (!listEl) return [];
+    return [...listEl.children].filter(child => {
+      if (labelEl && (child === labelEl || child.contains(labelEl))) return false;
+      const len = textOf(child).length;
+      return len >= 18 && len <= 1800;
+    });
+  }
+
   function repeatedList(panel, labelEl) {
     if (!panel) return null;
     const candidates = [panel, ...panel.querySelectorAll('div,ul,ol')]
       .filter(el => !labelEl || !el.isSameNode(labelEl))
       .filter(visible)
       .map(el => {
-        const children = [...el.children].filter(visible);
-        const rows = children.filter(child => {
+        const visibleChildren = [...el.children].filter(visible);
+        const rows = visibleChildren.filter(child => {
           if (labelEl && (child === labelEl || child.contains(labelEl))) return false;
           const len = textOf(child).length;
           return len >= 18 && len <= 1800;
@@ -134,11 +153,14 @@
   }
 
   function updateSigactCounter(panel, cocom, visibleCount) {
-    const candidates = [...panel.querySelectorAll('div,span')]
-      .filter(el => el.children.length === 0)
-      .filter(el => /LIVE\s*[·|\-]\s*\d+\s*ITEMS?/i.test(textOf(el)));
-    const counter = candidates[0];
+    let counter = panel.querySelector('[data-tm-sigact-counter="1"]');
+    if (!counter) {
+      counter = [...panel.querySelectorAll('div,span')]
+        .filter(el => el.children.length === 0)
+        .find(el => /(?:LIVE\s*(?:·|\||-)\s*\d+\s*ITEMS?|(?:EUCOM|CENTCOM|PACOM|INDOPACOM|AFRICOM|SOUTHCOM|NORTHCOM)\s*(?:·|\||-)\s*FILTERED\s*(?:·|\||-)\s*\d+\s*ITEMS?)/i.test(textOf(el))) || null;
+    }
     if (!counter) return;
+    counter.dataset.tmSigactCounter = '1';
     if (!counter.dataset.tmOriginal) counter.dataset.tmOriginal = textOf(counter);
     counter.textContent = `${publicLabel(cocom)} · FILTERED · ${visibleCount} ITEMS`;
   }
@@ -149,14 +171,22 @@
     if (!panel) return false;
     panel.classList.add('tm-sigacts-scoped');
 
-    const list = repeatedList(panel, label);
+    // Reuse the previously identified list when possible. Crucially, evaluate
+    // all of its rows, including rows hidden by the prior COCOM filter.
+    const existingList = panel.querySelector('.tm-sigact-list');
+    const list = existingList
+      ? { el:existingList, rows:rowCandidates(existingList, label) }
+      : repeatedList(panel, label);
     if (!list) return false;
     list.el.classList.add('tm-sigact-list');
+
+    const rows = rowCandidates(list.el, label);
+    if (!rows.length) return false;
 
     const cocom = activeCommand();
     let shown = 0;
     let filtered = 0;
-    for (const row of list.rows) {
+    for (const row of rows) {
       row.classList.add('tm-sigact-row');
       const keep = matchesCocom(row, cocom);
       row.dataset.tmAorMatch = keep ? 'true' : 'false';
