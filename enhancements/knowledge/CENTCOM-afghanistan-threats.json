@@ -1,0 +1,152 @@
+{
+  "id":"CENTCOM-AFGHANISTAN-THREATS",
+  "lastReviewed":"2026-09-06",
+  "countries":["Afghanistan"],
+  "actors":[
+    {
+      "id":"haqqani-network",
+      "name":"Haqqani Network (HQN)",
+      "type":"terrorist-insurgent",
+      "country":"Afghanistan",
+      "summary":"Afghan-Pakistan militant network that joined the Taliban in the 1990s and remains deeply interwoven with Taliban senior leadership. The United States continues to designate HQN as a Foreign Terrorist Organization; Sirajuddin Haqqani is both a senior Taliban figure and the de facto Minister of Interior.",
+      "capabilities":["militant networks","political-security influence","facilitation","historic insurgent operations","cross-border networks"],
+      "systems":[],
+      "relationships":[
+        {"target":"afghanistan-taliban-security-apparatus","kind":"overlapping senior leadership / network relationship"},
+        {"target":"afghanistan-ministry-interior","kind":"senior-personnel overlap"},
+        {"target":"al-qaida-afghanistan","kind":"closest ally relationship reported by UN"}
+      ],
+      "keywords":["HQN","Haqqani","Sirajuddin Haqqani"],
+      "sources":[
+        {"label":"U.S. State Department — Haqqani Network profile","url":"https://2021-2025.state.gov/reports/country-reports-on-terrorism-2023/"},
+        {"label":"U.S. State Department — Foreign Terrorist Organizations","url":"https://www.state.gov/foreign-terrorist-organizations/"},
+        {"label":"UN Security Council Monitoring Team — Afghanistan, S/2025/796","url":"https://documents.un.org/api/symbol/access?l=en&s=S%2F2025%2F796&t=pdf"}
+      ],
+      "coverageTags":["non-state-threats","external-relations"],
+      "status":"U.S.-DESIGNATED FTO; NETWORK INTERWOVEN WITH TALIBAN GOVERNING STRUCTURES",
+      "confidence":"HIGH",
+      "priority":1,
+      "signalEligible":true
+    },
+    {
+      "id":"isis-khorasan",
+      "name":"ISIS-Khorasan (ISIS-K / ISKP)",
+      "type":"terrorist-insurgent",
+      "country":"Afghanistan",
+      "summary":"Islamic State affiliate centered in Afghanistan and active across the Afghanistan-Pakistan-Central Asia theater. It remains the Taliban security apparatus's principal jihadist armed adversary and has maintained external-attack ambitions.",
+      "capabilities":["terrorism","suicide attacks","urban cells","regional recruitment","external plotting"],
+      "systems":[],
+      "relationships":[
+        {"target":"afghanistan-gdi","kind":"counterterrorism target"},
+        {"target":"afghanistan-taliban-security-apparatus","kind":"armed adversary"}
+      ],
+      "keywords":["ISIS-K","ISKP","Islamic State Khorasan"],
+      "sources":[
+        {"label":"UN Security Council Monitoring Team — Afghanistan, S/2025/796","url":"https://documents.un.org/api/symbol/access?l=en&s=S%2F2025%2F796&t=pdf"},
+        {"label":"U.S. State Department — Country Reports on Terrorism: Afghanistan","url":"https://2021-2025.state.gov/reports/country-reports-on-terrorism-2023/afghanistan/"},
+        {"label":"U.S. State Department — Foreign Terrorist Organizations","url":"https://www.state.gov/foreign-terrorist-organizations/"}
+      ],
+      "coverageTags":["non-state-threats"],
+      "status":"ACTIVE U.S.-DESIGNATED FTO",
+      "confidence":"HIGH",
+      "area":"Afghanistan with regional networks into Pakistan and Central Asia",
+      "priority":1,
+      "signalEligible":true
+    },
+    {
+      "id":"al-qaida-afghanistan",
+      "name":"Al-Qaida — Afghanistan Network",
+      "type":"terrorist-insurgent",
+      "country":"Afghanistan",
+      "summary":"Al-Qaida elements remain present in Afghanistan according to UN monitoring, which reports that the Taliban maintains tight control over the group while continuing to host and support it. Senior commanders have been reported in Kabul, with relationships extending into Taliban and Haqqani networks.",
+      "capabilities":["ideological guidance","training","advisory support","logistics","network facilitation"],
+      "systems":[],
+      "relationships":[
+        {"target":"haqqani-network","kind":"closest ally relationship reported by UN"},
+        {"target":"aqis","kind":"regional affiliate"},
+        {"target":"afghanistan-taliban-security-apparatus","kind":"host/control relationship reported by UN"}
+      ],
+      "keywords":["Al-Qaeda Afghanistan","Al-Qaida Afghanistan"],
+      "sources":[
+        {"label":"UN Security Council Monitoring Team — Afghanistan, S/2025/796","url":"https://documents.un.org/api/symbol/access?l=en&s=S%2F2025%2F796&t=pdf"},
+        {"label":"U.S. State Department — Country Reports on Terrorism: Afghanistan","url":"https://2021-2025.state.gov/reports/country-reports-on-terrorism-2023/afghanistan/"}
+      ],
+      "coverageTags":["non-state-threats"],
+      "status":"ACTIVE PRESENCE; TALIBAN DENIES PRESENCE",
+      "confidence":"HIGH THAT NETWORK EXISTS / VARIABLE ON LOCATIONS AND STRENGTH",
+      "priority":1,
+      "signalEligible":true
+    },
+    {
+      "id":"aqis",
+      "name":"Al-Qaida in the Indian Subcontinent (AQIS)",
+      "type":"terrorist-insurgent",
+      "country":"Afghanistan",
+      "summary":"Regional al-Qaida affiliate reported by the UN as active in southeastern Afghanistan. UN monitoring identifies the Haqqani Network as influential in the same area and reports continued AQIS activity.",
+      "capabilities":["terrorist facilitation","training","regional jihadist networking","propaganda"],
+      "systems":[],
+      "relationships":[
+        {"target":"al-qaida-afghanistan","kind":"regional affiliate"},
+        {"target":"haqqani-network","kind":"operates in areas of strong Haqqani influence"}
+      ],
+      "keywords":["AQIS","Al-Qaida Indian Subcontinent"],
+      "sources":[
+        {"label":"UN Security Council Monitoring Team — Afghanistan, S/2025/796","url":"https://documents.un.org/api/symbol/access?l=en&s=S%2F2025%2F796&t=pdf"},
+        {"label":"U.S. State Department — Foreign Terrorist Organizations","url":"https://www.state.gov/foreign-terrorist-organizations/"}
+      ],
+      "coverageTags":["non-state-threats"],
+      "status":"ACTIVE U.S.-DESIGNATED FTO",
+      "confidence":"HIGH",
+      "area":"Primarily southeastern Afghanistan",
+      "priority":1,
+      "signalEligible":true
+    },
+    {
+      "id":"tehrik-e-taliban-pakistan",
+      "name":"Tehrik-e Taliban Pakistan (TTP)",
+      "type":"terrorist-insurgent",
+      "country":"Afghanistan",
+      "summary":"Pakistan-focused militant umbrella with a major presence in Afghanistan. The 2025 UN Monitoring Team assessed roughly 6,000 fighters in Afghanistan across more than a dozen subgroups or factions and reported locations in Khost, Kunar, Nangarhar, Paktika and Paktiya.",
+      "capabilities":["terrorism","insurgency","cross-border movement","training","distributed faction network"],
+      "systems":[],
+      "relationships":[
+        {"target":"afghanistan-taliban-security-apparatus","kind":"logistical/operational space relationship reported by UN"},
+        {"target":"pakistan-armed-forces","kind":"cross-border armed adversary / security concern"}
+      ],
+      "keywords":["TTP","Tehrik-e Taliban Pakistan"],
+      "sources":[
+        {"label":"UN Security Council Monitoring Team — Afghanistan, S/2025/796","url":"https://documents.un.org/api/symbol/access?l=en&s=S%2F2025%2F796&t=pdf"},
+        {"label":"U.S. State Department — Country Reports on Terrorism: Afghanistan","url":"https://2021-2025.state.gov/reports/country-reports-on-terrorism-2023/afghanistan/"}
+      ],
+      "coverageTags":["non-state-threats","external-relations"],
+      "status":"ACTIVE; MAJOR CROSS-BORDER SECURITY THREAT",
+      "confidence":"HIGH",
+      "area":"Eastern and southeastern Afghanistan / Pakistan border regions",
+      "priority":1,
+      "signalEligible":true
+    },
+    {
+      "id":"afghan-opiate-trafficking-networks",
+      "name":"Afghan Narcotics & Trafficking Networks",
+      "type":"organized-crime",
+      "country":"Afghanistan",
+      "summary":"Distributed criminal networks involved in narcotics, precursor chemicals, smuggling and illicit finance. Cultivation and trafficking patterns have changed sharply under Taliban counternarcotics policies, but UNODC and Afghan law-enforcement reporting continue to document trafficking and synthetic-drug activity.",
+      "capabilities":["drug trafficking","cross-border logistics","money laundering","corruption","synthetic drug trade"],
+      "systems":[],
+      "relationships":[
+        {"target":"afghanistan-ministry-interior","kind":"law-enforcement target"},
+        {"target":"afghanistan-border-police","kind":"counter-smuggling target"}
+      ],
+      "keywords":["Afghanistan narcotics","opiate trafficking","methamphetamine trafficking"],
+      "sources":[
+        {"label":"UNODC Afghanistan","url":"https://www.unodc.org/coafg/"},
+        {"label":"Afghanistan Ministry of Interior","url":"https://www.moi.gov.af/en/ministry-interior-affairs-minister-office"}
+      ],
+      "coverageTags":["criminal-networks"],
+      "status":"ACTIVE; MARKET PATTERNS CHANGING",
+      "confidence":"HIGH",
+      "priority":1,
+      "signalEligible":true
+    }
+  ]
+}
