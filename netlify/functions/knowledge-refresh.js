@@ -1,4 +1,5 @@
 const { getStore } = require('@netlify/blobs');
+const { getExpansion } = require('./_task-org-expansion');
 
 const COMMANDS = {
   EUCOM: require('../../enhancements/knowledge/EUCOM.json'),
@@ -126,12 +127,21 @@ function proposalFromSignal(commandId, actor, signal, approved) {
 
 function actorsForCommand(commandId, command) {
   const actors = [...(command.actors || [])];
-  const seen = new Set(actors.map(actor => actor.id));
-  for (const actor of SUPPLEMENTS[commandId]?.actors || []) {
-    if (!seen.has(actor.id)) {
-      actors.push(actor);
-      seen.add(actor.id);
-    }
+  const seenIds = new Set(actors.map(actor => actor.id).filter(Boolean));
+  const seenNames = new Set(actors.map(actor => normalize(actor.name)).filter(Boolean));
+  const expansion = getExpansion(commandId);
+  const additions = [
+    ...(SUPPLEMENTS[commandId]?.actors || []),
+    ...(expansion?.actors || [])
+  ];
+
+  for (const actor of additions) {
+    if (actor?.signalEligible === false) continue;
+    const nameKey = normalize(actor?.name);
+    if (!actor?.id || !nameKey || seenIds.has(actor.id) || seenNames.has(nameKey)) continue;
+    actors.push(actor);
+    seenIds.add(actor.id);
+    seenNames.add(nameKey);
   }
   return actors;
 }
