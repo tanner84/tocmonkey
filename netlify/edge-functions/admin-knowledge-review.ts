@@ -4,6 +4,14 @@ export default async (_request: Request, context: any) => {
   if (!contentType.includes('text/html')) return response;
 
   let html = await response.text();
+
+  // Keep the legacy static admin file accurate without rewriting the whole document.
+  // The public ticker no longer depends on paid Metals API / Alpha Vantage plans.
+  html = html.replace(
+    '{ name:"Commodity Ticker", fn: ()=>fetch(\'/.netlify/functions/ticker\'),        envVars:["METALS_API_KEY","ALPHAVANTAGE_KEY","EIA_API_KEY"], docs:"metals-api.com + alphavantage.co + eia.gov" },',
+    '{ name:"Market Ticker",    fn: ()=>fetch(\'/.netlify/functions/ticker\'),        envVars:["EIA_API_KEY","OPENAI_API_KEY"], docs:"EIA.gov + scheduled verified web cache — no paid stock-data API" },'
+  );
+
   if (!html.includes('/enhancements/admin-knowledge-review.css')) {
     html = html.replace('</head>', '  <link rel="stylesheet" href="/enhancements/admin-knowledge-review.css">\n</head>');
   }
