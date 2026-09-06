@@ -1,1 +1,227 @@
-__AFG_JSON__
+{
+  "id": "CENTCOM-AFGHANISTAN-CORE",
+  "lastReviewed": "2026-09-06",
+  "countries": ["Afghanistan"],
+  "actors": [
+    {
+      "id": "afghanistan-taliban-security-apparatus",
+      "name": "Taliban / Islamic Emirate Security Apparatus",
+      "type": "defense-security",
+      "country": "Afghanistan",
+      "summary": "De facto governing security system established by the Taliban after its August 2021 takeover. Public reporting and Taliban official material show a centralized leadership structure spanning the Ministry of National Defense, Ministry of Interior and General Directorate of Intelligence. The United States has not recognized the Taliban as the government of Afghanistan.",
+      "capabilities": ["national command authority","military and internal security governance","counter-ISIS-K operations","border security","regional diplomacy"],
+      "systems": [],
+      "relationships": [
+        {"target":"afghanistan-ministry-national-defense","kind":"directs / oversees defense sector"},
+        {"target":"afghanistan-ministry-interior","kind":"directs / oversees internal security sector"},
+        {"target":"afghanistan-gdi","kind":"directs / oversees intelligence sector"},
+        {"target":"haqqani-network","kind":"overlapping senior personnel / network relationship"},
+        {"target":"isis-khorasan","kind":"principal armed adversary"}
+      ],
+      "keywords": ["Taliban","Islamic Emirate","Afghanistan security apparatus"],
+      "sources": [
+        {"label":"UN Secretary-General report on Afghanistan, S/2025/372","url":"https://digitallibrary.un.org/record/4083725/files/A_79_947--S_2025_372-EN.pdf"},
+        {"label":"U.S. State Department — Country Reports on Terrorism: Afghanistan","url":"https://2021-2025.state.gov/reports/country-reports-on-terrorism-2023/afghanistan/"},
+        {"label":"CIA World Factbook — Afghanistan","url":"https://www.cia.gov/the-world-factbook/countries/afghanistan/"}
+      ],
+      "coverageTags": ["command-authority","external-relations"],
+      "status": "DE FACTO GOVERNING SECURITY APPARATUS",
+      "confidence": "HIGH",
+      "leadership": [{"role":"Supreme Leader / Amir","name":"Haibatullah Akhundzada","note":"UN reporting describes central authority over de facto security officials."}],
+      "structure": ["Supreme Leader / Kandahar-centered leadership","De facto Cabinet and senior security officials","Ministry of National Defense","Ministry of Interior","General Directorate of Intelligence"],
+      "priority": 1,
+      "signalEligible": true
+    },
+    {
+      "id": "afghanistan-ministry-national-defense",
+      "name": "Ministry of National Defense — Islamic Emirate",
+      "type": "defense-security",
+      "country": "Afghanistan",
+      "summary": "De facto defense ministry directing the Taliban-era national military. Current official ministry material identifies regional army corps, a central corps, an air force and special-forces structures; exact manning and readiness are not consistently published.",
+      "capabilities": ["national defense administration","land-force command","air-force oversight","regional corps","training and logistics"],
+      "systems": [],
+      "relationships": [
+        {"target":"afghanistan-taliban-security-apparatus","kind":"subordinate security institution"},
+        {"target":"afghanistan-air-force","kind":"service / component"},
+        {"target":"afghanistan-mod-special-forces","kind":"special operations component"},
+        {"target":"afghanistan-313-central-corps","kind":"operational formation"}
+      ],
+      "keywords": ["Afghanistan Ministry of National Defense","Taliban Ministry of Defense"],
+      "sources": [
+        {"label":"Afghanistan Ministry of National Defense","url":"https://mod.gov.af/en"},
+        {"label":"Afghanistan MoD — regional corps procurement listing","url":"https://mod.gov.af/dr/%D8%AA%D9%87%DB%8C%D9%87-%D9%88-%D8%AA%D8%AF%D8%A7%D8%B1%DA%A9-38-%D9%82%D9%84%D9%85-%D9%82%D8%B1%D8%B7%D8%A7%D8%B3%DB%8C%D9%87-%D8%A8%D8%A7%D8%A8-%D8%B6%D8%B1%D9%88%D8%B1%D8%AA-%D9%82%D8%B7%D8%B9%D8%A7%D8%AA-%D9%88-%D8%AC%D8%B2%D9%88%D8%AA%D8%A7%D9%85-%D9%87%D8%A7%DB%8C-%D9%85%D8%B1%DA%A9%D8%B2%DB%8C-%D9%88-%D9%82%D9%88%D9%84-%D8%A7%D8%B1%D8%AF%D9%88%D9%87%D8%A7%DB%8C-%D8%B3%D8%A7%D8%AD%D9%88%DB%8C-%D8%A7%D8%B1%D8%AF%D9%88%DB%8C-%D8%A7%D8%B3%D9%84%D8%A7%D9%85%DB%8C-%D9%85%D9%84%DB%8C"},
+        {"label":"UN Secretary-General report on Afghanistan, S/2025/372","url":"https://digitallibrary.un.org/record/4083725/files/A_79_947--S_2025_372-EN.pdf"}
+      ],
+      "coverageTags": ["defense-ministry","land-force","operational-formations","systems"],
+      "status": "ACTIVE DE FACTO DEFENSE MINISTRY",
+      "confidence": "HIGH",
+      "leadership": [{"role":"Acting Minister of National Defense","name":"Mohammad Yaqoub Mujahid"}],
+      "structure": ["Minister and ministry staff","General Staff","Air Force General Command","Special Forces General Command","Regional corps","313 Central Corps"],
+      "priority": 1,
+      "signalEligible": true
+    },
+    {
+      "id": "afghanistan-ministry-interior",
+      "name": "Ministry of Interior Affairs — Islamic Emirate",
+      "type": "defense-security",
+      "country": "Afghanistan",
+      "summary": "De facto interior ministry responsible for policing and internal-security functions. Its current public structure includes security operations, border police, counter-crime, police special units, traffic and Interpol functions, with counter-narcotics institutions also active.",
+      "capabilities": ["internal security","policing","border security","special police operations","counter-crime","counter-narcotics"],
+      "systems": [],
+      "relationships": [
+        {"target":"afghanistan-taliban-security-apparatus","kind":"subordinate security institution"},
+        {"target":"afghanistan-border-police","kind":"subordinate directorate"},
+        {"target":"afghanistan-police-special-units","kind":"subordinate special unit command"},
+        {"target":"haqqani-network","kind":"senior-personnel / network relationship"}
+      ],
+      "keywords": ["Afghanistan Ministry of Interior","Taliban Ministry of Interior"],
+      "sources": [
+        {"label":"Afghanistan Ministry of Interior","url":"https://www.moi.gov.af/en/ministry-interior-affairs-minister-office"},
+        {"label":"Afghanistan MoI — Deputy Ministry of Security","url":"https://moi.gov.af/en/deputy-ministry-security"},
+        {"label":"UN Secretary-General report on Afghanistan, S/2025/372","url":"https://digitallibrary.un.org/record/4083725/files/A_79_947--S_2025_372-EN.pdf"}
+      ],
+      "coverageTags": ["interior-police","border-security","special-operations","criminal-networks"],
+      "status": "ACTIVE DE FACTO INTERIOR MINISTRY",
+      "confidence": "HIGH",
+      "leadership": [{"role":"Minister of Interior","name":"Sirajuddin Haqqani","note":"Also a senior Haqqani Network figure; HQN remains a U.S.-designated FTO."}],
+      "structure": ["Minister","Deputy Ministry of Security","Border Police","Counter-Crime","Police Special Units","Counter-Narcotics"],
+      "priority": 1,
+      "signalEligible": true
+    },
+    {
+      "id": "afghanistan-gdi",
+      "name": "General Directorate of Intelligence (GDI)",
+      "type": "security-intelligence",
+      "country": "Afghanistan",
+      "summary": "De facto national intelligence and internal-security service. UN reporting identifies Abdul Haq Wasiq as the head of the GDI and describes the directorate as part of the Taliban security apparatus, including activity against ISIS-K and internal security targets.",
+      "capabilities": ["intelligence collection","counterintelligence","internal security","counterterrorism","provincial intelligence network"],
+      "systems": [],
+      "relationships": [
+        {"target":"afghanistan-taliban-security-apparatus","kind":"subordinate / directly accountable security institution"},
+        {"target":"isis-khorasan","kind":"counterterrorism target"}
+      ],
+      "keywords": ["GDI","General Directorate of Intelligence","Afghanistan intelligence"],
+      "sources": [
+        {"label":"Afghanistan Administrative Office — General Directorate of Intelligence","url":"https://aop.gov.af/en/government/independent_directorate"},
+        {"label":"UN Secretary-General report on Afghanistan, S/2025/372","url":"https://digitallibrary.un.org/record/4083725/files/A_79_947--S_2025_372-EN.pdf"},
+        {"label":"UN Security Council Monitoring Team — Afghanistan, S/2025/796","url":"https://documents.un.org/api/symbol/access?l=en&s=S%2F2025%2F796&t=pdf"}
+      ],
+      "coverageTags": ["intelligence"],
+      "status": "ACTIVE DE FACTO INTELLIGENCE SERVICE",
+      "confidence": "HIGH",
+      "leadership": [{"role":"Director General","name":"Abdul Haq Wasiq"}],
+      "priority": 1,
+      "signalEligible": true
+    },
+    {
+      "id": "afghanistan-air-force",
+      "name": "Afghan Air Force / Air Force General Command",
+      "type": "unit",
+      "country": "Afghanistan",
+      "summary": "Air component under the de facto Ministry of National Defense. Taliban official reporting has shown efforts to restore inherited aircraft and helicopters; fleet availability is fluid and published inventory totals should not be treated as serviceable-aircraft counts.",
+      "capabilities": ["rotary-wing lift","light attack / armed helicopter operations","fixed-wing transport","medical / utility aviation","air mobility"],
+      "systems": [
+        {"name":"Mi-17","category":"medium transport helicopter","note":"Official reporting confirms continuing operation; serviceable quantity changes."},
+        {"name":"UH-60 Black Hawk","category":"utility helicopter","note":"Inherited aircraft; operational availability varies."},
+        {"name":"MD-530 family","category":"light attack / scout helicopter","note":"Taliban MoD has publicly displayed aircraft from this family."},
+        {"name":"Cessna C-208","category":"light transport aircraft","note":"Inherited platform; current mission availability varies."},
+        {"name":"An-32","category":"transport aircraft","note":"Publicly displayed by Taliban MoD."},
+        {"name":"Mi-35","category":"attack helicopter","note":"Publicly displayed by Taliban MoD; serviceability varies."}
+      ],
+      "relationships": [{"target":"afghanistan-ministry-national-defense","kind":"subordinate service / component"}],
+      "keywords": ["Afghan Air Force","Taliban Air Force","Air Force General Command"],
+      "sources": [
+        {"label":"Afghanistan MoD — Air Force aircraft/helicopter activity","url":"https://mod.gov.af/ps/%D8%AF-%D8%A7%D9%81%D8%BA%D8%A7%D9%86%D8%B3%D8%AA%D8%A7%D9%86-%D8%A7%D8%B3%D9%84%D8%A7%D9%85%D9%8A-%D8%A7%D9%85%D8%A7%D8%B1%D8%AA-%D8%AF-%D9%87%D9%88%D8%A7%D9%8A%D9%8A-%DA%81%D9%88%D8%A7%DA%A9%D9%88%D9%86%D9%88-%D8%AF-%D9%81%D8%B9%D8%A7%D9%84%DB%8C%D8%AA-%D8%A7%D9%88-%D8%B1%D8%BA%D9%88%D9%86%DB%90-%D9%BE%D9%87-%D9%85%D9%86%D8%A7%D8%B3%D8%A8%D8%AA-%D9%BE%D9%88%DA%81%D9%8A-%D8%A7%D9%84%D9%88%D8%AA%DA%A9%D9%88-%D8%A7%D9%88-%DA%86%D9%88%D8%B1%D9%84%DA%A9%D9%88-%D9%85%D8%A7%D9%86%D9%88%D8%B1"},
+        {"label":"Afghanistan Ministry of National Defense","url":"https://mod.gov.af/en"}
+      ],
+      "coverageTags": ["air-component","systems","bases-locations"],
+      "status": "ACTIVE; READINESS/INVENTORY FLUID",
+      "confidence": "HIGH",
+      "priority": 1,
+      "signalEligible": true
+    },
+    {
+      "id": "afghanistan-mod-special-forces",
+      "name": "MoD General Command of Special Forces",
+      "type": "unit",
+      "country": "Afghanistan",
+      "summary": "Special-operations organization under the de facto Ministry of National Defense. Official MoD reporting confirms a general command for special forces, while subordinate organization and current readiness are only partially visible in open sources.",
+      "capabilities": ["special operations","counterterrorism","direct action","specialized military training"],
+      "systems": [],
+      "relationships": [{"target":"afghanistan-ministry-national-defense","kind":"subordinate special-operations command"}],
+      "keywords": ["Afghanistan special forces","Taliban special forces"],
+      "sources": [
+        {"label":"Afghanistan MoD — Special Forces command","url":"https://mod.gov.af/en/node/4805"},
+        {"label":"Afghanistan Ministry of National Defense","url":"https://mod.gov.af/en"}
+      ],
+      "coverageTags": ["special-operations"],
+      "status": "ACTIVE; SUBORDINATE OOB PARTIALLY PUBLISHED",
+      "confidence": "HIGH",
+      "priority": 1,
+      "signalEligible": true
+    },
+    {
+      "id": "afghanistan-border-police",
+      "name": "General Directorate of Border Police",
+      "type": "defense-security",
+      "country": "Afghanistan",
+      "summary": "Border-security organization under the Ministry of Interior. Current ministry reporting identifies a Director General, military and logistics deputies, subordinate border-crossing personnel and continuing capacity-building activity.",
+      "capabilities": ["border security","port-of-entry security","inspection","counter-smuggling","interagency coordination"],
+      "systems": [],
+      "relationships": [{"target":"afghanistan-ministry-interior","kind":"subordinate directorate"}],
+      "keywords": ["Afghanistan Border Police","General Directorate of Border Police"],
+      "sources": [
+        {"label":"Afghanistan MoI — General Directorate of Border Police","url":"https://moi.gov.af/en/general-directorate-border-police-holds-coordination-meeting-improve-administrative-affairs"},
+        {"label":"Afghanistan MoI — Deputy Ministry of Security","url":"https://moi.gov.af/en/deputy-ministry-security"}
+      ],
+      "coverageTags": ["border-security"],
+      "status": "ACTIVE",
+      "confidence": "HIGH",
+      "priority": 1,
+      "signalEligible": true
+    },
+    {
+      "id": "afghanistan-police-special-units",
+      "name": "General Command of Police Special Units",
+      "type": "unit",
+      "country": "Afghanistan",
+      "summary": "Police special-operations structure under the Ministry of Interior's security chain. Official ministry pages list a General Command of Police Special Units and report national/provincial special-force training.",
+      "capabilities": ["high-risk policing","special operations","counter-crime","crisis response"],
+      "systems": [],
+      "relationships": [{"target":"afghanistan-ministry-interior","kind":"subordinate special-unit command"}],
+      "keywords": ["Afghanistan Police Special Units","police special forces"],
+      "sources": [
+        {"label":"Afghanistan MoI — Deputy Ministry of Security","url":"https://moi.gov.af/en/deputy-ministry-security"},
+        {"label":"Afghanistan MoI — Police Special Forces","url":"https://www.moi.gov.af/index.php/dr/ministry-interior-affairs-afghanistan-special-forces"}
+      ],
+      "coverageTags": ["special-operations"],
+      "status": "ACTIVE",
+      "confidence": "HIGH",
+      "priority": 1,
+      "signalEligible": true
+    },
+    {
+      "id": "afghanistan-key-military-hubs",
+      "name": "Afghanistan — Key Military Airfields & Garrison Hubs",
+      "type": "defense-security",
+      "country": "Afghanistan",
+      "summary": "Reference node for major inherited military facilities and garrison centers used by Afghan security forces. Kabul-area military facilities, Kandahar, Shindand, Mazar-e Sharif, Jalalabad and Bagram remain important reference points, but current tenant units and operational intensity should be verified against recent reporting before use.",
+      "capabilities": ["basing reference","military aviation support","regional garrison network","logistics"],
+      "systems": [],
+      "relationships": [
+        {"target":"afghanistan-ministry-national-defense","kind":"basing / garrison context"},
+        {"target":"afghanistan-air-force","kind":"aviation infrastructure context"}
+      ],
+      "keywords": ["Afghanistan bases","Bagram","Kandahar","Shindand","Mazar-e Sharif","Jalalabad"],
+      "sources": [
+        {"label":"CIA World Factbook — Afghanistan","url":"https://www.cia.gov/the-world-factbook/countries/afghanistan/"},
+        {"label":"Afghanistan Ministry of National Defense","url":"https://mod.gov.af/en"}
+      ],
+      "coverageTags": ["bases-locations"],
+      "status": "REFERENCE NODE; CURRENT TENANTS/READINESS VARY",
+      "confidence": "MODERATE",
+      "priority": 1,
+      "signalEligible": false
+    }
+  ]
+}
