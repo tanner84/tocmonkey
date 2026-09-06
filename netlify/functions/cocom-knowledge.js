@@ -1,4 +1,5 @@
 const { getStore } = require('@netlify/blobs');
+const { getExpansion } = require('./_task-org-expansion');
 
 const MANIFEST = require('../../enhancements/cocom-knowledge.json');
 const COMMANDS = {
@@ -31,6 +32,16 @@ function normalizeCommand(value = '') {
   return id;
 }
 
+function normalizeActorName(value = '') {
+  return String(value)
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 async function readJSON(storeName, key, fallback) {
   try {
     const store = getStore(storeName);
@@ -43,14 +54,19 @@ async function readJSON(storeName, key, fallback) {
 
 function mergeSupplement(command, supplement) {
   if (!supplement) return command;
-  const knownActorIds = new Set((command.actors || []).map(actor => actor.id));
-  const knownRefs = new Set((command.references || []).map(ref => `${ref.label}|${ref.url}`));
+  command.actors = Array.isArray(command.actors) ? command.actors : [];
+  command.references = Array.isArray(command.references) ? command.references : [];
+
+  const knownActorIds = new Set(command.actors.map(actor => actor.id).filter(Boolean));
+  const knownActorNames = new Set(command.actors.map(actor => normalizeActorName(actor.name)).filter(Boolean));
+  const knownRefs = new Set(command.references.map(ref => `${ref.label}|${ref.url}`));
 
   for (const actor of supplement.actors || []) {
-    if (!knownActorIds.has(actor.id)) {
-      command.actors.push(actor);
-      knownActorIds.add(actor.id);
-    }
+    const nameKey = normalizeActorName(actor.name);
+    if (!actor?.id || !nameKey || knownActorIds.has(actor.id) || knownActorNames.has(nameKey)) continue;
+    command.actors.push(actor);
+    knownActorIds.add(actor.id);
+    knownActorNames.add(nameKey);
   }
   for (const ref of supplement.references || []) {
     const key = `${ref.label}|${ref.url}`;
@@ -85,10 +101,19 @@ exports.handler = async function(event) {
     readJSON('cocom-knowledge-overrides', 'approved', {})
   ]);
 
-  const command = mergeSupplement(
-    JSON.parse(JSON.stringify(COMMANDS[requested])),
+  let command = JSON.parse(JSON.stringify(COMMANDS[requested]));
+  command = mergeSupplement(
+    command,
     SUPPLEMENTS[requested] ? JSON.parse(JSON.stringify(SUPPLEMENTS[requested])) : null
   );
+  command = mergeSupplement(command, getExpansion(requested));
+
+  command.actors.sort((a,b) => {
+    const priority = (a.priority ?? 2) - (b.priority ?? 2);
+    if (priority) return priority;
+    return String(a.name || '').localeCompare(String(b.name || ''));
+  });
+
   const signalMap = runtime?.actors || {};
   command.actors = command.actors.map(actor => {
     const actorKey = `${requested}:${actor.id}`;

@@ -1,8 +1,8 @@
 {
-  "version": "2026-09-04.2",
-  "updated": "2026-09-04",
+  "version": "2026-09-06.1",
+  "updated": "2026-09-06",
   "disclaimer": "Open-source research index. Organization status, equipment, leadership, alignment and relationships can change. Follow linked primary and authoritative sources before relying on an entry.",
-  "methodology": "TOC Monkey separates durable baseline profiles from automatically refreshed recent-reporting signals. Baseline profiles are source-linked and manually reviewed; the refresh job only attaches recent open-source reporting and never rewrites baseline facts automatically.",
+  "methodology": "TOC Monkey separates durable baseline profiles from automatically refreshed recent-reporting signals. Baseline profiles are source-linked and manually reviewed. The expanded Task Org layer adds AOR-wide country and defense/security reference nodes plus deeper military, maritime, militia, insurgent/terrorist and organized-crime profiles. Automated reporting may attach recent open-source signals but never rewrites baseline facts automatically.",
   "commands": {
     "EUCOM": {
       "displayName": "EUCOM",
@@ -31,7 +31,7 @@
     },
     "NORTHCOM": {
       "displayName": "NORTHCOM",
-      "focus": "United States, Canada, Mexico approaches, homeland defense and continental aerospace / maritime warning",
+      "focus": "United States, Canada, Mexico, Greenland, adjacent approaches and continental aerospace / maritime warning",
       "file": "/enhancements/knowledge/NORTHCOM.json"
     }
   }

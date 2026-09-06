@@ -22,6 +22,9 @@ export default async (_request: Request, context: any) => {
   if (!html.includes('/enhancements/public-enhancements.js')) {
     html = html.replace('</body>', '  <script src="/enhancements/public-enhancements.js" defer></script>\n</body>');
   }
+  if (!html.includes('/enhancements/task-org-scale.js')) {
+    html = html.replace('</body>', '  <script src="/enhancements/task-org-scale.js" defer></script>\n</body>');
+  }
   if (!html.includes('/enhancements/public-map-hotfix.js')) {
     html = html.replace('</body>', '  <script src="/enhancements/public-map-hotfix.js" defer></script>\n</body>');
   }
