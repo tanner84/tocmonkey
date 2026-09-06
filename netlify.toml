@@ -79,6 +79,11 @@
 [functions."marketbrief-close"]
   schedule = "30 21 * * 1-5"
 
+# Public market ticker cache. Refreshes around the major Asia/Europe/U.S. market windows.
+# The public ticker only reads this cache; visitors never trigger market web research.
+[functions."ticker-refresh"]
+  schedule = "5 7,12,14,16,18,20,22 * * 1-5"
+
 # Protect the admin page — redirects /admin to admin.html
 [[redirects]]
   from = "/admin"
