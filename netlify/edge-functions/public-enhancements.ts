@@ -34,6 +34,9 @@ export default async (_request: Request, context: any) => {
   if (!html.includes('/enhancements/toc-tv.css')) {
     html = html.replace('</head>', '  <link rel="stylesheet" href="/enhancements/toc-tv.css">\n</head>');
   }
+  if (!html.includes('/enhancements/sitrep-links.css')) {
+    html = html.replace('</head>', '  <link rel="stylesheet" href="/enhancements/sitrep-links.css">\n</head>');
+  }
   if (!html.includes('/enhancements/public-enhancements.js')) {
     html = html.replace('</body>', '  <script src="/enhancements/public-enhancements.js" defer></script>\n</body>');
   }
@@ -57,6 +60,9 @@ export default async (_request: Request, context: any) => {
   }
   if (!html.includes('/enhancements/mobile-polish.js')) {
     html = html.replace('</body>', '  <script src="/enhancements/mobile-polish.js" defer></script>\n</body>');
+  }
+  if (!html.includes('/enhancements/sitrep-links.js')) {
+    html = html.replace('</body>', '  <script src="/enhancements/sitrep-links.js" defer></script>\n</body>');
   }
 
   const headers = new Headers(response.headers);
