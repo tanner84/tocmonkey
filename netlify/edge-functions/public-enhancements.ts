@@ -16,6 +16,9 @@ export default async (_request: Request, context: any) => {
   if (!html.includes('/enhancements/cocom-feed-polish.css')) {
     html = html.replace('</head>', '  <link rel="stylesheet" href="/enhancements/cocom-feed-polish.css">\n</head>');
   }
+  if (!html.includes('/enhancements/mobile-polish.css')) {
+    html = html.replace('</head>', '  <link rel="stylesheet" href="/enhancements/mobile-polish.css">\n</head>');
+  }
   if (!html.includes('/enhancements/public-enhancements.js')) {
     html = html.replace('</body>', '  <script src="/enhancements/public-enhancements.js" defer></script>\n</body>');
   }
@@ -27,6 +30,9 @@ export default async (_request: Request, context: any) => {
   }
   if (!html.includes('/enhancements/cocom-feed-polish.js')) {
     html = html.replace('</body>', '  <script src="/enhancements/cocom-feed-polish.js" defer></script>\n</body>');
+  }
+  if (!html.includes('/enhancements/mobile-polish.js')) {
+    html = html.replace('</body>', '  <script src="/enhancements/mobile-polish.js" defer></script>\n</body>');
   }
 
   const headers = new Headers(response.headers);
