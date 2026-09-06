@@ -1,7 +1,0 @@
-Manual/logic test notes:
-- Only #srpbody text nodes are scanned.
-- Existing anchors/buttons/scripts/styles are skipped.
-- Only http:// and https:// URLs are converted.
-- Links use target=_blank and rel="noopener noreferrer".
-- Trailing punctuation is excluded from href.
-- JavaScript syntax validated with node --check.
