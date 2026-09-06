@@ -121,6 +121,32 @@
     overscroll-behavior: contain;
   }
 
+  .tm-mobile-sigact-panel .tm-sigact-list {
+    scroll-snap-type: y proximity;
+    scroll-padding-top: 8px;
+  }
+  .tm-mobile-sigact-panel .tm-sigact-row[data-tm-aor-match="true"] {
+    min-height: 66px;
+    padding-top: 9px !important;
+    padding-bottom: 9px !important;
+    overflow-wrap: anywhere;
+  }
+  .tm-mobile-sigact-panel .ph {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+    min-width: 0 !important;
+  }
+  .tm-mobile-sigact-panel .ph .pht {
+    min-width: 0;
+  }
+  .tm-mobile-sigact-panel .ph .phs {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    font-size: 8px !important;
+  }
+
   .tm-osint-dense .tm-osint-dense-card {
     max-height: 126px !important;
     padding: 9px 10px !important;
@@ -141,6 +167,69 @@
     font-size: 12px !important;
     line-height: 1.4 !important;
     -webkit-line-clamp: 3;
+  }
+
+  /* TOC TV should feel like a native mobile panel, not a squeezed desktop quadrant. */
+  #eqpnl.tm-tv-panel.tm-mobile-tv-panel {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow: visible !important;
+  }
+  .tm-mobile-tv-panel .tm-tv-shell {
+    width: 100%;
+    gap: 8px !important;
+    padding: 10px !important;
+    box-sizing: border-box;
+  }
+  .tm-mobile-tv-panel .tm-tv-frame-wrap {
+    width: 100% !important;
+    aspect-ratio: 16 / 9;
+    max-height: none !important;
+  }
+  .tm-mobile-tv-panel .tm-tv-meta {
+    padding: 6px 1px 5px !important;
+  }
+  .tm-mobile-tv-panel .tm-tv-kicker,
+  .tm-mobile-tv-panel .tm-tv-count {
+    font-size: 9px !important;
+  }
+  .tm-mobile-tv-panel .tm-tv-title {
+    font-size: 13px !important;
+    line-height: 1.35 !important;
+    white-space: normal !important;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+  }
+  .tm-mobile-tv-panel .tm-tv-controls,
+  .tm-mobile-tv-panel .tm-tv-picker {
+    grid-template-columns: 1fr !important;
+    gap: 7px !important;
+  }
+  .tm-mobile-tv-panel .tm-tv-picker > span {
+    font-size: 9px !important;
+  }
+  .tm-mobile-tv-panel .tm-tv-select {
+    width: 100% !important;
+    min-height: 44px !important;
+    height: 44px !important;
+    padding: 8px 32px 8px 9px !important;
+  }
+  .tm-mobile-tv-panel .tm-tv-actions {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px !important;
+    width: 100%;
+  }
+  .tm-mobile-tv-panel .tm-tv-actions a {
+    width: 100%;
+    min-height: 44px !important;
+    height: 44px !important;
+    padding: 0 10px !important;
+    box-sizing: border-box;
+    font-size: 10px !important;
   }
 
   /* AO/task-org explorer becomes a true phone sheet. */
@@ -227,6 +316,17 @@
   .leaflet-container.tm-mobile-map {
     height: clamp(350px, 52svh, 520px) !important;
     min-height: 350px !important;
+  }
+  .tm-mobile-sigact-panel .ph .phs {
+    max-width: 58%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .tm-mobile-tv-panel .tm-tv-meta-top {
+    gap: 6px !important;
+  }
+  .tm-mobile-tv-panel .tm-tv-actions {
+    grid-template-columns: 1fr 1fr;
   }
   .tm-k-tools { grid-template-columns: 1fr !important; }
   .tm-k-tools input { grid-column: auto; }
