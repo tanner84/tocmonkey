@@ -78,7 +78,9 @@
   function rewriteLabels(drawer) {
     drawer.querySelectorAll('.tm-k-meta,.tm-k-breadcrumb span,.tm-k-dossier-meta').forEach(node => {
       let text = node.textContent || '';
-      for (const [from,to] of DISPLAY_REWRITES) text = text.replace(from,to);
+      for (const [from,to] of DISPLAY_REWRITES) {
+        if (!text.includes(to) && text.includes(from)) text = text.replace(from,to);
+      }
       if (text !== node.textContent) node.textContent = text;
     });
   }
