@@ -1,6 +1,11 @@
 const PACKS = {
   EUCOM: [require('../../enhancements/knowledge/EUCOM-expansion.json')],
-  CENTCOM: [require('../../enhancements/knowledge/CENTCOM-expansion.json')],
+  CENTCOM: [
+    require('../../enhancements/knowledge/CENTCOM-afghanistan.json'),
+    require('../../enhancements/knowledge/CENTCOM-afghanistan-formations.json'),
+    require('../../enhancements/knowledge/CENTCOM-afghanistan-threats.json'),
+    require('../../enhancements/knowledge/CENTCOM-expansion.json')
+  ],
   INDOPACOM: [
     require('../../enhancements/knowledge/INDOPACOM-expansion-a.json'),
     require('../../enhancements/knowledge/INDOPACOM-expansion-b.json')
