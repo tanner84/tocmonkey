@@ -1,4 +1,4 @@
-const { getStore } = require('@netlify/blobs');
+const { getStore, getDeployStore } = require('@netlify/blobs');
 const { generateText } = require('./_openai');
 
 const STORE_NAME = 'market-ticker';
@@ -24,6 +24,24 @@ const INSTRUMENTS = [
 ];
 
 const META = Object.fromEntries(INSTRUMENTS.map(item => [item.key, item]));
+
+function env(name) {
+  try { return globalThis.Netlify?.env?.get(name) || ''; } catch (_) { return ''; }
+}
+
+function deployContext() {
+  try {
+    return globalThis.Netlify?.context?.deploy?.context || env('CONTEXT') || '';
+  } catch (_) {
+    return '';
+  }
+}
+
+function marketStore() {
+  const context = deployContext();
+  if (context && context !== 'production') return getDeployStore(STORE_NAME);
+  return getStore(STORE_NAME, { consistency:'strong' });
+}
 
 function num(value) {
   const n = Number(value);
@@ -53,8 +71,7 @@ function extractJson(text = '') {
 
 async function readCache() {
   try {
-    const store = getStore(STORE_NAME);
-    const cached = await store.get(STORE_KEY, { type:'json' });
+    const cached = await marketStore().get(STORE_KEY, { type:'json' });
     return cached && typeof cached === 'object' ? cached : null;
   } catch (_) {
     return null;
@@ -62,8 +79,7 @@ async function readCache() {
 }
 
 async function writeCache(payload) {
-  const store = getStore(STORE_NAME);
-  await store.set(STORE_KEY, JSON.stringify(payload));
+  await marketStore().setJSON(STORE_KEY, payload);
 }
 
 function normalizeQuote(key, raw, defaults = {}) {
@@ -92,9 +108,9 @@ function normalizeQuote(key, raw, defaults = {}) {
 }
 
 async function fetchEiaQuote(meta) {
-  const apiKey = process.env.EIA_API_KEY || 'DEMO_KEY';
+  const apiKey = env('EIA_API_KEY') || 'DEMO_KEY';
   const url = `https://api.eia.gov/v2/seriesid/${encodeURIComponent(meta.seriesId)}?api_key=${encodeURIComponent(apiKey)}&data[0]=value&sort[0][column]=period&sort[0][direction]=desc&length=2`;
-  const response = await fetch(url, { signal:AbortSignal.timeout(7000) });
+  const response = await fetch(url, { signal:AbortSignal.timeout(6500) });
   if (!response.ok) throw new Error(`EIA ${meta.key} HTTP ${response.status}`);
   const json = await response.json();
   const rows = json?.response?.data || [];
@@ -132,11 +148,11 @@ async function researchWebQuotes() {
 
   const result = await generateText({
     prompt,
-    model: process.env.OPENAI_RESEARCH_MODEL || 'gpt-5.6-terra',
-    maxOutputTokens: 1800,
+    model: env('OPENAI_RESEARCH_MODEL') || 'gpt-5.6-terra',
+    maxOutputTokens: 1500,
     reasoningEffort: 'low',
-    timeoutMs: 50000,
-    retries: 1,
+    timeoutMs: 22000,
+    retries: 0,
     tools: [{ type:'web_search' }],
   });
 
@@ -251,7 +267,16 @@ async function getPublicTicker() {
     if (items.length) return { items, updatedAt:cache.updatedAt || null, coverage:cache.coverage || null, stale:globallyStale };
   }
 
-  // Bootstrap fallback: official EIA data only. No invented values and no visitor-triggered AI call.
+  // One-time bootstrap if the Blob cache has never been populated. After this succeeds,
+  // ordinary visitors only read the shared cache and never trigger market research.
+  try {
+    const warmed = await refreshMarketData();
+    if (warmed?.items?.length) return { items:warmed.items, updatedAt:warmed.updatedAt || null, coverage:warmed.coverage || null, stale:false };
+  } catch (error) {
+    console.warn('Market cache bootstrap failed:', error.message);
+  }
+
+  // Last-resort bootstrap is official EIA data only. No invented values.
   const eia = await fetchEiaQuotes();
   return {
     items: Object.values(eia.quotes),
