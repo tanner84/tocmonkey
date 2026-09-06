@@ -43,7 +43,7 @@
       <div class="tm-tv-error">
         <b>TOC TV feed unavailable.</b>
         <span>The rest of TOC Monkey is still live.</span>
-        ${channelUrl ? `<a href="${esc(channelUrl)}" target="_blank" rel="noopener noreferrer">OPEN TOC MONKEY ON YOUTUBE ↗</a>` : ''}
+        ${channelUrl ? `<a href="${esc(channelUrl)}" target="_blank" rel="noopener noreferrer">OPEN ON YOUTUBE ↗</a>` : ''}
       </div>`;
     preserveLegacyTargets(panel);
   }
@@ -52,11 +52,17 @@
     const episodes=Array.isArray(config?.episodes) ? config.episodes.filter(x => x?.videoId) : [];
     const liveId=String(config?.live?.videoId || '').trim();
     const liveTitle=String(config?.live?.title || 'TOC MONKEY LIVE');
+    const archiveUrl=String(config?.channelSearchUrl || '').trim();
     let selectedId=liveId || String(config?.defaultVideoId || episodes[0]?.videoId || '').trim();
-    if (!selectedId) return renderFailure(panel, config?.channelSearchUrl);
+    if (!selectedId) return renderFailure(panel, archiveUrl);
 
-    let selected=episodes.find(ep => ep.videoId === selectedId) || null;
-    let selectedTitle=liveId ? liveTitle : (selected?.title || 'TOC MONKEY');
+    const selected=episodes.find(ep => ep.videoId === selectedId) || null;
+    const selectedTitle=liveId ? liveTitle : (selected?.title || 'TOC MONKEY');
+
+    const episodeOrdinal = id => {
+      const index=episodes.findIndex(ep => ep.videoId === id);
+      return index >= 0 ? `${String(index + 1).padStart(2,'0')} / ${String(episodes.length).padStart(2,'0')}` : `LIVE / ${String(episodes.length).padStart(2,'0')}`;
+    };
 
     panel.classList.add('tm-tv-panel');
     panel.innerHTML=`
@@ -69,20 +75,23 @@
           <iframe class="tm-tv-frame" title="${esc(selectedTitle)}" src="${esc(embedUrl(selectedId))}" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
         </div>
         <div class="tm-tv-meta">
-          <div class="tm-tv-kicker">TOC MONKEY // VETERAN TRASH TALK</div>
+          <div class="tm-tv-meta-top">
+            <span class="tm-tv-kicker">TOC MONKEY // VETERAN TRASH TALK</span>
+            <span class="tm-tv-count">${esc(episodeOrdinal(selectedId))}</span>
+          </div>
           <div class="tm-tv-title">${esc(selectedTitle)}</div>
         </div>
         <div class="tm-tv-controls">
-          <label>
-            <span>EPISODES</span>
+          <label class="tm-tv-picker">
+            <span>EPISODE</span>
             <select class="tm-tv-select" aria-label="Select TOC Monkey episode">
               ${liveId ? `<option value="${esc(liveId)}">● LIVE — ${esc(liveTitle)}</option>` : ''}
               ${episodes.map(ep => `<option value="${esc(ep.videoId)}"${ep.videoId===selectedId?' selected':''}>${esc(ep.title)}</option>`).join('')}
             </select>
           </label>
           <div class="tm-tv-actions">
-            <a class="tm-tv-watch" href="${esc(videoUrl(selectedId))}" target="_blank" rel="noopener noreferrer">YOUTUBE ↗</a>
-            ${config?.channelSearchUrl ? `<a class="tm-tv-archive" href="${esc(config.channelSearchUrl)}" target="_blank" rel="noopener noreferrer">ALL EPISODES ↗</a>` : ''}
+            <a class="tm-tv-watch" href="${esc(videoUrl(selectedId))}" target="_blank" rel="noopener noreferrer">OPEN ↗</a>
+            ${archiveUrl ? `<a class="tm-tv-archive" href="${esc(archiveUrl)}" target="_blank" rel="noopener noreferrer">ARCHIVE ↗</a>` : ''}
           </div>
         </div>
       </div>`;
@@ -91,6 +100,7 @@
 
     const frame=panel.querySelector('.tm-tv-frame');
     const title=panel.querySelector('.tm-tv-title');
+    const count=panel.querySelector('.tm-tv-count');
     const watch=panel.querySelector('.tm-tv-watch');
     const select=panel.querySelector('.tm-tv-select');
     const status=panel.querySelector('.tm-tv-status');
@@ -105,6 +115,7 @@
         frame.title=nextTitle;
       }
       if (title) title.textContent=nextTitle;
+      if (count) count.textContent=episodeOrdinal(nextId);
       if (watch) watch.href=videoUrl(nextId);
       if (status) {
         status.textContent=isLive ? '● LIVE' : 'REPLAY';
