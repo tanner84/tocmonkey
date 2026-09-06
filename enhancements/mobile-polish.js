@@ -46,14 +46,26 @@
     });
   }
 
+  function annotateKnownPanels() {
+    document.querySelectorAll('.tm-sigacts-scoped').forEach(panel => {
+      panel.classList.add('tm-mobile-panel', 'tm-mobile-sigact-panel');
+    });
+    document.querySelectorAll('.tm-osint-dense').forEach(panel => {
+      panel.classList.add('tm-mobile-panel', 'tm-mobile-osint-panel');
+    });
+    const tv = document.querySelector('#eqpnl.tm-tv-panel');
+    if (tv) tv.classList.add('tm-mobile-panel', 'tm-mobile-tv-panel');
+  }
+
   function annotateContentPanels() {
-    const headings = [...document.querySelectorAll('h1,h2,h3,h4,.title,.section-title,[class*="header"]')];
+    const headings = [...document.querySelectorAll('h1,h2,h3,h4,.title,.section-title,.pht,[class*="header"]')];
     headings.forEach(h => {
       const text = (h.textContent || '').replace(/\s+/g, ' ').trim().toUpperCase();
       if (!text || text.length > 120) return;
       let kind = null;
       if (/\bSIGACT/.test(text)) kind = 'sigact';
       else if (/\b(OSINT|RSS|OPEN SOURCE|SOCIAL FEED|INTEL FEED)\b/.test(text)) kind = 'osint';
+      else if (/\bTOC TV\b/.test(text)) kind = 'tv';
       else if (/\bSITREP\b/.test(text)) kind = 'sitrep';
       if (!kind) return;
       const panel = nearestPanel(h);
@@ -72,6 +84,7 @@
     annotateUtilities();
     annotateCocomTabs();
     annotateMap();
+    annotateKnownPanels();
     annotateContentPanels();
   }
 
@@ -86,7 +99,12 @@
 
   function boot() {
     annotate();
-    observer.observe(document.body, { childList:true, subtree:true });
+    observer.observe(document.body, {
+      childList:true,
+      subtree:true,
+      attributes:true,
+      attributeFilter:['class']
+    });
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, { once:true });
