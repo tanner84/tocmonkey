@@ -1,5 +1,6 @@
 const { getStore } = require('@netlify/blobs');
 const { getExpansion } = require('./_task-org-expansion');
+const { buildCoverage } = require('./_task-org-coverage');
 
 const MANIFEST = require('../../enhancements/cocom-knowledge.json');
 const COMMANDS = {
@@ -129,6 +130,8 @@ exports.handler = async function(event) {
     };
   });
 
+  const coverage = buildCoverage(command);
+
   return json(200, {
     version:MANIFEST.version,
     updated:command.lastReviewed || MANIFEST.updated,
@@ -136,6 +139,7 @@ exports.handler = async function(event) {
     runtimeItemCount:runtime?.sourceItemCount || 0,
     disclaimer:MANIFEST.disclaimer,
     methodology:MANIFEST.methodology,
+    coverage,
     command
   });
 };
