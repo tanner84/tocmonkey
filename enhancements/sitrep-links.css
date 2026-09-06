@@ -1,0 +1,13 @@
+#srpbody .tm-sitrep-inline-link{
+  color:inherit;
+  text-decoration:none;
+  overflow-wrap:anywhere;
+  word-break:break-word;
+  cursor:pointer;
+}
+#srpbody .tm-sitrep-inline-link:hover,
+#srpbody .tm-sitrep-inline-link:focus-visible{
+  color:var(--g1);
+  text-decoration:underline;
+  outline:none;
+}
