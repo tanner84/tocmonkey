@@ -1,3 +1,4 @@
+import { filterReporting, normalizeCommand } from '../../enhancements/reporting-policy.mjs';
 // ─────────────────────────────────────────────────────────────────────────────
 // RSS Feed Aggregator — 100+ sources, COCOM-tagged, 30min cache
 // ─────────────────────────────────────────────────────────────────────────────
@@ -245,7 +246,7 @@ function extractItems(xml, feed) {
       });
     }
   }
-  return items.slice(0, 8); // max 8 per feed
+  return items.slice(0, 30); // filter story relevance before imposing display limits
 }
 
 async function fetchFeed(feed) {
@@ -268,8 +269,11 @@ async function fetchFeed(feed) {
 export default async (req) => {
   // Parse optional COCOM filter from query string
   const url = new URL(req.url);
-  const filterCocom = url.searchParams.get("cocom")?.toUpperCase() || "ALL";
-  const cacheKey = filterCocom;
+  const requested = url.searchParams.get("cocom")?.toUpperCase() || "ALL";
+  const filterCocom = requested === 'ALL' ? 'ALL' : normalizeCommand(requested);
+  if (!filterCocom) return new Response('Invalid COCOM', { status:400 });
+  const purpose = ['sigacts','sitrep'].includes(url.searchParams.get('purpose')) ? url.searchParams.get('purpose') : 'feed';
+  const cacheKey = `${filterCocom}:${purpose}`;
 
   // Return per-COCOM cached result if fresh
   if (cache[cacheKey] && (Date.now() - (cacheTime[cacheKey] || 0)) < CACHE_TTL) {
@@ -287,7 +291,7 @@ export default async (req) => {
   const results = [];
   const chunks = [];
   for (let i = 0; i < selectedFeeds.length; i += 50) {
-    chunks.push(selectedFeeds.slice(i, i + 40));
+    chunks.push(selectedFeeds.slice(i, i + 50));
   }
   for (const chunk of chunks) {
     const chunkResults = await Promise.all(chunk.map(fetchFeed));
@@ -310,10 +314,11 @@ export default async (req) => {
     return true;
   });
 
-  cache[cacheKey] = deduped;
+  const filtered = filterCocom === 'ALL' ? deduped : filterReporting(deduped, filterCocom, { purpose });
+  cache[cacheKey] = filtered;
   cacheTime[cacheKey] = Date.now();
 
-  return new Response(JSON.stringify(deduped), {
+  return new Response(JSON.stringify(filtered), {
     headers: { "Content-Type": "application/json", "Cache-Control": "public, max-age=1800" }
   });
 };

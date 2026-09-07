@@ -1,32 +1,13 @@
-import { createRequire } from 'node:module';
-
-const require = createRequire(import.meta.url);
-const { generateAll } = require('./_sitrep-service.js');
-
+// Dispatch within the scheduler's 30-second limit. Generation runs in a
+// protected background function, where RSS collection and retries can finish.
 export default async () => {
-  const results = await generateAll({ source: 'scheduled' });
-  const ok = results.filter((r) => r.ok).length;
-  const degraded = results.filter((r) => r.degraded).length;
-
-  return new Response(JSON.stringify({
-    ok: ok === results.length,
-    generatedAt: new Date().toISOString(),
-    completed: ok,
-    degraded,
-    total: results.length,
-    results: results.map((r) => ({
-      cocomId: r.cocomId,
-      ok: r.ok,
-      skipped: Boolean(r.skipped),
-      reason: r.reason || null,
-      status: r.report?.status || null,
-      mode: r.report?.mode || null,
-      generatedAt: r.report?.generatedAt || null,
-      sourceItemCount: r.report?.sourceItemCount || 0,
-      error: r.error || null,
-    })),
-  }), {
-    status: ok ? 200 : 500,
-    headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
+  const password = Netlify.env.get('ADMIN_PASSWORD');
+  if (!password) throw new Error('SITREP dispatch is not configured');
+  const origin = Netlify.env.get('URL') || 'https://tocmonkey.com';
+  const response = await fetch(new URL('/.netlify/functions/sitrep-generate-background', origin), {
+    method:'POST', headers:{ 'x-admin-password':password },
+    signal:AbortSignal.timeout(8000)
   });
+  if (!response.ok) throw new Error(`SITREP dispatch HTTP ${response.status}`);
+  console.log('SITREP background generation dispatched');
 };

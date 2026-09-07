@@ -399,6 +399,11 @@ body.theme-mono .phb.on{background:rgba(232,232,232,0.12)!important;color:#f0f0f
 body.theme-mono .phb:hover{background:rgba(232,232,232,0.18)!important}
 body.theme-mono .logo-img{filter:grayscale(100%) brightness(1.2)}
 </style>
+<script type="module">
+import * as policy from '/enhancements/reporting-policy.mjs';
+window.TMReportingPolicy = policy;
+updateFeed();
+</script>
 </head>
 <body>
 <div id="app">
@@ -1854,458 +1859,7 @@ const COCOMS=[
 // ═══════════════════════════════════════════════════════════════════
 // OSINT POSTS
 // ═══════════════════════════════════════════════════════════════════
-const ALL_POSTS=[
-
- // ══════════════════════════════════════════════════════════════════════════
- // EUCOM — Ukraine/Russia/NATO/Europe
- // ══════════════════════════════════════════════════════════════════════════
-
- // — Major News Networks —
- {src:"@Reuters",          handle:"Reuters",          dname:"Reuters",                verified:true,  aor:["EUCOM","CENTCOM","AFRICOM","SOUTHCOM","INDOPACOM","NORTHCOM"], likes:42000,rts:18000,replies:5200, time:"3m",
-  text:"Ukraine war: Russia launches largest drone attack on Kyiv infrastructure in six months. Power grid damaged across four oblasts. EU emergency energy ministers meeting called for Friday."},
- {src:"@AP",               handle:"AP",               dname:"AP News",                verified:true,  aor:["EUCOM","CENTCOM","AFRICOM","SOUTHCOM","INDOPACOM","NORTHCOM"], likes:38000,rts:15000,replies:4800, time:"8m",
-  text:"NATO foreign ministers meet in Brussels — communique expected to address Ukraine aid package and Article 5 clarifications for cyber domain. Three allies pushing harder commitments."},
- {src:"@BBCWorld",         handle:"BBCWorld",         dname:"BBC News World",         verified:true,  aor:["EUCOM","CENTCOM","AFRICOM"],  likes:18400,rts:7200, replies:3100, time:"14m",
-  text:"Ukraine war: Russia launches largest drone attack on Kyiv infrastructure since February. Power grid damaged across four oblasts. EU emergency energy meeting called."},
- {src:"@KyivIndependent",  handle:"KyivIndependent",  dname:"Kyiv Independent",       verified:true,  aor:["EUCOM"],                      likes:9800, rts:3900, replies:1400, time:"45m",
-  text:"Ukrainian President confirms new package of Western military aid incoming — details classified pending delivery. Third such confirmation this month."},
- {src:"@DerSpiegel",       handle:"DerSpiegel",       dname:"Der Spiegel Int'l",      verified:true,  aor:["EUCOM"],                      likes:6800, rts:2700, replies:1100, time:"1h",
-  text:"Germany's Bundestag approves €12B emergency defense supplemental — Taurus long-range missiles NOT included after chancellery intervention. Coalition partners furious."},
- {src:"@LeMonde_EN",       handle:"LeMonde_EN",       dname:"Le Monde English",       verified:true,  aor:["EUCOM","AFRICOM"],            likes:5400, rts:2100, replies:890,  time:"1h",
-  text:"France deploys additional special operations forces to Romania under NATO Enhanced Forward Presence. Macron reiterates 'no red lines' statement on Ukraine support."},
-
- // — Heads of State / Government Officials —
- {src:"@ZelenskyyUa",      handle:"ZelenskyyUa",      dname:"Volodymyr Zelenskyy",    verified:true,  aor:["EUCOM"],                      likes:89000,rts:34000,replies:12000,time:"45m",
-  text:"We held our ground. 47th Brigade, 3rd Assault, Azov — all held. Russia threw everything at Chasiv Yar this week. Everything. And they failed. Ukraine stands. Слава Україні."},
- {src:"@vonderleyen",      handle:"vonderleyen",      dname:"Ursula von der Leyen",   verified:true,  aor:["EUCOM"],                      likes:22000,rts:8900, replies:3400, time:"1h",
-  text:"Europe will not waver. We have approved the 14th sanctions package targeting Russian energy revenues and defense procurement networks. Our unity is Ukraine's strength."},
- {src:"@jensstoltenberg",  handle:"jensstoltenberg",  dname:"Jens Stoltenberg",       verified:true,  aor:["EUCOM","NORTHCOM"],           likes:18000,rts:7100, replies:2800, time:"2h",
-  text:"NATO allies have now committed over $230 billion in support to Ukraine since February 2022. We are in this for the long haul. Deterrence requires credibility. Credibility requires capability."},
- {src:"@OlafScholz",       handle:"OlafScholz",       dname:"Olaf Scholz",            verified:true,  aor:["EUCOM"],                      likes:12000,rts:4800, replies:2100, time:"3h",
-  text:"Germany stands with Ukraine. Our support is sustainable, consistent, and will not be subject to political calendar. The Zeitenwende is real. €12B this year alone."},
-
- // — Defense / Diplomatic —
- {src:"@NATO",             handle:"NATO",             dname:"NATO",                   verified:true,  aor:["EUCOM","NORTHCOM"],           likes:31000,rts:12000,replies:4200, time:"1h",
-  text:"ALLIED SPIRIT 24 exercise concludes — 12 nations, 7,000 troops, largest combined arms exercise in Eastern Europe this year. Key focus: multi-domain C2 and cross-border logistics."},
- {src:"@USEmbassyKyiv",    handle:"USEmbassyKyiv",    dname:"U.S. Embassy Kyiv",      verified:true,  aor:["EUCOM"],                      likes:8900, rts:3500, replies:1200, time:"2h",
-  text:"Ambassador Brink meets Ukrainian Defense Minister — new air defense package confirmed, delivery timeline accelerated. Embassy remains fully operational in Kyiv."},
- {src:"@ukdefjournal",     handle:"ukdefjournal",     dname:"UK Defence Journal",     verified:true,  aor:["EUCOM","NORTHCOM"],           likes:4200, rts:1700, replies:560,  time:"4h",
-  text:"UK MoD confirms AS-90 self-propelled howitzers being refurbished for Ukraine delivery. Additional Challenger 2 package under review. Defence Secretary briefed Parliament today."},
- {src:"@RALee85",          handle:"RALee85",          dname:"Rob Lee",                verified:true,  aor:["EUCOM"],                      likes:5120, rts:2340, replies:671,  time:"55m",
-  text:"Russian operational tempo remains HIGH on Donetsk axis. Logistics buildup in Belgorod — fuel, bridging, forward-staged MLRS. Assessment: offensive resumption within 2 weeks."},
- {src:"@Tatarigami_UA",    handle:"Tatarigami_UA",    dname:"Tatarigami",             verified:true,  aor:["EUCOM"],                      likes:7200, rts:3410, replies:912,  time:"1h",
-  text:"47th Mech Brigade repels assault NE of Avdiivka. Russian losses: 3×T-80BVM, 1×BMP-3, ~18 KIA. Confirmed via FPV footage. Line holding."},
- {src:"@michaelkofman",    handle:"michaelkofman",    dname:"Michael Kofman",         verified:true,  aor:["EUCOM"],                      likes:8900, rts:4200, replies:1100, time:"3h",
-  text:"Russian forces are not stalling due to morale — stalling due to fires-logistics integration failures. Very different problem set with different solutions."},
- {src:"@wartranslated",    handle:"wartranslated",    dname:"War Translated",         verified:true,  aor:["EUCOM"],                      likes:3400, rts:1600, replies:442,  time:"1h",
-  text:"Translation — Rybar: Two BTGs rerouted from Zaporizhzhia to Kursk axis. Suggests command prioritizing border stabilization over southern offensive."},
- {src:"@planespotterbel",  handle:"planespotterbel",  dname:"Planespotter Belgium",   verified:false, aor:["EUCOM"],                      likes:890,  rts:340,  replies:78,   time:"28m",
-  text:"Two USAF RC-135V/W Rivet Joint departed RAF Mildenhall 06:14Z tracking northeast — SIGINT pattern along Russian Baltic coast. One E-3 AWACS also active over Poland."},
- {src:"@AircraftSpots",    handle:"AircraftSpots",    dname:"Aircraft Spots",         verified:false, aor:["EUCOM","INDOPACOM"],          likes:2200, rts:980,  replies:210,  time:"42m",
-  text:"USAF B-52H (FORTE11) airborne over North Sea. Two RAF Typhoons in company — QRA escort handoff exercise."},
- {src:"@h_i_scruton",      handle:"h_i_scruton",      dname:"H.I. Sutton",            verified:true,  aor:["EUCOM","CENTCOM","NORTHCOM"], likes:3600, rts:1700, replies:401,  time:"2h",
-  text:"Russian Black Sea Fleet lost ~30% of surface combatants to Ukrainian Neptune/Storm Shadow strikes since 2022. Remaining ships at Novorossiysk — now within range of upgraded Ukrainian systems."},
- {src:"@GeoConfirmed",     handle:"GeoConfirmed",     dname:"GeoConfirmed",           verified:true,  aor:["EUCOM","CENTCOM"],            likes:3400, rts:1200, replies:389,  time:"30m",
-  text:"Shahed-136 variant confirmed near Dnipro outskirts 48.7°N 35.2°E. Delta-wing geometry and engine mount match known airframe specs."},
-
- // — World Bank / Finance —
- {src:"@WorldBank",        handle:"WorldBank",        dname:"World Bank",             verified:true,  aor:["EUCOM","AFRICOM","SOUTHCOM"], likes:14000,rts:5600, replies:1900, time:"4h",
-  text:"Ukraine reconstruction needs now estimated at $486B over 10 years — World Bank/EU joint assessment. Energy infrastructure accounts for 31% of damage. Donor coordination framework agreed."},
- {src:"@IMFNews",          handle:"IMFNews",          dname:"IMF",                    verified:true,  aor:["EUCOM","AFRICOM","SOUTHCOM"], likes:11000,rts:4400, replies:1600, time:"5h",
-  text:"IMF approves $15.6B Extended Fund Facility for Ukraine — tied to anti-corruption benchmarks and governance reforms. Disbursement schedule quarterly through 2026."},
-
- // — Religious Leaders —
- {src:"@Pontifex",         handle:"Pontifex",         dname:"Pope Francis",           verified:true,  aor:["EUCOM","CENTCOM","AFRICOM","SOUTHCOM"], likes:78000,rts:31000,replies:9800, time:"6h",
-  text:"I call on all parties to the conflict in Ukraine to lay down arms and open the path to dialogue. War is always a defeat. Peace requires courage. I am praying for an end to this suffering."},
- {src:"@Patriarch_Kirill", handle:"Patriarch_Kirill", dname:"Patriarch Kirill",       verified:true,  aor:["EUCOM"],                      likes:12000,rts:4800, replies:3100, time:"9h",
-  text:"The Russian Orthodox Church stands with our soldiers defending the Motherland and the spiritual values of Holy Rus against the expansion of godless Western influence."},
-
- // — Chaos/troll intel —
- {src:"@USArmyWTF",        handle:"USArmyWTF",        dname:"US Army WTF Moments",    verified:false, aor:["EUCOM","NORTHCOM"],           likes:28400,rts:9200, replies:3100, time:"8h",
-  text:"POV: you're a NATO planner and the guy who lost his NVGs in Lithuania just posted their location on FindMy. Again. We are so back."},
- {src:"@DrAlexanderBurns", handle:"DrAlexanderBurns", dname:"Dr. Alexander Burns",    verified:false, aor:["EUCOM","CENTCOM"],            likes:12300,rts:5100, replies:2200, time:"10h",
-  text:"Hot take: the reason Western analysts keep getting Russian timelines wrong is that we keep projecting our own logistics assumptions onto a military that genuinely does not care how many trucks burn."},
- {src:"@FancyBear_track",  handle:"FancyBear_track",  dname:"Fancy Bear Tracker",     verified:false, aor:["EUCOM"],                      likes:4200, rts:1900, replies:890,  time:"6h",
-  text:"APT28 spearphish campaign targeting NATO logistics contractors. Same TTPs as 2023 Burisma op. Lure: fake EU energy grant application. Don't click."},
-
- // ══════════════════════════════════════════════════════════════════════════
- // CENTCOM — Middle East / Central Asia
- // ══════════════════════════════════════════════════════════════════════════
-
- // — Major News Networks —
- {src:"@AlJazeera_Eng",    handle:"AlJazeera_Eng",    dname:"Al Jazeera English",     verified:true,  aor:["CENTCOM","AFRICOM"],          likes:22000,rts:8900, replies:4100, time:"9m",
-  text:"Gaza: IDF confirms continued operations in northern Gaza. UN OCHA reports humanitarian corridor at Kerem Shalom operating at 30% capacity. Civilian casualty figures disputed."},
- {src:"@MiddleEastEye",    handle:"MiddleEastEye",    dname:"Middle East Eye",        verified:true,  aor:["CENTCOM"],                    likes:8700, rts:3400, replies:1600, time:"1h",
-  text:"Leaked Israeli cabinet document indicates disagreement over post-conflict Gaza governance — three factions with incompatible visions. No consensus on day-after plan."},
- {src:"@BBCArabic",        handle:"BBCArabic",        dname:"BBC Arabic",             verified:true,  aor:["CENTCOM","AFRICOM"],          likes:14200,rts:5600, replies:2400, time:"18m",
-  text:"Yemen: Houthi leadership claims 47 vessels turned back from Red Sea this month. UN shipping data partially corroborates — 31 confirmed diversions to Cape of Good Hope route."},
- {src:"@AJArabic",         handle:"AJArabic",         dname:"Al Jazeera Arabic",      verified:true,  aor:["CENTCOM","AFRICOM"],          likes:31000,rts:12000,replies:5400, time:"16m",
-  text:"Arab League emergency session on Gaza ends without binding resolution — Saudi Arabia and Egypt pushing ceasefire framework, Gulf states split on normalization with Israel."},
- {src:"@haaretzcom",       handle:"haaretzcom",       dname:"Haaretz",                verified:true,  aor:["CENTCOM"],                    likes:9200, rts:3700, replies:1800, time:"38m",
-  text:"IDF Chief of Staff briefs War Cabinet on Gaza Phase 4 planning — focus shifts to Rafah and southern tunnel network. Three senior generals reportedly opposed to current operational tempo."},
- {src:"@TimesofIsrael",    handle:"TimesofIsrael",    dname:"Times of Israel",        verified:true,  aor:["CENTCOM"],                    likes:7800, rts:3100, replies:1400, time:"51m",
-  text:"Israel-Hezbollah exchange: six Hezbollah anti-tank missile teams destroyed in southern Lebanon overnight. Iron Dome intercepts 14 rockets fired from Lebanese territory."},
-
- // — Heads of State / Government Officials —
- {src:"@KingSalman",       handle:"KingSalman",       dname:"Saudi Royal Court",      verified:true,  aor:["CENTCOM"],                    likes:28000,rts:11000,replies:4200, time:"4h",
-  text:"The Kingdom of Saudi Arabia calls upon all parties to exercise maximum restraint and protect civilian lives. Saudi Arabia stands ready to facilitate humanitarian corridors in coordination with international partners."},
- {src:"@EinatSliman",      handle:"EinatSliman",      dname:"Israel MFA",             verified:true,  aor:["CENTCOM"],                    likes:6800, rts:2700, replies:1400, time:"2h",
-  text:"Israel's position is clear: we have the right and duty to defend our citizens. The international community must recognize that Hamas's deliberate use of civilians as shields bears full moral responsibility for civilian casualties."},
- {src:"@AbbasFatah",       handle:"AbbasFatah",       dname:"Palestinian Authority",  verified:true,  aor:["CENTCOM"],                    likes:8900, rts:3500, replies:2100, time:"4h",
-  text:"The Palestinian people deserve freedom, dignity, and a state. The two-state solution is not just the right answer — it is the only answer. We call on the international community to act now, not after the rubble is cleared."},
- {src:"@MBSAlSaud",        handle:"MBSAlSaud",        dname:"MBS / Saudi Arabia",     verified:true,  aor:["CENTCOM"],                    likes:19000,rts:7600, replies:3200, time:"5h",
-  text:"Saudi Arabia's Vision 2030 is not just economic — it is a strategic reorientation. Regional stability, not external dependency, is the foundation of our future security architecture."},
-
- // — Defense / Diplomatic / Embassies —
- {src:"@CENTCOM",          handle:"CENTCOM",          dname:"U.S. CENTCOM",           verified:true,  aor:["CENTCOM"],                    likes:12000,rts:4800, replies:1800, time:"35m",
-  text:"U.S. forces and coalition partners conducted strikes against Houthi weapons storage facilities and launch sites in Yemen. Strikes assessed as degrading Houthi capability to threaten maritime traffic."},
- {src:"@USEmbassyBaghdad", handle:"USEmbassyBaghdad", dname:"U.S. Embassy Baghdad",   verified:true,  aor:["CENTCOM"],                    likes:3200, rts:1300, replies:445,  time:"3h",
-  text:"Embassy Baghdad: Security Alert — increased threat reporting in the International Zone. All non-essential travel deferred. Emergency contact: +964-770-000-0000."},
- {src:"@USEmbassyTelAviv", handle:"USEmbassyTelAviv", dname:"U.S. Embassy Tel Aviv",  verified:true,  aor:["CENTCOM"],                    likes:4800, rts:1900, replies:780,  time:"4h",
-  text:"U.S. Embassy Tel Aviv: Security Alert — rocket sirens reported in Tel Aviv metropolitan area. Follow Home Front Command instructions. Shelter in place until all-clear issued."},
- {src:"@UKinIsrael",       handle:"UKinIsrael",       dname:"UK Embassy Israel",      verified:true,  aor:["CENTCOM"],                    likes:2100, rts:840,  replies:290,  time:"5h",
-  text:"UK Foreign Secretary speaks with Israeli counterpart — UK pushing for increased humanitarian access to Gaza. Arms export review ongoing. Diplomatic mission fully staffed."},
- {src:"@JominiW",          handle:"JominiW",          dname:"Jomini of the West",     verified:true,  aor:["CENTCOM","EUCOM","INDOPACOM"],likes:5900, rts:2600, replies:780,  time:"1h",
-  text:"USS Gravely SM-2 intercept of Houthi anti-ship missile in southern Red Sea — second successful interdiction this week. Sortie rates are high for sustained ops."},
- {src:"@IranIntl_En",      handle:"IranIntl_En",      dname:"Iran International",     verified:true,  aor:["CENTCOM"],                    likes:7400, rts:3100, replies:980,  time:"2h",
-  text:"IRGC announces new ballistic missile test — claimed range 2,000km, designated Fattah-2. State media claims MIRVed warheads. Unverified by Western sources."},
- {src:"@ELINTNews",        handle:"ELINTNews",        dname:"ELINT News",             verified:false, aor:["CENTCOM","EUCOM"],            likes:3800, rts:1600, replies:421,  time:"1h",
-  text:"Israeli Air Force activity over Lebanon overnight — strikes in Bekaa Valley. IDF cites Hezbollah weapons storage. Second night of strikes this week."},
- {src:"@navylookout",      handle:"navylookout",      dname:"Navy Lookout",           verified:true,  aor:["CENTCOM","EUCOM"],            likes:2700, rts:1100, replies:265,  time:"1h",
-  text:"USS Eisenhower CSG on station in Red Sea/Gulf of Aden 140+ days — well beyond standard deployment tempo. Crew fatigue and maintenance cycle concerns building."},
- {src:"@Amichay_Stein",    handle:"Amichay_Stein",    dname:"Amichay Stein",          verified:true,  aor:["CENTCOM"],                    likes:3100, rts:1200, replies:445,  time:"3h",
-  text:"IDF briefing: Iron Dome intercept rate holding at 96%. Arrow-3 engaged twice this week against ballistic trajectories from Yemen."},
-
- // — World Bank / Finance —
- {src:"@WorldBank",        handle:"WorldBank",        dname:"World Bank",             verified:true,  aor:["CENTCOM"],                    likes:9800, rts:3900, replies:1200, time:"4h",
-  text:"World Bank: Gaza GDP estimated to have contracted 80% since October 2023. Reconstruction needs will require a coordinated Marshall Plan-scale international effort. Donor fatigue is a real risk."},
- {src:"@IMFNews",          handle:"IMFNews",          dname:"IMF",                    verified:true,  aor:["CENTCOM"],                    likes:8200, rts:3300, replies:1100, time:"5h",
-  text:"Egypt's IMF program on track — currency reform and subsidy removal proceeding despite political sensitivity. Gulf financial support critical buffer. Gaza conflict dampening Suez Canal revenues by 38%."},
-
- // — Religious Leaders —
- {src:"@Pontifex",         handle:"Pontifex",         dname:"Pope Francis",           verified:true,  aor:["CENTCOM"],                    likes:78000,rts:31000,replies:9800, time:"6h",
-  text:"I appeal for an immediate ceasefire in Gaza. The Holy Land must be a place of encounter, not conflict. Children are paying the price of decisions made by adults. This must stop."},
- {src:"@GrandImamAlAzhar", handle:"GrandImamAlAzhar", dname:"Grand Imam Al-Azhar",    verified:true,  aor:["CENTCOM","AFRICOM"],          likes:34000,rts:13000,replies:4800, time:"7h",
-  text:"Al-Azhar condemns all attacks on civilians, whether Muslim, Jewish, or Christian. The killing of innocents is forbidden by God regardless of political justification. We call for immediate ceasefire and humanitarian access."},
- {src:"@Khamenei_ir",      handle:"Khamenei_ir",      dname:"Ayatollah Khamenei",     verified:true,  aor:["CENTCOM"],                    likes:41000,rts:16000,replies:7200, time:"8h",
-  text:"The Zionist regime's crimes in Gaza are a test for the Islamic world. The Resistance Axis will not abandon the Palestinian people. Those who fund and supply this aggression are equally responsible."},
-
- // — Chaos/troll intel —
- {src:"@USArmyWTF",        handle:"USArmyWTF",        dname:"US Army WTF Moments",    verified:false, aor:["CENTCOM"],                    likes:31200,rts:10400,replies:4200, time:"8h",
-  text:"Soldier deployed to CENTCOM just posted a TikTok complaining about the chow hall. Location services on. Geofenced to within 200m of a classified base. This is fine."},
- {src:"@DrAlexanderBurns", handle:"DrAlexanderBurns", dname:"Dr. Alexander Burns",    verified:false, aor:["CENTCOM"],                    likes:9800, rts:3900, replies:1700, time:"10h",
-  text:"'Iran won't escalate because it fears a response' has been stress-tested approximately 47 times in 18 months. At some point the theory needs updating."},
- {src:"@SheepIntel",       handle:"SheepIntel",       dname:"Sheep Intel",            verified:false, aor:["CENTCOM","EUCOM"],            likes:7200, rts:2800, replies:1100, time:"9h",
-  text:"CENTCOM press release confirms airstrike on Houthi 'command and control infrastructure.' Translation: they hit the same building they hit last Tuesday."},
-
- // ══════════════════════════════════════════════════════════════════════════
- // INDOPACOM — Indo-Pacific / China / DPRK
- // ══════════════════════════════════════════════════════════════════════════
-
- // — Major News Networks —
- {src:"@SCMPNews",         handle:"SCMPNews",         dname:"South China Morning Post",verified:true,  aor:["INDOPACOM"],                  likes:11200,rts:4400, replies:1900, time:"55m",
-  text:"Beijing warns Taiwan against 'provocative' F-16 patrols near median line. PLA Eastern Theater Command activates 'readiness posture' for 48-hour exercise window."},
- {src:"@NikkeiAsia",       handle:"NikkeiAsia",       dname:"Nikkei Asia",            verified:true,  aor:["INDOPACOM"],                  likes:8900, rts:3500, replies:1200, time:"1h",
-  text:"Japan defense budget hits record ¥7.9 trillion — 2.1% of GDP. GSDF acquiring long-range standoff missiles for first time since WWII. Constitutional debate intensifying."},
- {src:"@KoreaHerald",      handle:"KoreaHerald",      dname:"The Korea Herald",       verified:true,  aor:["INDOPACOM"],                  likes:5600, rts:2200, replies:780,  time:"2h",
-  text:"ROK-US combined exercise Ulchi Freedom Shield begins — largest since 2017 suspension. DPRK issues 'declaration of war' statement. Sixth such statement this year."},
- {src:"@AustralianFP",     handle:"AustralianFP",     dname:"Australian Foreign Pol.",verified:true,  aor:["INDOPACOM"],                  likes:3400, rts:1400, replies:490,  time:"4h",
-  text:"ASEAN summit communique: strongest language yet on South China Sea — China abstains from consensus on final text. Malaysia and Vietnam push back hardest. Philippines openly sides with U.S. position."},
-
- // — Heads of State / Government Officials —
- {src:"@POTUS",            handle:"POTUS",            dname:"President Biden",        verified:true,  aor:["INDOPACOM","NORTHCOM"],       likes:92000,rts:38000,replies:22000,time:"40m",
-  text:"America's commitment to Taiwan and our Indo-Pacific allies is ironclad. Full stop. We will stand with our partners against coercion and aggression. That is not a threat — it is a promise."},
- {src:"@kishida230",       handle:"kishida230",        dname:"PM Kishida (Japan)",     verified:true,  aor:["INDOPACOM"],                  likes:14000,rts:5600, replies:2100, time:"2h",
-  text:"Japan-U.S. Alliance has never been stronger. Today we agreed to deepen defense industrial cooperation and accelerate AUKUS partnership consultations. Japan's security is our security."},
- {src:"@MarcosJr",         handle:"MarcosJr",         dname:"President Marcos Jr.",   verified:true,  aor:["INDOPACOM"],                  likes:9800, rts:3900, replies:1800, time:"3h",
-  text:"The Philippines will defend every inch of its territory. We will not be intimidated. We will not accept aggression in the West Philippine Sea. We stand with our allies."},
- {src:"@AnthonyAlbanese",  handle:"AnthonyAlbanese",  dname:"PM Anthony Albanese",    verified:true,  aor:["INDOPACOM"],                  likes:8200, rts:3300, replies:1400, time:"3h",
-  text:"Australia's AUKUS commitment is generational. This is not a decision about the next budget cycle — it's about who we are as a nation and what kind of region we want to live in."},
-
- // — Defense / Diplomatic / Embassies —
- {src:"@INDOPACOM",        handle:"INDOPACOM",        dname:"U.S. INDOPACOM",         verified:true,  aor:["INDOPACOM"],                  likes:8900, rts:3600, replies:1200, time:"1h",
-  text:"USS Ronald Reagan CSG and JMSDF Izumo conduct combined exercise in Philippine Sea — first integrated carrier operations with modified Izumo. INDOPACOM: interoperability at its highest level."},
- {src:"@USEmbassyBeijing", handle:"USEmbassyBeijing", dname:"U.S. Embassy Beijing",   verified:true,  aor:["INDOPACOM"],                  likes:5600, rts:2200, replies:890,  time:"5h",
-  text:"U.S. Embassy Beijing: American citizens in China are advised to maintain a low profile during upcoming PLA military exercises. Consular services remain operational at all posts."},
- {src:"@UKinAustralia",    handle:"UKinAustralia",    dname:"UK High Commission AUS", verified:true,  aor:["INDOPACOM"],                  likes:1800, rts:720,  replies:245,  time:"6h",
-  text:"UK-Australia AUKUS technical working group concludes — submarine industrial base integration timeline confirmed. UK shipyard capacity committed through 2040 for SSN-AUKUS hull construction."},
- {src:"@AndrewSErickson",  handle:"AndrewSErickson",  dname:"Andrew Erickson",        verified:true,  aor:["INDOPACOM"],                  likes:3900, rts:1700, replies:490,  time:"4h",
-  text:"PLAN force structure: China operates more warships than USN by hull count. The key metric is sortie-sustained combat power. That race is far closer. 🧵"},
- {src:"@OKMastro",         handle:"OKMastro",         dname:"Oriana Skylar Mastro",   verified:true,  aor:["INDOPACOM"],                  likes:4600, rts:2000, replies:590,  time:"5h",
-  text:"Deterrence over Taiwan is not failing — it's being continuously tested. Xi is patient. Window of concern: 2027-2030 when PLAN modernization milestones converge."},
- {src:"@nktpnd",           handle:"nktpnd",           dname:"Ankit Panda",            verified:true,  aor:["INDOPACOM"],                  likes:5200, rts:2300, replies:640,  time:"3h",
-  text:"DPRK Hwasong-18: solid fuel, road-mobile, harder to detect on prep. Combined with tactical nukes — most dangerous North Korean posture to date."},
- {src:"@Rupprecht_A",      handle:"Rupprecht_A",      dname:"Andreas Rupprecht",      verified:true,  aor:["INDOPACOM"],                  likes:3200, rts:1450, replies:365,  time:"3h",
-  text:"PLAAF J-35A in mass production at Shenyang — 12+ airframes in various completion stages. IOC timeline accelerating beyond prior estimates."},
- {src:"@AircraftSpots",    handle:"AircraftSpots",    dname:"Aircraft Spots",         verified:false, aor:["INDOPACOM"],                  likes:2400, rts:1050, replies:234,  time:"42m",
-  text:"USAF RC-135S Cobra Ball (COBRA11) departed Kadena AB — collection profile consistent with DPRK ballistic missile test watch. Second mission this week."},
- {src:"@PLATracker",       handle:"PLATracker",       dname:"PLA Tracker",            verified:false, aor:["INDOPACOM"],                  likes:1700, rts:690,  replies:155,  time:"2h",
-  text:"PLA 72nd Group Army large-scale combined arms exercise in Fujian Province — armor, aviation, amphibious. Third major exercise opposite Taiwan Strait this quarter."},
- {src:"@navylookout",      handle:"navylookout",      dname:"Navy Lookout",           verified:true,  aor:["INDOPACOM"],                  likes:2900, rts:1200, replies:278,  time:"1h",
-  text:"JMSDF Izumo departs Yokosuka for Indo-Pacific deployment — F-35B modifications confirmed complete. First operational deployment with fixed-wing carrier capability."},
-
- // — World Bank / Finance —
- {src:"@WorldBank",        handle:"WorldBank",        dname:"World Bank",             verified:true,  aor:["INDOPACOM"],                  likes:8800, rts:3500, replies:1100, time:"4h",
-  text:"World Bank: Southeast Asia's infrastructure financing gap remains $210B annually. China's BRI filling portions Western donors won't touch — port and rail projects moving forward in Cambodia, Laos, Myanmar."},
- {src:"@ADBnews",          handle:"ADBnews",          dname:"Asian Development Bank", verified:true,  aor:["INDOPACOM"],                  likes:6200, rts:2500, replies:890,  time:"6h",
-  text:"ADB approves $3.2B climate resilience package for Pacific Island nations — infrastructure hardening against sea level rise and extreme weather. Geopolitical dimension acknowledged: China also bidding for these contracts."},
-
- // — Religious Leaders —
- {src:"@DalaiLama",        handle:"DalaiLama",        dname:"Dalai Lama",             verified:true,  aor:["INDOPACOM"],                  likes:52000,rts:21000,replies:6800, time:"7h",
-  text:"The world faces unprecedented challenges — climate, conflict, inequality. These are human-made problems that require human solutions rooted in compassion. No single nation or ideology has all the answers."},
-
- // — Chaos/troll intel —
- {src:"@USArmyWTF",        handle:"USArmyWTF",        dname:"US Army WTF Moments",    verified:false, aor:["INDOPACOM"],                  likes:22000,rts:7800, replies:2900, time:"8h",
-  text:"Unit in Pacific theater just had COIN review. PowerPoint had 94 slides. Scenario set in 2009. Nobody said anything. Carry on."},
- {src:"@DrAlexanderBurns", handle:"DrAlexanderBurns", dname:"Dr. Alexander Burns",    verified:false, aor:["INDOPACOM"],                  likes:11200,rts:4400, replies:1900, time:"10h",
-  text:"Annual reminder that PLAN has been 'five years from operational readiness on Taiwan' for approximately twenty years. At some point the boy who cried wolf gets eaten."},
- {src:"@ChinaAviationFan", handle:"ChinaAviationFan", dname:"China Aviation Fan",     verified:false, aor:["INDOPACOM"],                  likes:4100, rts:1800, replies:445,  time:"4h",
-  text:"Footage on Chinese mil forums shows WZ-7 Soaring Dragon HALE UAV with new sensor pod configuration. Metadata suggests posted from Wuhan region."},
-
- // ══════════════════════════════════════════════════════════════════════════
- // AFRICOM — Africa
- // ══════════════════════════════════════════════════════════════════════════
-
- // — Major News Networks —
- {src:"@AlJazeera_Eng",    handle:"AlJazeera_Eng",    dname:"Al Jazeera English",     verified:true,  aor:["AFRICOM"],                    likes:19400,rts:7800, replies:3300, time:"9m",
-  text:"Sudan: Al Jazeera correspondent reports RSF executing civilians in El Fasher market. UN Security Council emergency session called. Russia and China signal veto on intervention resolution."},
- {src:"@BBCAfrica",        handle:"BBCAfrica",        dname:"BBC Africa",             verified:true,  aor:["AFRICOM"],                    likes:12300,rts:4900, replies:2100, time:"25m",
-  text:"Sahel: BBC investigation documents Wagner Africa payment network running through three shell companies registered in UAE. Estimated $400M transferred since 2022."},
- {src:"@TheEastAfrican_",  handle:"TheEastAfrican_",  dname:"The East African",       verified:true,  aor:["AFRICOM"],                    likes:4800, rts:1900, replies:780,  time:"2h",
-  text:"Ethiopia: Tigray ceasefire holding but Amhara regional forces now in open conflict with federal government. Second simultaneous insurgency stretching ENDF capacity."},
- {src:"@Africa_OSINTme",   handle:"Africa_OSINTme",   dname:"Africa OSINT",           verified:false, aor:["AFRICOM"],                    likes:780,  rts:290,  replies:67,   time:"4h",
-  text:"Mali: Wagner-linked forces and FAMA clash with JNIM northwest of Gao. Convoy ambush — 4 vehicles destroyed. Junta claims 12 KIA, no independent verification."},
- {src:"@SudanWarMonitor",  handle:"SudanWarMonitor",  dname:"Sudan War Monitor",      verified:false, aor:["AFRICOM"],                    likes:1100, rts:440,  replies:130,  time:"2h",
-  text:"SAF airstrike on RSF logistics column near El Obeid. Significant secondary explosions suggest ammo storage hit. RSF advance on Khartoum North appears to have slowed."},
-
- // — Heads of State / Government Officials —
- {src:"@CyrilRamaphosa",   handle:"CyrilRamaphosa",   dname:"President Ramaphosa",    verified:true,  aor:["AFRICOM"],                    likes:18000,rts:7200, replies:2800, time:"3h",
-  text:"Africa will not be a battlefield for great power competition. The African Union's position is clear: sovereignty, non-interference, and African-led solutions to African problems."},
- {src:"@AU_PSCPOST",       handle:"AU_PSCPOST",       dname:"AU Peace & Security",    verified:true,  aor:["AFRICOM"],                    likes:4200, rts:1700, replies:560,  time:"5h",
-  text:"AU Peace and Security Council: Sudan crisis requires immediate humanitarian ceasefire. AU-led mediation framework being reactivated with IGAD. External military intervention opposed by Council majority."},
-
- // — Defense / Diplomatic / Embassies —
- {src:"@AFRICOM_PAO",      handle:"AFRICOM_PAO",      dname:"U.S. AFRICOM",           verified:true,  aor:["AFRICOM"],                    likes:3800, rts:1500, replies:490,  time:"2h",
-  text:"AFRICOM and partner nation forces complete Exercise FLINTLOCK 24 — largest annual special operations exercise on continent. 30 nations, 7 locations, focus on counterterrorism interoperability."},
- {src:"@USEmbassyAbuja",   handle:"USEmbassyAbuja",   dname:"U.S. Embassy Nigeria",   verified:true,  aor:["AFRICOM"],                    likes:2800, rts:1100, replies:380,  time:"4h",
-  text:"Security Alert: U.S. Embassy Abuja advises citizens to avoid Maitama district following credible threat reporting. Emergency warden message issued. Contact +234-9-461-4000."},
- {src:"@FranceAfrique",    handle:"FranceAfrique",    dname:"France in Africa",       verified:true,  aor:["AFRICOM"],                    likes:3100, rts:1200, replies:445,  time:"5h",
-  text:"France confirms withdrawal of remaining Barkhane forces from Mali — final convoy departed Gao. Relationship with junta described as 'irretrievably broken.' France pivoting to Gulf of Guinea partners."},
- {src:"@GeoConfirmed",     handle:"GeoConfirmed",     dname:"GeoConfirmed",           verified:true,  aor:["AFRICOM"],                    likes:2100, rts:870,  replies:230,  time:"30m",
-  text:"Satellite imagery confirms new Wagner Africa base near Kidal, Mali — expanded vehicle park, hardened shelters, comms infrastructure. Facility 3× larger than 2023 footprint."},
- {src:"@CrisisGroupHorn",  handle:"CrisisGroupHorn",  dname:"Crisis Group Horn",      verified:true,  aor:["AFRICOM"],                    likes:1900, rts:780,  replies:210,  time:"5h",
-  text:"Somalia: Al-Shabaab retakes two towns in Hiiraan region. SNAF capacity degraded. International partners reviewing enabler commitments."},
- {src:"@IntelCrab",        handle:"IntelCrab",        dname:"Intel Crab",             verified:true,  aor:["AFRICOM"],                    likes:920,  rts:340,  replies:91,   time:"15m",
-  text:"Sahel: JNIM advances on Burkina Faso positions north of Ouahigouya. Junta territory estimated under 40% of national land area. Wagner providing air support."},
- {src:"@Nrg8000",          handle:"Nrg8000",          dname:"African Defence",        verified:false, aor:["AFRICOM"],                    likes:1200, rts:490,  replies:112,  time:"3h",
-  text:"Niger: 200+ military vehicles staging near Agadez Air Base — FRAP technicals and former French Mirage ground support equipment. Wagner advisors reportedly present."},
-
- // — World Bank / Finance —
- {src:"@WorldBank",        handle:"WorldBank",        dname:"World Bank",             verified:true,  aor:["AFRICOM"],                    likes:7600, rts:3000, replies:980,  time:"4h",
-  text:"World Bank: Sub-Saharan Africa faces $67B annual financing gap for basic services. Debt distress in 22 countries — external creditor composition shifting toward non-Paris Club lenders including China."},
- {src:"@IMFNews",          handle:"IMFNews",          dname:"IMF",                    verified:true,  aor:["AFRICOM"],                    likes:6400, rts:2600, replies:890,  time:"5h",
-  text:"IMF flags Sudan economic collapse — GDP contracted 40% since April 2023 conflict outbreak. Humanitarian financing through IDA emergency window approved. Long-term reconstruction requires political settlement first."},
-
- // — Religious Leaders —
- {src:"@Pontifex",         handle:"Pontifex",         dname:"Pope Francis",           verified:true,  aor:["AFRICOM"],                    likes:78000,rts:31000,replies:9800, time:"6h",
-  text:"I am deeply troubled by reports from Sudan and the Sahel. The suffering of the African people demands the attention and action of the international community. We cannot look away."},
- {src:"@GrandImamAlAzhar", handle:"GrandImamAlAzhar", dname:"Grand Imam Al-Azhar",    verified:true,  aor:["AFRICOM"],                    likes:34000,rts:13000,replies:4800, time:"7h",
-  text:"Al-Azhar calls on Muslim leaders across the Sahel to reject extremist ideology that exploits poverty and instability. True Islam is a religion of peace, knowledge, and community — not of war and ignorance."},
-
- // — Chaos/troll intel —
- {src:"@USArmyWTF",        handle:"USArmyWTF",        dname:"US Army WTF Moments",    verified:false, aor:["AFRICOM"],                    likes:19400,rts:6100, replies:2200, time:"8h",
-  text:"SOF team in Africa just found out their interpreter has been posting their patrol routes on Facebook for a year. Operational security is a mindset, not a checklist."},
- {src:"@DrAlexanderBurns", handle:"DrAlexanderBurns", dname:"Dr. Alexander Burns",    verified:false, aor:["AFRICOM"],                    likes:8900, rts:3300, replies:1400, time:"10h",
-  text:"The diplomatic formula for every Sahel coup: 1) Strong condemnation 2) Suspension of aid 3) Aid quietly restored 4) Coup leader visits Beijing 5) Repeat. We are on iteration 4."},
- {src:"@AfricaIntelBrief", handle:"AfricaIntelBrief", dname:"Africa Intel Brief",     verified:false, aor:["AFRICOM"],                    likes:3800, rts:1500, replies:390,  time:"7h",
-  text:"Wagner rebranded to Africa Corps but the guys on the ground still call it Wagner. The trucks are the same. The tactics are the same. Only the business cards changed."},
-
- // ══════════════════════════════════════════════════════════════════════════
- // SOUTHCOM — Latin America / Caribbean
- // ══════════════════════════════════════════════════════════════════════════
-
- // — Major News Networks —
- {src:"@BBCMundo",         handle:"BBCMundo",         dname:"BBC Mundo",              verified:true,  aor:["SOUTHCOM"],                   likes:9800, rts:3900, replies:1600, time:"32m",
-  text:"Mexico: Sheinbaum administration under pressure from U.S. on fentanyl interdiction — bilateral talks described as 'tense.' Military cooperation framework at risk."},
- {src:"@AlJazeera_Eng",    handle:"AlJazeera_Eng",    dname:"Al Jazeera English",     verified:true,  aor:["SOUTHCOM"],                   likes:11200,rts:4400, replies:1900, time:"9m",
-  text:"Venezuela: Maduro government arrests 14 opposition figures ahead of constitutional referendum. Carter Center withdraws monitoring mission."},
- {src:"@Reuters",          handle:"Reuters",          dname:"Reuters",                verified:true,  aor:["SOUTHCOM"],                   likes:18000,rts:7200, replies:2400, time:"3m",
-  text:"Ecuador declares new state of emergency in three provinces after cartel assassination of two municipal judges. Military deployed to Guayaquil. Third emergency in 18 months."},
-
- // — Heads of State / Government Officials —
- {src:"@LulaOficial",      handle:"LulaOficial",      dname:"President Lula (Brazil)",verified:true,  aor:["SOUTHCOM"],                   likes:34000,rts:13000,replies:5200, time:"4h",
-  text:"Brazil is a country of peace. We will not be dragged into great power rivalries. BRICS offers an alternative to the old unipolar order — one built on mutual respect, not imposition."},
- {src:"@ClaudiaSheinbaum", handle:"ClaudiaSheinbaum", dname:"President Sheinbaum",    verified:true,  aor:["SOUTHCOM"],                   likes:22000,rts:8800, replies:3600, time:"4h",
-  text:"Mexico's sovereignty is non-negotiable. We will cooperate with our partners on security — but decisions about Mexican territory are made in Mexico, not in Washington."},
- {src:"@NayibBukele",      handle:"NayibBukele",      dname:"President Bukele",       verified:true,  aor:["SOUTHCOM"],                   likes:48000,rts:19000,replies:8200, time:"5h",
-  text:"El Salvador homicide rate: 7.8 per 100,000 in 2023. Lowest in recorded history. Three years ago it was over 100. They said it couldn't be done. Results don't lie."},
-
- // — Defense / Diplomatic / Embassies —
- {src:"@SOUTHCOM",         handle:"SOUTHCOM",         dname:"U.S. SOUTHCOM",          verified:true,  aor:["SOUTHCOM"],                   likes:4800, rts:1900, replies:640,  time:"2h",
-  text:"SOUTHCOM and partner nation forces complete Operation MARTILLO — multi-month maritime counter-narcotics operation. Record cocaine interdictions: 143 metric tons in 90 days."},
- {src:"@USEmbassyMexico",  handle:"USEmbassyMexico",  dname:"U.S. Embassy Mexico",    verified:true,  aor:["SOUTHCOM"],                   likes:4200, rts:1700, replies:560,  time:"5h",
-  text:"Security Alert: U.S. Embassy Mexico City — Do Not Travel advisory in effect for six Mexican states. Cartel activity continues to pose threat to civilian travel. Citizens advised to register at STEP."},
- {src:"@USEmbassyBogota",  handle:"USEmbassyBogota",  dname:"U.S. Embassy Colombia",  verified:true,  aor:["SOUTHCOM"],                   likes:2900, rts:1200, replies:380,  time:"6h",
-  text:"U.S.-Colombia security cooperation milestone: joint counter-narcotics forces destroy largest coca processing lab in Colombian history. Estimated processing capacity: 8 tons/month."},
- {src:"@InSightCrime",     handle:"InSightCrime",     dname:"InSight Crime",          verified:true,  aor:["SOUTHCOM"],                   likes:2800, rts:1100, replies:310,  time:"2h",
-  text:"Sinaloa fragment war: Los Chapitos vs. Zambada killed 1,400+ in six months. Mexican security forces are observers in Culiacán. State authority absent."},
- {src:"@Narconomics",      handle:"Narconomics",      dname:"Tom Wainwright",         verified:true,  aor:["SOUTHCOM"],                   likes:1600, rts:640,  replies:148,  time:"4h",
-  text:"Colombia coca cultivation plateaued but cocaine output per hectare up 40% vs 2020. Eradication metrics are divorced from market impact."},
- {src:"@VenezuelaOSINT",   handle:"VenezuelaOSINT",   dname:"Venezuela OSINT",        verified:false, aor:["SOUTHCOM"],                   likes:1400, rts:560,  replies:145,  time:"3h",
-  text:"FANB vessel conducts dangerous approach against USCGC Thetis in Caribbean — third incident in 60 days. Venezuela harassment pattern intensified since election dispute."},
-
- // — World Bank / Finance —
- {src:"@WorldBank",        handle:"WorldBank",        dname:"World Bank",             verified:true,  aor:["SOUTHCOM"],                   likes:6800, rts:2700, replies:890,  time:"4h",
-  text:"World Bank: Haiti requires $3.7B over five years for basic institutional reconstruction — security precondition for any meaningful economic recovery. MSS mission size currently insufficient."},
- {src:"@IMFNews",          handle:"IMFNews",          dname:"IMF",                    verified:true,  aor:["SOUTHCOM"],                   likes:5600, rts:2200, replies:780,  time:"5h",
-  text:"IMF: Venezuela GDP estimated to have contracted 80% since 2014. Hyperinflation controlled but underlying structural issues unresolved. Sanctions relief tied to credible electoral process."},
-
- // — Religious Leaders —
- {src:"@Pontifex",         handle:"Pontifex",         dname:"Pope Francis",           verified:true,  aor:["SOUTHCOM"],                   likes:78000,rts:31000,replies:9800, time:"6h",
-  text:"Latin America must not become a continent of inequality and violence. The Church calls on governments to protect the poor, dismantle criminal networks, and invest in the dignity of every person."},
-
- // — Chaos/troll intel —
- {src:"@USArmyWTF",        handle:"USArmyWTF",        dname:"US Army WTF Moments",    verified:false, aor:["SOUTHCOM"],                   likes:17800,rts:5800, replies:1900, time:"8h",
-  text:"JTF-Bravo humanitarian assistance exercise: helicopter broke down, interpreters didn't show, 'local village' was three guys from the motor pool. 10/10 realistic."},
- {src:"@DrAlexanderBurns", handle:"DrAlexanderBurns", dname:"Dr. Alexander Burns",    verified:false, aor:["SOUTHCOM"],                   likes:7600, rts:2900, replies:1200, time:"10h",
-  text:"SOUTHCOM has the best understanding of its AOR of any combatant command and the least resources to do anything about what it knows. This is called strategy."},
- {src:"@NarcoFiles_",      handle:"NarcoFiles_",      dname:"Narco Files",            verified:false, aor:["SOUTHCOM"],                   likes:6200, rts:2500, replies:980,  time:"6h",
-  text:"Mexican state governor's WhatsApp leaked by cartel affiliate — three months of comms including coordination with Los Chapitos on roadblock removal."},
-
- // ══════════════════════════════════════════════════════════════════════════
- // NORTHCOM — North America / Arctic / Homeland
- // ══════════════════════════════════════════════════════════════════════════
-
- // — Major News Networks —
- {src:"@CBCNews",          handle:"CBCNews",          dname:"CBC News",               verified:true,  aor:["NORTHCOM"],                   likes:7800, rts:3100, replies:1200, time:"45m",
-  text:"Canada announces $73B defense spending increase over 10 years — largest in a generation. RCAF Arctic surveillance drone program and icebreaker fleet both accelerated."},
- {src:"@Reuters",          handle:"Reuters",          dname:"Reuters",                verified:true,  aor:["NORTHCOM"],                   likes:24000,rts:9600, replies:3200, time:"3m",
-  text:"U.S. announces new Arctic defense initiative — additional radar installations across Alaska and Yukon, F-35 basing at Eielson AFB expanded. Cost: $4.2B over five years."},
- {src:"@AP",               handle:"AP",               dname:"AP News",                verified:true,  aor:["NORTHCOM"],                   likes:18000,rts:7200, replies:2400, time:"8m",
-  text:"Pentagon briefs Congress on GIUK gap submarine surveillance gap — classified annex details Russian undersea transit frequency. Appropriations committee signals emergency funding."},
-
- // — Heads of State / Government Officials —
- {src:"@POTUS",            handle:"POTUS",            dname:"President Biden",        verified:true,  aor:["NORTHCOM"],                   likes:92000,rts:38000,replies:22000,time:"40m",
-  text:"America's homeland defense is our first obligation. We are modernizing NORAD, hardening our Arctic posture, and ensuring no adversary can threaten this continent. That work is ongoing and funded."},
- {src:"@JustinTrudeau",    handle:"JustinTrudeau",    dname:"PM Justin Trudeau",      verified:true,  aor:["NORTHCOM"],                   likes:28000,rts:11000,replies:5600, time:"3h",
-  text:"Canada is committed to NORAD modernization. The North is not empty — it is home to Canadians and it is sovereign territory. We will defend it with our allies."},
-
- // — Defense / Diplomatic / Embassies —
- {src:"@NoradNorthcom",    handle:"NoradNorthcom",    dname:"NORAD/NORTHCOM",         verified:true,  aor:["NORTHCOM"],                   likes:3100, rts:1300, replies:290,  time:"22m",
-  text:"NORAD tracks and intercepts two Russian Tu-95MS Bear-H in Alaska ADIZ. F-22 Raptors from Elmendorf-Richardson scrambled. Aircraft did not enter sovereign airspace."},
- {src:"@DeptofDefense",    handle:"DeptofDefense",    dname:"U.S. Dept of Defense",   verified:true,  aor:["NORTHCOM","EUCOM","INDOPACOM"],likes:22000,rts:8800, replies:3200, time:"2h",
-  text:"Secretary Austin meets with Canadian counterpart — joint statement commits both nations to accelerated NORAD modernization funding. Over-the-horizon radar sites to begin construction Q3."},
- {src:"@StateDept",        handle:"StateDept",        dname:"U.S. State Dept",        verified:true,  aor:["NORTHCOM","EUCOM","CENTCOM"], likes:18000,rts:7200, replies:2800, time:"3h",
-  text:"State Department issues worldwide caution for American travelers — elevated terrorism threat environment globally. Citizens abroad encouraged to register with nearest U.S. Embassy or Consulate."},
- {src:"@MT_Anderson",      handle:"MT_Anderson",      dname:"MT Anderson",            verified:false, aor:["NORTHCOM"],                   likes:2900, rts:1100, replies:270,  time:"2h",
-  text:"Russian arctic submarine transit detected in GIUK gap — acoustic signature consistent with Yasen-M class. Third transit this quarter. NATO MPA assets tracking."},
- {src:"@GeoConfirmed",     handle:"GeoConfirmed",     dname:"GeoConfirmed",           verified:true,  aor:["NORTHCOM","EUCOM"],           likes:3200, rts:1300, replies:312,  time:"30m",
-  text:"Satellite imagery: expanded Russian military infrastructure on Wrangel Island — new radar arrays, hardened shelters, extended runway markings."},
- {src:"@h_i_scruton",      handle:"h_i_scruton",      dname:"H.I. Sutton",            verified:true,  aor:["NORTHCOM"],                   likes:2800, rts:1150, replies:260,  time:"2h",
-  text:"Canada's underwater Arctic surveillance has significant gaps vs Cold War SOSUS coverage. Yasen-M submarines can exploit these for undetected Atlantic approaches."},
- {src:"@AircraftSpots",    handle:"AircraftSpots",    dname:"Aircraft Spots",         verified:false, aor:["NORTHCOM"],                   likes:1700, rts:690,  replies:155,  time:"42m",
-  text:"USAF E-3 Sentry AWACS (CASINO01) active over Hudson Bay — unusual operational area, likely tied to VIGILANT SHIELD exercise activity."},
- {src:"@ArcticToday",      handle:"ArcticToday",      dname:"Arctic Today",           verified:true,  aor:["NORTHCOM","EUCOM"],           likes:1800, rts:720,  replies:190,  time:"5h",
-  text:"China's Xuelong 2 icebreaker completes fifth Arctic transit. Track deviated near Svalbard approaches. Scientific mission cover noted."},
- {src:"@SpyCatcher",       handle:"SpyCatcher",       dname:"CI Spotter",             verified:false, aor:["NORTHCOM","EUCOM"],           likes:5400, rts:2200, replies:890,  time:"6h",
-  text:"Chinese 'student' arrested at Twentynine Palms photographing restricted areas. Third such incident at Marine Corps installations in 12 months. Pattern, not coincidence."},
-
- // — World Bank / Finance —
- {src:"@WorldBank",        handle:"WorldBank",        dname:"World Bank",             verified:true,  aor:["NORTHCOM"],                   likes:5600, rts:2200, replies:780,  time:"4h",
-  text:"World Bank: Arctic economic development represents $1T+ in untapped resources. Legal framework disputes between Arctic Council nations are primary obstacle. Climate change accelerating access timeline."},
-
- // — Chaos/troll intel —
- {src:"@USArmyWTF",        handle:"USArmyWTF",        dname:"US Army WTF Moments",    verified:false, aor:["NORTHCOM"],                   likes:24600,rts:8200, replies:3400, time:"8h",
-  text:"NORAD detected an unidentified airborne object over Montana. Turned out to be a $12 hobbyist weather balloon. Intercept cost $2.1 million. God bless America."},
- {src:"@DrAlexanderBurns", handle:"DrAlexanderBurns", dname:"Dr. Alexander Burns",    verified:false, aor:["NORTHCOM"],                   likes:10400,rts:4100, replies:1700, time:"10h",
-  text:"Fascinating that NORTHCOM was stood up in 2002 because we realized we had no command responsible for defending the continental United States. We just... forgot."},
- {src:"@BorealWatch",      handle:"BorealWatch",      dname:"Boreal Watch",           verified:false, aor:["NORTHCOM"],                   likes:1900, rts:780,  replies:188,  time:"4h",
-  text:"Three Russian Tu-142 Bear-F ASW aircraft active near GIUK gap simultaneously — coordinated training or hunting something specific. RCAF CF-18s airborne."},
-
- // ── NORTHCOM — Border / Domestic Security / Cartel ──
- {src:"@CBP",              handle:"CBP",              dname:"U.S. Customs & Border Protection",verified:true, aor:["NORTHCOM"], likes:4200, rts:1700, replies:520,  time:"32m",
-  text:"SECTOR UPDATE: Eagle Pass Sector reports 1,400+ encounters in 48-hour period. USBP deploys additional tactical units. Cartel-linked smuggling routes identified via OSINT imagery. JATF-West coordination ongoing."},
- {src:"@DHSgov",           handle:"DHSgov",           dname:"Dept of Homeland Security",      verified:true, aor:["NORTHCOM"], likes:8900, rts:3500, replies:1200, time:"1h",
-  text:"DHS issues NTAS bulletin: Elevated threat from foreign terrorist organizations exploiting southwestern border. All state fusion centers notified. FBI JTTF coordination activated in 12 field offices."},
- {src:"@DEANews",          handle:"DEANews",          dname:"Drug Enforcement Administration",verified:true, aor:["NORTHCOM"], likes:6200, rts:2500, replies:810,  time:"2h",
-  text:"DEA/USCG joint interdiction seizes 2.3 metric tons fentanyl precursors — largest in agency history. Semi-submersible interdicted 200nm off Baja California. Sinaloa affiliation confirmed by DEA intelligence."},
- {src:"@USCGNews",         handle:"USCGNews",         dname:"U.S. Coast Guard",               verified:true, aor:["NORTHCOM"], likes:3100, rts:1200, replies:340,  time:"4h",
-  text:"USCG D11 partnering with JIATF-South: $120M cocaine seized off Central American coast. 3 suspected Sinaloa transportistas detained. NORTHCOM coordinates with DEA on narco-transit pattern analysis."},
- {src:"@InSightCrime",     handle:"InSightCrime",     dname:"InSight Crime",                  verified:true, aor:["NORTHCOM"], likes:2800, rts:1100, replies:290,  time:"3h",
-  text:"ANALYSIS: CJNG territorial expansion threatening US-Mexico border crossing infrastructure at Nogales and Laredo. Cartel lookout presence on US side documented by CBP OSINT. Escalation trajectory assessed as HIGH."},
- {src:"@CISA",             handle:"CISA",             dname:"CISA",                           verified:true, aor:["NORTHCOM"], likes:5600, rts:2200, replies:780,  time:"5h",
-  text:"CISA ALERT AA26-031: Volt Typhoon (PRC state actor) pre-positioning detected in US critical infrastructure — water, energy, and comms nodes. NORTHCOM cyber coordination activated. Public advisory issued."},
- {src:"@TexasDPS",         handle:"TexasDPS",         dname:"Texas DPS",                      verified:true, aor:["NORTHCOM"], likes:4800, rts:1900, replies:640,  time:"3h",
-  text:"Operation Lone Star Update: 3 cartel lookout positions dismantled in Kinney County. 14 gotaways tracked via aerostat. Cross-border gunfire incident 600m east of Eagle Pass under investigation."},
- {src:"@FBI",              handle:"FBI",              dname:"FBI",                            verified:true, aor:["NORTHCOM"], likes:9200, rts:3700, replies:1400, time:"6h",
-  text:"FBI and HSI disrupt Hezbollah-linked procurement network operating through US border region — 3 arrested, $2.1M in assets seized. Network was acquiring dual-use electronics for Iran."},
-
- // ══════════════════════════════════════════════════════════════════════════
- // DOMESTIC US MEDIA — scoped to region-appropriate content
- // ══════════════════════════════════════════════════════════════════════════
- {src:"@CNN",              handle:"CNN",              dname:"CNN",                    verified:true,  aor:["EUCOM","CENTCOM","INDOPACOM","AFRICOM"], likes:48000,rts:19000,replies:8200, time:"5m",
-  text:"BREAKING: U.S. military officials confirm coalition forces conducted strikes on Houthi missile launch sites in western Yemen. Pentagon briefing scheduled for 3PM ET."},
- {src:"@CNN",              handle:"CNN",              dname:"CNN",                    verified:true,  aor:["SOUTHCOM"],                             likes:48000,rts:19000,replies:8200, time:"18m",
-  text:"CNN: Haitian Prime Minister requests additional UN peacekeeping forces as gang coalition controls estimated 85% of Port-au-Prince. Security council emergency session called."},
- {src:"@CNN",              handle:"CNN",              dname:"CNN",                    verified:true,  aor:["NORTHCOM"],                             likes:48000,rts:19000,replies:8200, time:"22m",
-  text:"CNN: Record fentanyl seizure at San Diego port of entry — 800,000 pills hidden in commercial truck shipment. CBP says cartel packaging now nearly indistinguishable from legitimate goods."},
- {src:"@FoxNews",          handle:"FoxNews",          dname:"Fox News",               verified:true,  aor:["EUCOM","CENTCOM"],                      likes:52000,rts:21000,replies:12000,time:"11m",
-  text:"EXCLUSIVE: Pentagon source tells Fox News administration blocking delivery of key munitions to Israel despite congressional approval. White House denies. Developing."},
- {src:"@FoxNews",          handle:"FoxNews",          dname:"Fox News",               verified:true,  aor:["SOUTHCOM"],                             likes:52000,rts:21000,replies:12000,time:"28m",
-  text:"Fox News: Venezuelan Maduro regime expels U.S. diplomats after OFAC sanctions target PDVSA shell companies. State Dept considers reciprocal action. Venezuela military on heightened alert."},
- {src:"@FoxNews",          handle:"FoxNews",          dname:"Fox News",               verified:true,  aor:["NORTHCOM"],                             likes:52000,rts:21000,replies:12000,time:"35m",
-  text:"Fox News: Texas National Guard deploys additional units to Eagle Pass after cartel spotters observed coordinating mass crossing event. Governor invokes state emergency powers."},
- {src:"@MSNBC",            handle:"MSNBC",            dname:"MSNBC",                  verified:true,  aor:["EUCOM","CENTCOM"],                      likes:34000,rts:13000,replies:7800, time:"22m",
-  text:"Analysis: NATO's eastern flank reinforcement is proceeding but slower than promised. Four allies still below 2% GDP defense spending. The alliance has a credibility problem."},
- {src:"@nytimes",          handle:"nytimes",          dname:"New York Times",         verified:true,  aor:["EUCOM","CENTCOM","INDOPACOM"],           likes:61000,rts:24000,replies:9800, time:"35m",
-  text:"Inside the CIA's assessment of Putin's health: three intelligence sources tell the Times the analysis is more uncertain than public statements suggest. Full report at link."},
- {src:"@nytimes",          handle:"nytimes",          dname:"New York Times",         verified:true,  aor:["SOUTHCOM"],                             likes:61000,rts:24000,replies:9800, time:"42m",
-  text:"NYT investigation: How Colombian cocaine flows through Venezuela's military-protected corridors to reach European markets. Maduro inner circle named as direct beneficiaries."},
- {src:"@nytimes",          handle:"nytimes",          dname:"New York Times",         verified:true,  aor:["NORTHCOM"],                             likes:61000,rts:24000,replies:9800, time:"50m",
-  text:"NYT: DHS internal assessment warns fentanyl crisis has overtaken opioid crisis of 2010s in lethality. 110,000 overdose deaths last year — 70% fentanyl. Border seizures up 40% but supply outpaces interdiction."},
- {src:"@WSJ",              handle:"WSJ",              dname:"Wall Street Journal",    verified:true,  aor:["EUCOM","CENTCOM","INDOPACOM"],           likes:38000,rts:15000,replies:5600, time:"28m",
-  text:"Defense stocks surge as Congress signals bipartisan support for supplemental Ukraine aid. RTX, LMT, NOC all up 4%+ on volume. Defense ETF ITA hits 52-week high."},
- {src:"@NPR",              handle:"NPR",              dname:"NPR",                    verified:true,  aor:["CENTCOM","AFRICOM"],                    likes:29000,rts:11000,replies:4200, time:"3h",
-  text:"The families of hostages held in Gaza describe a U.S. diplomatic effort that is 'exhausted and out of options.' Families briefed by NSC staff last week say they were given no timeline."},
- {src:"@NPR",              handle:"NPR",              dname:"NPR",                    verified:true,  aor:["SOUTHCOM"],                             likes:29000,rts:11000,replies:4200, time:"3h",
-  text:"NPR: El Salvador's Bukele model being exported — Honduras and Ecuador studying CECOT-style mega-prison approach. Human rights groups warn of mass arbitrary detention risks."},
- {src:"@NPR",              handle:"NPR",              dname:"NPR",                    verified:true,  aor:["NORTHCOM"],                             likes:29000,rts:11000,replies:4200, time:"3h",
-  text:"NPR: Arctic Council activity frozen since Russia's suspension in 2022. US, Canada, Norway conducting bilateral security coordination outside Council framework. Russian Arctic militarization continues unimpeded."},
- {src:"@washingtonpost",   handle:"washingtonpost",   dname:"Washington Post",        verified:true,  aor:["EUCOM","CENTCOM","INDOPACOM"],           likes:44000,rts:17000,replies:7200, time:"42m",
-  text:"Exclusive: Internal State Dept cables show significant disagreement over Gaza ceasefire strategy — at least six senior diplomats have filed dissent cables. Secretary Blinken briefed."},
- {src:"@CBSNews",          handle:"CBSNews",          dname:"CBS News",               verified:true,  aor:["EUCOM","CENTCOM"],                      likes:26000,rts:10000,replies:4100, time:"4h",
-  text:"60 Minutes: U.S. ammunition stockpiles in Europe are at historic lows after Ukraine transfers. Army officials tell CBS the replenishment timeline is 'deeply concerning.'"},
- {src:"@NBCNews",          handle:"NBCNews",          dname:"NBC News",               verified:true,  aor:["EUCOM","CENTCOM","INDOPACOM"],           likes:31000,rts:12000,replies:5200, time:"3h",
-  text:"NBC News obtains Pentagon document showing INDOPACOM readiness concerns — classified annex details specific capability gaps for potential Taiwan scenario. DOD declines comment."},
- {src:"@ABC",              handle:"ABC",              dname:"ABC News",               verified:true,  aor:["EUCOM","CENTCOM"],                      likes:27000,rts:10000,replies:4600, time:"5h",
-  text:"ABC News: Former CENTCOM commander says current Red Sea posture is 'unsustainable' — carrier strike groups cannot maintain this operational tempo past six more months without relief."},
- {src:"@thehill",          handle:"thehill",          dname:"The Hill",               verified:true,  aor:["EUCOM","CENTCOM","INDOPACOM"],           likes:14000,rts:5600, replies:2800, time:"3h",
-  text:"Defense authorization bill passes committee 24-8 — includes $886B topline, hypersonic program funding increase, and new INDOPACOM deterrence initiative. Floor vote TBD."},
- {src:"@DefenseOne",       handle:"DefenseOne",       dname:"Defense One",            verified:true,  aor:["EUCOM","CENTCOM","INDOPACOM","AFRICOM"], likes:8900, rts:3500, replies:1200, time:"2h",
-  text:"The Army's new multi-domain task force concept is being stress-tested in real time — EUCOM is using it in support of Ukraine and the lessons are shaping how the rest will be built."},
- {src:"@BreakingDefense",  handle:"BreakingDefense",  dname:"Breaking Defense",       verified:true,  aor:["EUCOM","CENTCOM","INDOPACOM"],           likes:6800, rts:2700, replies:890,  time:"3h",
-  text:"Exclusive: Next-gen JSTARS replacement program gets $2.1B in supplemental — Advanced Battle Management System contract awarded to Leidos/Boeing team. Delivery 2028."},
- {src:"@ForeignPolicy",    handle:"ForeignPolicy",    dname:"Foreign Policy",         verified:true,  aor:["EUCOM","CENTCOM","INDOPACOM","AFRICOM","SOUTHCOM"], likes:16000,rts:6400, replies:2400, time:"5h",
-  text:"The grand strategy debate Washington isn't having: restraint vs. primacy vs. selective engagement. Ukraine, Gaza, and Taiwan are all happening simultaneously. Something has to give."},
- {src:"@TheEconomist",     handle:"TheEconomist",     dname:"The Economist",          verified:true,  aor:["EUCOM","CENTCOM","INDOPACOM","AFRICOM"], likes:42000,rts:16000,replies:5800, time:"7h",
-  text:"The global defence industry is running hot. Order backlogs at Lockheed, RTX, and BAE Systems are at record highs. The supply chain bottleneck is not money — it's skilled labour and raw materials."},
- {src:"@ProPublica",       handle:"ProPublica",       dname:"ProPublica",             verified:true,  aor:["CENTCOM","AFRICOM"],                    likes:12000,rts:4800, replies:2100, time:"8h",
-  text:"ProPublica investigation: Pentagon contractor overcharges on Afghanistan reconstruction projects totaled $2.7B. Eight companies, no criminal referrals. Contracting office still active."},
- {src:"@TheIntercept",     handle:"TheIntercept",     dname:"The Intercept",          verified:true,  aor:["CENTCOM","EUCOM"],                      likes:18000,rts:7200, replies:4800, time:"10h",
-  text:"Leaked NSA document details surveillance of allied nation diplomats at UN headquarters. Three European ambassadors' communications intercepted during 2023 Gaza vote. State Dept aware."},
- {src:"@MilitaryTimes",    handle:"MilitaryTimes",    dname:"Military Times",         verified:true,  aor:["EUCOM","CENTCOM","INDOPACOM","AFRICOM","NORTHCOM"], likes:9800, rts:3900, replies:1600, time:"3h",
-  text:"Survey: 61% of active duty service members say military readiness has declined in the past three years. Top concerns: maintenance backlogs, personnel shortfalls, and equipment availability."},
- {src:"@taskandpurpose",   handle:"taskandpurpose",   dname:"Task & Purpose",         verified:true,  aor:["EUCOM","CENTCOM","INDOPACOM","NORTHCOM"], likes:14000,rts:5600, replies:2800, time:"4h",
-  text:"The Army missed recruiting goals for the second straight year. The pitch 'Be All You Can Be' is back. Whether it works depends on a labor market that currently offers better pay with fewer deployments."},
-];
-
-const TICKERS=[
- {s:"WTI",p:78.42,c:+1.23,u:"$/bbl"},{s:"BRENT",p:82.17,c:+0.89,u:"$/bbl"},
- {s:"NAT GAS",p:2.84,c:-.12,u:"$/MMBtu"},{s:"GOLD",p:2341.5,c:+12.3,u:"$/oz"},
- {s:"USD/RUB",p:91.24,c:+.44,u:""},{s:"USD/UAH",p:37.88,c:-.03,u:""},
- {s:"URANIUM",p:97.25,c:+2.1,u:"$/lb"},{s:"COPPER",p:4.52,c:-.08,u:"$/lb"},
- {s:"DEFENSE ETF",p:198.34,c:+3.11,u:"ITA"},
-];
+// Live reporting only: no sample posts or sample market quotes.
 
 // ═══════════════════════════════════════════════════════════════════
 // STATE
@@ -2428,13 +1982,7 @@ setInterval(tick,1000);tick();
 // ═══════════════════════════════════════════════════════════════════
 // TICKER
 // ═══════════════════════════════════════════════════════════════════
-(()=>{
- const d=[...TICKERS,...TICKERS];
- document.getElementById('tkinner').innerHTML=d.map(t=>{
-  const u=t.c>=0;
-  return `<span class="ti"><span class="ts">${t.s}</span><span class="tp ${u?'up':'dn'}">${t.p.toFixed(2)}</span><span class="tc ${u?'up':'dn'}">${u?'▲':'▼'}${Math.abs(t.c).toFixed(2)}</span>${t.u?`<span class="tu">${t.u}</span>`:''}</span>`;
- }).join('');
-})();
+document.getElementById('tkinner').textContent='LOADING VERIFIED MARKET DATA…';
 
 // ═══════════════════════════════════════════════════════════════════
 // TABS
@@ -2450,7 +1998,7 @@ buildTabs();
 
 
 // ═══════════════════════════════════════════════════════════════════
-// SITREP — AI-generated brief via Claude API
+// SITREP — read-only cached brief
 // ═══════════════════════════════════════════════════════════════════
 let sitrepAbort=null;
 
@@ -2463,16 +2011,18 @@ async function generateSitrep(cocom, forceRefresh){
  const el=document.getElementById('sitrep');
  const body=document.getElementById('srpbody');
  const meta=document.getElementById('srpmeta');
+ if(sitrepAbort)sitrepAbort.abort();
  const now=new Date();
  const zulu=now.toISOString().slice(11,16)+'Z '+now.toISOString().slice(0,10);
 
  document.getElementById('srptitle').textContent='SITREP — '+cocom.id;
  meta.textContent=zulu;
- body.innerHTML='<span style="color:var(--fade)">GENERATING...</span><span class="srp-cursor"></span>';
+ body.innerHTML='<span style="color:var(--fade)">LOADING SITREP...</span><span class="srp-cursor"></span>';
  el.classList.add('show');
 
  const allItems = getFeedItems().slice(0,16).map(p=>({
   text: p.text||'',
+  pubDate:p.pubDate||p.isoDate||null,
   dname: p.dname||p.src||'',
   src: p.src||'',
   isRSS: !!p.isRSS,
@@ -2480,11 +2030,12 @@ async function generateSitrep(cocom, forceRefresh){
  }));
 
  try{
-  sitrepAbort=new AbortController();
+  const controller=new AbortController();
+  sitrepAbort=controller;
   const url='/.netlify/functions/sitrep'+(forceRefresh?'?force=1':'');
   fetch(url,{
    method:'POST',
-   signal:sitrepAbort.signal,
+   signal:controller.signal,
    headers:{'Content-Type':'application/json'},
    body:JSON.stringify({
     cocomId:cocom.id,
@@ -2494,16 +2045,19 @@ async function generateSitrep(cocom, forceRefresh){
     forceRefresh:!!forceRefresh
    })
   }).then(r=>r.json()).then(data=>{
+   if(AC.id!==cocom.id || controller.signal.aborted || sitrepAbort!==controller)return;
    if(data.error){ body.innerHTML='<span style="color:var(--red)">ERROR: '+data.error+'</span>'; return; }
    const html=formatSitrep(data.text||'');
    // Add cached badge + refresh button if serving from cache
-   const cacheLabel=data.stale?'// STALE':'// CACHED';
+   const cacheLabel=data.mode==='SOURCE_ONLY'?'// SOURCE REPORTING':data.stale?'// UPDATE DELAYED':'// CACHED';
+   if(data.generatedAt)meta.textContent='UPDATED '+data.generatedAt.slice(0,16).replace('T',' ')+'Z';
    const refreshBtn='<button onclick="generateSitrep(AC,true)" style="background:none;border:1px solid #3d4f3d;color:#7a9e7a;font-size:8px;letter-spacing:1px;padding:2px 6px;cursor:pointer;border-radius:2px;font-family:inherit">REFRESH</button>';
    const badge=data.cached
     ? '<div style="margin-top:10px;display:flex;align-items:center;gap:8px"><span style="color:#7a9e7a;font-size:9px;letter-spacing:1px">'+cacheLabel+'</span>'+refreshBtn+'</div>'
     : '';
    body.innerHTML=html+badge;
   }).catch(e=>{
+   if(sitrepAbort!==controller || controller.signal.aborted)return;
    if(e.name!=='AbortError') body.innerHTML='<span style="color:var(--red)">SITREP UNAVAILABLE — '+e.message+'</span>';
   });
  }catch(e){
@@ -2537,22 +2091,22 @@ function formatSitrep(text){
     }
     // If we have a title and a url, linkify url
     if (title && url) {
-      return `<a href="${normalizeUrl(url)}" target="_blank" rel="noopener" class="srp-src-link">${title}</a>`;
+      return `<a href="${escapeFeedText(normalizeUrl(url))}" target="_blank" rel="noopener" class="srp-src-link">${escapeFeedText(title)}</a>`;
     }
     // Otherwise, linkify all URLs in the line
-    let replaced = clean.replace(urlRegex, match => {
+    let replaced = escapeFeedText(clean).replace(urlRegex, match => {
       const href = normalizeUrl(match);
       return `<a href="${href}" target="_blank" rel="noopener" class="srp-src-link">${match.length>60?match.slice(0,60)+'…':match}</a>`;
     });
     // If nothing was linkified, just show as text
     if (replaced === clean) {
-      return `<span class="srp-src-link">${clean}</span>`;
+      return `<span class="srp-src-link">${escapeFeedText(clean)}</span>`;
     }
     return replaced;
   }).join('');
   if(linkHtml) sourcesHtml = `<div class="srp-sources"><span class="srp-section">SOURCES</span>${linkHtml}</div>`;
  }
- const formatted = mainText
+ const formatted = escapeFeedText(mainText)
   .replace(/^(SITUATION|KEY ACTIVITY|INDICATORS|ASSESSMENT)[\s:—]*/gm,
    '<div class="srp-section">$1</div>')
   .replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>')
@@ -2736,6 +2290,7 @@ const SIGACTS_TYPE_COLOR={
 };
 
 let _sigItems=[];
+let sigactRequest=0, rssRequest=0, telegramRequest=0;
 let _sigScrollTimer=null;
 
 function startSigScroll(){
@@ -2754,6 +2309,7 @@ function startSigScroll(){
 }
 
 async function renderSigacts(id){
+ const requestId=++sigactRequest;
  const el=document.getElementById('sigactslist');
  if(!el)return;
  sg.clearLayers();
@@ -2763,25 +2319,27 @@ async function renderSigacts(id){
  const RSS_COL={green:'#4ade80',amber:'#f59e0b',blue:'#3b82f6',mute:'#6b7280'};
  try{
   const cocom=id||'EUCOM';
-  const r=await fetch('/.netlify/functions/rss?cocom='+cocom);
+  const r=await fetch('/.netlify/functions/rss?cocom='+cocom+'&purpose=sigacts&v=reporting-v1');
   if(!r.ok)throw new Error('fetch '+r.status);
   const items=await r.json();
+  if(AC.id!==cocom || requestId!==sigactRequest)return;
   _sigItems=Array.isArray(items)?items.slice(0,60):[];
   if(sub)sub.textContent=cocom+' · LIVE · '+_sigItems.length+' ITEMS';
   if(!_sigItems.length){el.innerHTML='<div style="padding:12px;color:var(--fade);font-size:9px">No feed items for this AOR.</div>';return;}
   el.innerHTML=_sigItems.map((s,i)=>{
    const col=RSS_COL[s.color]||'#6b7280';
-   return `<div class="sigact" id="sigrow${i}" onclick="selectSigact(${i})">
+   return `<div class="sigact" data-tm-policy="reporting-v1" data-cocom="${cocom}" id="sigrow${i}" onclick="selectSigact(${i})">
     <div class="sigdot" style="background:${col}"></div>
     <div class="sigbody">
-     <div class="sigmeta"><span class="sigdate">${s.age||''}</span><span class="sigtype" style="background:${col}22;color:${col}">${s.sourceHandle||s.source||''}</span></div>
-     <div class="sigloc">${s.title}</div>
-     ${s.desc?`<div class="sigsummary">${s.desc}</div>`:''}
+     <div class="sigmeta"><span class="sigdate">${s.age||''}</span><span class="sigtype" style="background:${col}22;color:${col}">${escapeFeedText(s.sourceHandle||s.source||'')}</span></div>
+     <div class="sigloc">${escapeFeedText(s.title)}</div>
+     ${s.desc?`<div class="sigsummary">${escapeFeedText(s.desc)}</div>`:''}
     </div>
    </div>`;
   }).join('');
   startSigScroll();
  }catch(e){
+  if(AC.id!==(id||'EUCOM') || requestId!==sigactRequest)return;
   el.innerHTML='<div style="padding:12px;color:var(--fade);font-size:9px">Feed unavailable.</div>';
   if(sub)sub.textContent=(id||'EUCOM')+' · FEED ERROR';
  }
@@ -2795,6 +2353,8 @@ function selectSigact(i){
 
 function switchCocom(id){
  AC=COCOMS.find(c=>c.id===id);
+ RSS_ITEMS=[]; TELEGRAM_ITEMS=[];
+ if(sitrepAbort)sitrepAbort.abort();
  selZone=null; activeOrgTab=0;
  buildTabs(); updateMap(); updateFeed(); buildOrgTabs(); renderOrg(); resetSrcBar(); renderArticles(); renderSigacts(id);
  loadRSS(id); loadTelegram(id);
@@ -3815,114 +3375,18 @@ function parseTimeToMins(t){
  return 999999;
 }
 
-// Max age for static posts: 96 hours = 5760 minutes
-const MAX_POST_AGE_MINS = 5760;
-
-// Assign realistic random age to a static post on page load
-// so posts rotate freshness each visit
-function assignFreshTime(p){
- if(p._tAssigned) return p;
- // Use a seeded offset based on handle+text so same post gets same time per session
- const seed=(p.handle||'').charCodeAt(0)+(p.text||'').charCodeAt(0)+(p.text||'').charCodeAt(5)||0;
- const rng=((seed*9301+49297)%233280)/233280;
- // Spread across 0-90h based on account type implied by existing time field
- const baseMins=parseTimeToMins(p.time);
- const spreadMins=Math.min(baseMins, MAX_POST_AGE_MINS-60);
- // Add small jitter ±30min so same-bucket posts don't all show same time
- const jitter=Math.floor(rng*60)-30;
- const finalMins=Math.max(1, spreadMins+jitter);
- p._assignedMins=finalMins;
- p._tAssigned=true;
- // Reformat time display
- if(finalMins<60) p.displayTime=finalMins+'m';
- else if(finalMins<1440) p.displayTime=Math.floor(finalMins/60)+'h';
- else p.displayTime=Math.floor(finalMins/1440)+'d';
- return p;
-}
-
-function interleaveByAccount(posts){
- // Sort by time first
- const sorted=[...posts].sort((a,b)=>parseTimeToMins(a.time)-parseTimeToMins(b.time));
- // Group into time buckets (~30min windows), shuffle within each bucket
- // so same-account posts never cluster
- const buckets={};
- sorted.forEach(p=>{
-  const mins=parseTimeToMins(p.time);
-  const bucket=Math.floor(mins/30); // 30min windows
-  if(!buckets[bucket]) buckets[bucket]=[];
-  buckets[bucket].push(p);
- });
- // Within each bucket, shuffle so accounts are mixed
- const result=[];
- Object.keys(buckets).sort((a,b)=>Number(a)-Number(b)).forEach(bk=>{
-  const items=buckets[bk];
-  // Fisher-Yates shuffle within bucket
-  for(let i=items.length-1;i>0;i--){
-   const j=Math.floor(Math.random()*(i+1));
-   [items[i],items[j]]=[items[j],items[i]];
-  }
-  // Ensure no back-to-back same handle within result
-  items.forEach((p,idx)=>{
-   if(idx>0 && (p.handle||p.src)===(items[idx-1].handle||items[idx-1].src)){
-    // Swap with next different item
-    const swap=items.findIndex((x,xi)=>xi>idx && (x.handle||x.src)!==(p.handle||p.src));
-    if(swap>-1)[items[idx],items[swap]]=[items[swap],items[idx]];
-   }
-  });
-  result.push(...items);
- });
- return result;
-}
-
 function getFeedItems(){
- const id=AC.id,kw=AC.keywords;
- const livePosts=LIVE_POSTS.filter(p=>{
-  if(p.aor && p.aor.includes(id)) return true;
-  const txt=(p.text||'').toLowerCase();
-  return kw.some(k=>txt.includes(k.toLowerCase()));
- });
-
- // Assign fresh realistic times to static posts (once per session)
- const staticPosts=ALL_POSTS
-  .filter(p=>p.aor.includes(id))
-  .map(assignFreshTime)
-  .filter(p=>p._assignedMins<=MAX_POST_AGE_MINS); // drop anything >96h
-
- // RSS items — filter by COCOM and age
- const rss=RSS_ITEMS.filter(r=>{
-  const ageMins=parseTimeToMins(r.age);
-  if(ageMins>MAX_POST_AGE_MINS) return false;
-  return !r.cocom || r.cocom==='ALL' || r.cocom===id;
- }).map(r=>({
-  src:r.source,handle:r.sourceHandle,dname:r.source,
-  time:r.age,displayTime:r.age,
-  text:r.title,aor:[id],likes:0,rts:0,replies:0,
-  url:r.url,isRSS:true,_assignedMins:parseTimeToMins(r.age)
+ const policy=window.TMReportingPolicy;
+ if(!policy)return [];
+ const rss=RSS_ITEMS.map(r=>({
+  ...r,src:r.source,handle:r.sourceHandle,dname:r.source,
+  time:r.age,displayTime:r.age,text:r.title,isRSS:true
  }));
-
- // Telegram items
- const tg=(TELEGRAM_ITEMS||[]).filter(t=>{
-  const ageMins=parseTimeToMins(t.age);
-  return ageMins<=MAX_POST_AGE_MINS&&(t.cocom===id||t.cocom==='ALL');
- }).map(t=>({src:t.source,handle:t.sourceHandle,dname:t.source+' [TG]',time:t.age,displayTime:t.age,text:t.title,aor:[id],likes:0,rts:0,replies:0,url:t.url,isRSS:true,isTelegram:true,_assignedMins:parseTimeToMins(t.age)}));
-
- // Sort static by assigned time
- const sortedStatic=[...staticPosts].sort((a,b)=>a._assignedMins-b._assignedMins);
-
- // Interleave so no account clusters
- const interleaved=interleaveByAccount(sortedStatic);
-
- // Live first, then RSS, then interleaved static — all <96h
- const merged=[...livePosts,...rss,...(tg||[]),...interleaved];
-
- // Dedupe
- const seen=new Set();
- return merged.filter(p=>{
-  const k=(p.handle||p.src||'')+':'+(p.text||'').slice(0,40).toLowerCase();
-  if(seen.has(k)) return false;
-  seen.add(k);
-  return true;
- });
+ const telegram=TELEGRAM_ITEMS.map(t=>({
+  ...t,src:t.source,handle:t.sourceHandle,dname:t.source+' [TG]',
+  time:t.age,displayTime:t.age,text:t.title,isRSS:true,isTelegram:true
+ }));
+ return policy.filterReporting([...LIVE_POSTS,...rss,...telegram],AC.id);
 }
 
 function updateFeed(){
@@ -3933,12 +3397,15 @@ function updateFeed(){
 }
 
 const FSHOW=2;
+function escapeFeedText(value){
+ return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
 function renderFeed(){
  const track=document.getElementById('ftrack');
  if(!feedItems.length){track.innerHTML='<div style="padding:14px 10px;color:var(--fade);font-size:10px">No feed items for this AOR.</div>';return;}
  const visible=Array.from({length:FSHOW+1},(_,i)=>feedItems[(feedOffset+i)%feedItems.length]);
  track.innerHTML=visible.map(p=>{
-  const enc=encodeURIComponent(JSON.stringify(p));
+  const enc=encodeURIComponent(JSON.stringify(p)).replace(/'/g,'%27');
   const isRSS=!!p.isRSS;
   const col=avColor(p.handle||p.src);
   const init=avInit(p.handle||p.src);
@@ -3947,17 +3414,17 @@ function renderFeed(){
     <div class="twhdr">
       <div class="twavatar" style="background:${col}">${init}</div>
       <div class="twnames">
-        <div class="twdname">${p.dname||p.src}${p.verified?'<span class="twverified" title="Verified">✓</span>':''}</div>
-        <div class="twhandle">${p.src}</div>
+        <div class="twdname">${escapeFeedText(p.dname||p.src)}${p.verified?'<span class="twverified" title="Verified">✓</span>':''}</div>
+        <div class="twhandle">${escapeFeedText(p.src)}</div>
       </div>
       <div class="twtime">${p.displayTime||p.time}${String(p.displayTime||p.time).endsWith('ago')?'':' ago'}</div>
     </div>
-    <div class="twbody">${p.text}</div>
-    <div class="twfooter">
+    <div class="twbody">${escapeFeedText(p.text)}</div>
+    ${isRSS?'':`<div class="twfooter">
       <span class="twstat"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>${fmtNum(p.replies||0)}</span>
       <span class="twstat"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>${fmtNum(p.rts||0)}</span>
       <span class="twstat"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>${fmtNum(p.likes||0)}</span>
-    </div>
+    </div>`}
   </div>`;
  }).join('');
 }
@@ -4163,18 +3630,21 @@ async function delArticle(id){
 // RSS
 // ═══════════════════════════════════════════════════════════════════
 async function loadRSS(cocomId){
+ const requestId=++rssRequest;
  try{
   const cocom=cocomId||AC?.id||'EUCOM';
-  const r=await fetch('/.netlify/functions/rss?cocom='+cocom);
-  if(r.ok){RSS_ITEMS=await r.json();updateFeed();}
+  const r=await fetch('/.netlify/functions/rss?cocom='+cocom+'&v=reporting-v1');
+  if(r.ok){const items=await r.json();if(AC.id!==cocom || requestId!==rssRequest)return;RSS_ITEMS=Array.isArray(items)?items:[];updateFeed();}
  }catch{console.warn('RSS unavailable');}
 }
 async function loadTelegram(cocomId){
+ const requestId=++telegramRequest;
  try{
   const cocom=cocomId||AC?.id||'EUCOM';
   const r=await fetch('/.netlify/functions/telegram?cocom='+cocom);
   if(r.ok){
    const data=await r.json();
+   if(AC.id!==cocom || requestId!==telegramRequest)return;
    TELEGRAM_ITEMS=Array.isArray(data)?data:(data.items||[]);
    updateFeed();
   }
@@ -4207,12 +3677,12 @@ function openFeedModal(encoded){
    <div class="tw-modal-hdr">
     <div class="tw-modal-avatar" style="background:${col}">${init}</div>
     <div>
-     <div class="tw-modal-dname">${p.dname||p.src}${p.verified?` <svg width="17" height="17" viewBox="0 0 24 24" fill="#60a5fa"><path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>`:''}
+     <div class="tw-modal-dname">${escapeFeedText(p.dname||p.src)}${p.verified?` <svg width="17" height="17" viewBox="0 0 24 24" fill="#60a5fa"><path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>`:''}
      </div>
-     <div class="tw-modal-handle">${p.src}</div>
+     <div class="tw-modal-handle">${escapeFeedText(p.src)}</div>
     </div>
    </div>
-   <div class="tw-modal-body">${p.text}</div>
+   <div class="tw-modal-body">${escapeFeedText(p.text)}</div>
    <div class="tw-modal-time">${p.displayTime||p.time}${String(p.displayTime||p.time).endsWith('ago')?'':' ago'} · ${AC.id} AOR</div>
    <div class="tw-modal-stats">
     <span class="tw-modal-stat"><b>${fmtNum(p.replies||0)}</b> Replies</span>
@@ -4253,17 +3723,20 @@ function openArtModal(el){
 async function loadTicker(){
  try{
   const r=await fetch('/.netlify/functions/ticker');
-  if(!r.ok) return;
+  if(!r.ok) throw new Error('Market feed unavailable');
   const data=await r.json();
+  if(!Array.isArray(data)||!data.length)throw new Error('No verified quotes');
   // Rebuild ticker with live data
-  const d=[...data,...data];
+  const quotes=data.filter(t=>t.price!==null && t.price!=='' && Number.isFinite(Number(t.price)));
+  if(!quotes.length)throw new Error('No verified quotes');
+  const d=[...quotes,...quotes];
   const label='<span style="display:inline-flex;align-items:center;margin-right:28px;font-size:9px;letter-spacing:2px;color:var(--mute);border:1px solid var(--border);padding:1px 6px;border-radius:2px">UPDATED EVERY 8H</span>';
   document.getElementById('tkinner').innerHTML=label+d.map(t=>{
    const u=t.change>=0;
    const liveTag=t.live?'':'<span style="color:var(--fade);font-size:8px;margin-left:2px">·</span>';
    return `<span class="ti"><span class="ts">${t.symbol}</span><span class="tp ${u?'up':'dn'}">${Number(t.price).toFixed(2)}</span><span class="tc ${u?'up':'dn'}">${u?'▲':'▼'}${Math.abs(t.change||0).toFixed(2)}</span>${t.unit?`<span class="tu">${t.unit}</span>`:''}${liveTag}</span>`;
   }).join('');
- }catch(e){console.warn('Ticker API unavailable, using static data');}
+ }catch(e){document.getElementById('tkinner').textContent='MARKET DATA TEMPORARILY UNAVAILABLE';}
 }
 
 // ═══════════════════════════════════════════════════════════════════

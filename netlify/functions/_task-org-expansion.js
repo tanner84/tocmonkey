@@ -1,5 +1,5 @@
 const PACKS = {
-  EUCOM: [require('../../enhancements/knowledge/EUCOM-expansion.json')],
+  EUCOM: [require('../../enhancements/knowledge/EUCOM-depth.json'), require('../../enhancements/knowledge/EUCOM-expansion.json')],
   CENTCOM: [
     require('../../enhancements/knowledge/CENTCOM-afghanistan.json'),
     require('../../enhancements/knowledge/CENTCOM-afghanistan-formations.json'),

@@ -37,7 +37,9 @@
       anchor.href = parts.url;
       anchor.target = '_blank';
       anchor.rel = 'noopener noreferrer';
-      anchor.textContent = parts.url;
+      anchor.textContent = 'Source ↗';
+      anchor.title = parts.url;
+      anchor.setAttribute('aria-label', 'Read source at ' + new URL(parts.url).hostname);
       fragment.appendChild(anchor);
 
       if (parts.trailing) fragment.appendChild(document.createTextNode(parts.trailing));
