@@ -4,6 +4,7 @@ const { generateText } = require('./_openai');
 const STORE_NAME = 'market-ticker';
 const STORE_KEY = 'latest';
 const MIN_REFRESH_MS = 45 * 60 * 1000;
+const FAST_REPAIR_MIN_MS = 5 * 60 * 1000;
 const STALE_AFTER_MS = 3 * 60 * 60 * 1000;
 
 const INSTRUMENTS = [
@@ -16,15 +17,22 @@ const INSTRUMENTS = [
   { key:'URANIUM', symbol:'URANIUM', unit:'$/lb', sourceType:'web' },
   { key:'COPPER', symbol:'COPPER', unit:'$/lb', sourceType:'web' },
   { key:'ITA', symbol:'DEFENSE ETF', unit:'ITA', sourceType:'web' },
-  { key:'NASDAQ', symbol:'NASDAQ', unit:'', sourceType:'web' },
-  { key:'SP500', symbol:'S&P 500', unit:'', sourceType:'web' },
-  { key:'DOW', symbol:'DOW JONES', unit:'', sourceType:'web' },
-  { key:'FTSE100', symbol:'FTSE 100', unit:'', sourceType:'web' },
-  { key:'NIKKEI225', symbol:'NIKKEI 225', unit:'', sourceType:'web' },
+  { key:'NASDAQ', symbol:'NASDAQ', unit:'', sourceType:'direct-index' },
+  { key:'SP500', symbol:'S&P 500', unit:'', sourceType:'direct-index' },
+  { key:'DOW', symbol:'DOW JONES', unit:'', sourceType:'direct-index' },
+  { key:'FTSE100', symbol:'FTSE 100', unit:'', sourceType:'direct-index' },
+  { key:'NIKKEI225', symbol:'NIKKEI 225', unit:'', sourceType:'direct-index' },
 ];
 
 const META = Object.fromEntries(INSTRUMENTS.map(item => [item.key, item]));
 const REQUIRED_MARKET_KEYS = ['NASDAQ','SP500','DOW','FTSE100','NIKKEI225'];
+const DIRECT_INDEX_SOURCES = {
+  NASDAQ: { symbol:'^IXIC', label:'Yahoo Finance', sourceUrl:'https://finance.yahoo.com/quote/%5EIXIC/' },
+  SP500: { symbol:'^GSPC', label:'Yahoo Finance', sourceUrl:'https://finance.yahoo.com/quote/%5EGSPC/' },
+  DOW: { symbol:'^DJI', label:'Yahoo Finance', sourceUrl:'https://finance.yahoo.com/quote/%5EDJI/' },
+  FTSE100: { symbol:'^FTSE', label:'Yahoo Finance', sourceUrl:'https://finance.yahoo.com/quote/%5EFTSE/' },
+  NIKKEI225: { symbol:'^N225', label:'Yahoo Finance', sourceUrl:'https://finance.yahoo.com/quote/%5EN225/' },
+};
 const WEB_DESCRIPTIONS = {
   GOLD: 'gold spot or nearest widely reported benchmark in USD per troy ounce',
   USD_RUB: 'Russian rubles per 1 U.S. dollar',
@@ -32,14 +40,8 @@ const WEB_DESCRIPTIONS = {
   URANIUM: 'uranium spot price in USD per pound',
   COPPER: 'copper price in USD per pound',
   ITA: 'iShares U.S. Aerospace & Defense ETF share price in USD',
-  NASDAQ: 'Nasdaq Composite index level',
-  SP500: 'S&P 500 index level',
-  DOW: 'Dow Jones Industrial Average index level',
-  FTSE100: 'FTSE 100 index level',
-  NIKKEI225: 'Nikkei 225 index level',
 };
 const WEB_BATCHES = [
-  { name:'indices', keys:['NASDAQ','SP500','DOW','FTSE100','NIKKEI225'] },
   { name:'macro', keys:['GOLD','USD_RUB','USD_UAH','URANIUM','COPPER','ITA'] },
 ];
 
@@ -113,19 +115,19 @@ function normalizeQuote(key, raw, defaults = {}) {
 
   return {
     key,
-    symbol: meta.symbol,
-    unit: meta.unit,
+    symbol:meta.symbol,
+    unit:meta.unit,
     price,
     change,
-    changePct: num(raw?.changePct),
-    asOf: safeText(raw?.asOf || defaults.asOf || '', 80),
-    source: safeText(raw?.source || defaults.source || '', 80),
-    sourceUrl: validUrl(raw?.sourceUrl || defaults.sourceUrl || ''),
-    provider: safeText(raw?.provider || defaults.provider || '', 40),
-    verifiedAt: defaults.verifiedAt || new Date().toISOString(),
-    status: 'verified',
-    stale: false,
-    live: true,
+    changePct:num(raw?.changePct),
+    asOf:safeText(raw?.asOf || defaults.asOf || '', 80),
+    source:safeText(raw?.source || defaults.source || '', 80),
+    sourceUrl:validUrl(raw?.sourceUrl || defaults.sourceUrl || ''),
+    provider:safeText(raw?.provider || defaults.provider || '', 40),
+    verifiedAt:defaults.verifiedAt || new Date().toISOString(),
+    status:'verified',
+    stale:false,
+    live:true,
   };
 }
 
@@ -143,12 +145,13 @@ async function fetchEiaQuote(meta) {
   if (current === null || previous === null) throw new Error(`EIA ${meta.key} returned invalid values`);
 
   return normalizeQuote(meta.key, {
-    price: current,
-    change: current - previous,
-    asOf: rows[0]?.period || '',
-    source: 'U.S. EIA',
-    sourceUrl: 'https://www.eia.gov/opendata/',
-    provider: 'eia',
+    price:current,
+    change:current - previous,
+    changePct:previous ? ((current - previous) / previous) * 100 : null,
+    asOf:rows[0]?.period || '',
+    source:'U.S. EIA',
+    sourceUrl:'https://www.eia.gov/opendata/',
+    provider:'eia',
   });
 }
 
@@ -165,18 +168,66 @@ async function fetchEiaQuotes() {
   return { quotes, errors };
 }
 
+async function fetchDirectIndexQuote(key, config) {
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(config.symbol)}?range=5d&interval=1d&includePrePost=false&events=div%2Csplits`;
+  const response = await fetch(url, {
+    headers:{ 'User-Agent':'TOCMonkey/1.0 (+https://tocmonkey.com)' },
+    signal:AbortSignal.timeout(6500),
+  });
+  if (!response.ok) throw new Error(`${key} quote HTTP ${response.status}`);
+  const json = await response.json();
+  const result = json?.chart?.result?.[0];
+  if (!result || json?.chart?.error) throw new Error(`${key} quote unavailable`);
+
+  const timestamps = Array.isArray(result.timestamp) ? result.timestamp : [];
+  const closes = Array.isArray(result?.indicators?.quote?.[0]?.close) ? result.indicators.quote[0].close : [];
+  const sessions = [];
+  for (let i=0; i<Math.min(timestamps.length, closes.length); i++) {
+    const close = num(closes[i]);
+    const ts = num(timestamps[i]);
+    if (close !== null && close > 0 && ts !== null) sessions.push({ close, ts });
+  }
+  if (sessions.length < 2) throw new Error(`${key} quote returned insufficient sessions`);
+
+  const current = sessions.at(-1);
+  const previous = sessions.at(-2);
+  const change = current.close - previous.close;
+  return normalizeQuote(key, {
+    price:current.close,
+    change,
+    changePct:previous.close ? (change / previous.close) * 100 : null,
+    asOf:new Date(current.ts * 1000).toISOString(),
+    source:config.label,
+    sourceUrl:config.sourceUrl,
+    provider:'yahoo-chart',
+  });
+}
+
+async function fetchDirectIndexQuotes() {
+  const entries = Object.entries(DIRECT_INDEX_SOURCES);
+  const settled = await Promise.allSettled(entries.map(([key, config]) => fetchDirectIndexQuote(key, config)));
+  const quotes = {};
+  const errors = [];
+  settled.forEach((result, index) => {
+    const key = entries[index][0];
+    if (result.status === 'fulfilled' && result.value) quotes[key] = result.value;
+    else errors.push(`${key}: ${result.reason?.message || 'direct index error'}`);
+  });
+  return { quotes, errors };
+}
+
 async function researchWebQuoteBatch(batch) {
   const requested = batch.keys.map(key => `${key} = ${WEB_DESCRIPTIONS[key]}`).join('\n');
-  const prompt = `Use web search to verify the most recent available market value and same-session/day absolute change for the instruments below. This is for a public informational dashboard, not trading execution. Prefer current or last official close values from reputable market, exchange, government, issuer or major financial-reporting sources. Do not estimate, interpolate, substitute a proxy for an index, or reuse example numbers. If you cannot verify both a price/level and its absolute daily change, omit that key.\n\nReturn ONLY raw JSON with only the requested keys.\n${requested}\n\nFor every returned key use exactly this object shape:\n{"price":number,"change":number,"changePct":number|null,"asOf":"short date/time or market-state note","source":"source name","sourceUrl":"https://..."}\n\nImportant: change MUST be the absolute price/point change, not the percent change. A negative day must have a negative change. Use the most recent available session for each market even if that market is closed.`;
+  const prompt = `Use web search to verify the most recent available market value and same-session/day absolute change for the instruments below. This is for a public informational dashboard, not trading execution. Prefer current or last official close values from reputable market, exchange, government, issuer or major financial-reporting sources. Do not estimate, interpolate, substitute a proxy, or reuse example numbers. If you cannot verify both a price/level and its absolute daily change, omit that key.\n\nReturn ONLY raw JSON with only the requested keys.\n${requested}\n\nFor every returned key use exactly this object shape:\n{"price":number,"change":number,"changePct":number|null,"asOf":"short date/time or market-state note","source":"source name","sourceUrl":"https://..."}\n\nImportant: change MUST be the absolute price/point change, not the percent change. A negative day must have a negative change. Use the most recent available session for each market even if that market is closed.`;
 
   const result = await generateText({
     prompt,
-    model: env('OPENAI_RESEARCH_MODEL') || 'gpt-5.6-terra',
-    maxOutputTokens: 900,
-    reasoningEffort: 'low',
-    timeoutMs: 45000,
-    retries: 1,
-    tools: [{ type:'web_search' }],
+    model:env('OPENAI_RESEARCH_MODEL') || 'gpt-5.6-terra',
+    maxOutputTokens:900,
+    reasoningEffort:'low',
+    timeoutMs:45000,
+    retries:1,
+    tools:[{ type:'web_search' }],
   });
 
   const parsed = extractJson(result.text);
@@ -229,65 +280,27 @@ function staleCopy(item, nowIso) {
   if (!item) return null;
   return {
     ...item,
-    symbol: META[item.key]?.symbol || item.symbol,
-    unit: META[item.key]?.unit ?? item.unit,
-    status: 'last_verified',
-    stale: true,
-    live: false,
-    servedAt: nowIso,
+    symbol:META[item.key]?.symbol || item.symbol,
+    unit:META[item.key]?.unit ?? item.unit,
+    status:'last_verified',
+    stale:true,
+    live:false,
+    servedAt:nowIso,
   };
 }
 
 function coverageHealth(items = []) {
   const present = new Set(items.map(item => item?.key).filter(key => META[key]));
   const missingRequired = REQUIRED_MARKET_KEYS.filter(key => !present.has(key));
-  return {
-    degraded: missingRequired.length > 0,
-    missingRequired,
-  };
+  return { degraded:missingRequired.length > 0, missingRequired };
 }
 
 function cacheIsDegraded(cache) {
   if (!cache?.items?.length) return true;
-  const health = coverageHealth(cache.items);
-  return health.degraded;
+  return coverageHealth(cache.items).degraded;
 }
 
-async function refreshMarketData({ force = false } = {}) {
-  const now = Date.now();
-  const nowIso = new Date(now).toISOString();
-  const previous = await readCache();
-  const previousAge = previous?.updatedAt ? now - Date.parse(previous.updatedAt) : Infinity;
-
-  if (!force && previous && !cacheIsDegraded(previous) && Number.isFinite(previousAge) && previousAge >= 0 && previousAge < MIN_REFRESH_MS) {
-    return { ...previous, skipped:true, skipReason:'fresh-cache' };
-  }
-
-  const [eiaResult, webResult] = await Promise.allSettled([
-    fetchEiaQuotes(),
-    researchWebQuotes(),
-  ]);
-
-  const fresh = {};
-  const errors = [];
-  let model = null;
-
-  if (eiaResult.status === 'fulfilled') {
-    Object.assign(fresh, eiaResult.value.quotes);
-    errors.push(...(eiaResult.value.errors || []));
-  } else {
-    errors.push(`EIA: ${eiaResult.reason?.message || 'refresh failed'}`);
-  }
-
-  if (webResult.status === 'fulfilled') {
-    Object.assign(fresh, webResult.value.quotes);
-    model = webResult.value.model || null;
-    errors.push(...(webResult.value.errors || []));
-    if (webResult.value.rejected?.length) errors.push(`Web unverified: ${webResult.value.rejected.join(', ')}`);
-  } else {
-    errors.push(`Web research: ${webResult.reason?.message || 'refresh failed'}`);
-  }
-
+function buildPayload(previous, fresh, errors, model, nowIso) {
   const old = previousByKey(previous);
   const items = [];
   let freshCount = 0;
@@ -304,29 +317,112 @@ async function refreshMarketData({ force = false } = {}) {
   }
 
   if (!items.length) throw new Error(`Market refresh produced no verified data${errors.length ? `: ${errors.join(' | ')}` : ''}`);
-
   const health = coverageHealth(items);
-  const payload = {
-    updatedAt: nowIso,
-    model,
+  return {
+    updatedAt:nowIso,
+    model:model || null,
     items,
-    coverage: {
-      total: INSTRUMENTS.length,
-      fresh: freshCount,
-      lastVerified: staleCount,
-      unavailable: INSTRUMENTS.length - items.length,
-      degraded: health.degraded,
-      missingRequired: health.missingRequired,
+    coverage:{
+      total:INSTRUMENTS.length,
+      fresh:freshCount,
+      lastVerified:staleCount,
+      unavailable:INSTRUMENTS.length - items.length,
+      degraded:health.degraded,
+      missingRequired:health.missingRequired,
     },
-    errors: errors.slice(0, 20),
+    errors:errors.slice(0, 20),
   };
+}
 
+async function refreshFastMarketData({ previous = null } = {}) {
+  const nowIso = new Date().toISOString();
+  const base = previous || await readCache();
+  const [eiaResult, directResult] = await Promise.allSettled([
+    fetchEiaQuotes(),
+    fetchDirectIndexQuotes(),
+  ]);
+
+  const fresh = {};
+  const errors = [];
+  if (eiaResult.status === 'fulfilled') {
+    Object.assign(fresh, eiaResult.value.quotes || {});
+    errors.push(...(eiaResult.value.errors || []));
+  } else {
+    errors.push(`EIA: ${eiaResult.reason?.message || 'refresh failed'}`);
+  }
+  if (directResult.status === 'fulfilled') {
+    Object.assign(fresh, directResult.value.quotes || {});
+    errors.push(...(directResult.value.errors || []));
+  } else {
+    errors.push(`Direct indices: ${directResult.reason?.message || 'refresh failed'}`);
+  }
+
+  const payload = buildPayload(base, fresh, errors, base?.model || null, nowIso);
+  await writeCache(payload);
+  return payload;
+}
+
+async function refreshMarketData({ force = false } = {}) {
+  const now = Date.now();
+  const nowIso = new Date(now).toISOString();
+  const previous = await readCache();
+  const previousAge = previous?.updatedAt ? now - Date.parse(previous.updatedAt) : Infinity;
+
+  if (!force && previous && !cacheIsDegraded(previous) && Number.isFinite(previousAge) && previousAge >= 0 && previousAge < MIN_REFRESH_MS) {
+    return { ...previous, skipped:true, skipReason:'fresh-cache' };
+  }
+
+  const [eiaResult, directResult, webResult] = await Promise.allSettled([
+    fetchEiaQuotes(),
+    fetchDirectIndexQuotes(),
+    researchWebQuotes(),
+  ]);
+
+  const fresh = {};
+  const errors = [];
+  let model = null;
+
+  if (eiaResult.status === 'fulfilled') {
+    Object.assign(fresh, eiaResult.value.quotes || {});
+    errors.push(...(eiaResult.value.errors || []));
+  } else {
+    errors.push(`EIA: ${eiaResult.reason?.message || 'refresh failed'}`);
+  }
+
+  if (directResult.status === 'fulfilled') {
+    Object.assign(fresh, directResult.value.quotes || {});
+    errors.push(...(directResult.value.errors || []));
+  } else {
+    errors.push(`Direct indices: ${directResult.reason?.message || 'refresh failed'}`);
+  }
+
+  if (webResult.status === 'fulfilled') {
+    Object.assign(fresh, webResult.value.quotes || {});
+    model = webResult.value.model || null;
+    errors.push(...(webResult.value.errors || []));
+    if (webResult.value.rejected?.length) errors.push(`Web unverified: ${webResult.value.rejected.join(', ')}`);
+  } else {
+    errors.push(`Web research: ${webResult.reason?.message || 'refresh failed'}`);
+  }
+
+  const payload = buildPayload(previous, fresh, errors, model, nowIso);
   await writeCache(payload);
   return payload;
 }
 
 async function getPublicTicker() {
-  const cache = await readCache();
+  let cache = await readCache();
+  if (cache?.items?.length && cacheIsDegraded(cache)) {
+    const age = cache.updatedAt ? Date.now() - Date.parse(cache.updatedAt) : Infinity;
+    if (!Number.isFinite(age) || age >= FAST_REPAIR_MIN_MS) {
+      try {
+        cache = await refreshFastMarketData({ previous:cache });
+      } catch (error) {
+        console.warn('Fast market cache repair failed:', error.message);
+      }
+    }
+  }
+
   if (cache?.items?.length) {
     const age = cache.updatedAt ? Date.now() - Date.parse(cache.updatedAt) : Infinity;
     const globallyStale = !Number.isFinite(age) || age > STALE_AFTER_MS;
@@ -337,7 +433,7 @@ async function getPublicTicker() {
   }
 
   try {
-    const warmed = await refreshMarketData();
+    const warmed = await refreshFastMarketData();
     if (warmed?.items?.length) return { items:warmed.items, updatedAt:warmed.updatedAt || null, coverage:warmed.coverage || null, stale:false };
   } catch (error) {
     console.warn('Market cache bootstrap failed:', error.message);
@@ -348,8 +444,8 @@ async function getPublicTicker() {
   const health = coverageHealth(items);
   return {
     items,
-    updatedAt: new Date().toISOString(),
-    coverage: {
+    updatedAt:new Date().toISOString(),
+    coverage:{
       total:INSTRUMENTS.length,
       fresh:items.length,
       lastVerified:0,
@@ -364,6 +460,7 @@ async function getPublicTicker() {
 module.exports = {
   INSTRUMENTS,
   readCache,
+  refreshFastMarketData,
   refreshMarketData,
   getPublicTicker,
 };

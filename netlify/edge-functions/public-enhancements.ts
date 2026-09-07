@@ -5,12 +5,12 @@ export default async (_request: Request, context: any) => {
 
   let html = await response.text();
 
-  // Bust the legacy 8-hour browser/CDN cache key for the market ticker.
-  // The new ticker backend serves only verified or last-verified values; using a
-  // versioned URL prevents browsers from reusing the old placeholder response.
+  // Bust the legacy browser/CDN cache key for the market ticker.
+  // The ticker backend serves only verified or last-verified values; using a
+  // versioned URL prevents browsers from reusing an older degraded response.
   html = html.replace(
     "fetch('/.netlify/functions/ticker')",
-    "fetch('/.netlify/functions/ticker?v=verified-market-v2', { cache:'no-store' })"
+    "fetch('/.netlify/functions/ticker?v=verified-market-v3', { cache:'no-store' })"
   );
 
   if (!html.includes('/enhancements/public-overrides.css')) {
