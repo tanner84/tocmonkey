@@ -40,7 +40,8 @@ const DISTRACTIONS = /\b(basketball|football|rugby|cricket|tennis|baseball|socce
 export function significant(item) {
   const headline = titleOf(item);
   if (DISTRACTIONS.test(headline) && !VIOLENCE.test(headline)) return false;
-  return VIOLENCE.test(headline) || matches(`${headline} ${summaryOf(item)}`, SECURITY);
+  const securityText = `${headline} ${summaryOf(item)}`.replace(/artificial intelligence/gi, 'AI');
+  return VIOLENCE.test(headline) || matches(securityText, SECURITY);
 }
 export function validArticle(item, { now = Date.now(), maxAgeHours = 96 } = {}) {
   const title = titleOf(item);

@@ -74,6 +74,11 @@
     const run = () => {
       queued = false;
       linkifySitrep(body);
+      const footer = document.getElementById('srpfoot');
+      if (footer) {
+        const sourceOnly = /SOURCE-ONLY|AI assessment is temporarily unavailable/i.test(body.textContent);
+        footer.textContent = (sourceOnly ? 'SOURCE REPORTING' : 'AI-GENERATED') + ' · OPEN SOURCE DATA ONLY · NOT OFFICIAL INTELLIGENCE · FOR EDUCATIONAL USE';
+      }
     };
     const queue = () => {
       if (queued) return;
@@ -83,7 +88,7 @@
 
     const observer = new MutationObserver(queue);
     observer.observe(body, { childList: true, subtree: true, characterData: true });
-    linkifySitrep(body);
+    run();
   }
 
   if (document.readyState === 'loading') {
