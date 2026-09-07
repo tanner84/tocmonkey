@@ -26,6 +26,10 @@
   box-sizing:border-box !important;
 }
 
+/* data-tm-strict-aor belongs to the dedicated SIGACT integrity pass and wins
+   even if the older broad keyword filter later touches data-tm-aor-match. */
+#sigactslist > .sigact[data-tm-strict-aor="false"],
+#sigactslist > .tm-sigact-row[data-tm-strict-aor="false"],
 #sigactslist > .sigact[data-tm-aor-match="false"],
 #sigactslist > .tm-sigact-row[data-tm-aor-match="false"] {
   display:none !important;
