@@ -31,7 +31,7 @@
       "summary":"Army service component supporting land forces, theater sustainment, exercises and partner integration across Europe and Africa.",
       "capabilities":["land component command","theater sustainment","air and missile defense integration","multinational exercises"],
       "systems":[{"name":"M1 Abrams","category":"main battle tank","url":"https://en.wikipedia.org/wiki/M1_Abrams"},{"name":"M142 HIMARS","category":"rocket artillery","url":"https://en.wikipedia.org/wiki/M142_HIMARS"},{"name":"Patriot","category":"air and missile defense","url":"https://en.wikipedia.org/wiki/MIM-104_Patriot"}],
-      "relationships":[{"target":"useucom","kind":"service component"},{"target":"nato-aco","kind":"alliance integration"}],
+      "relationships":[{"target":"useucom","kind":"service component"},{"target":"nato-aco","kind":"alliance integration"},{"target":"us-v-corps","kind":"corps reference"}],
       "keywords":["USAREUR-AF","U.S. Army Europe","Army Europe and Africa"],
       "sources":[{"label":"USAREUR-AF","url":"https://www.europeafrica.army.mil/"}]
     },

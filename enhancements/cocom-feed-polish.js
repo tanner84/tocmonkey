@@ -166,6 +166,7 @@
   }
 
   function filterSigacts() {
+    if(document.querySelector('#sigactslist [data-tm-policy="reporting-v1"]'))return true;
     const label = labelElement('SIGACTS');
     const panel = panelFromLabel(label);
     if (!panel) return false;

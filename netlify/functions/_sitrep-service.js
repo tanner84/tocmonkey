@@ -1,4 +1,4 @@
-const { getStore } = require('@netlify/blobs');
+const { getStore, getDeployStore } = require('@netlify/blobs');
 const { generateText, DEFAULT_MODEL } = require('./_openai');
 
 const COMMANDS = {
@@ -14,6 +14,9 @@ const STORE_NAME = 'sitrep-cache';
 const CURRENT_MS = 6 * 60 * 60 * 1000;
 const AGING_MS = 12 * 60 * 60 * 1000;
 const EXPIRED_MS = 24 * 60 * 60 * 1000;
+const POLICY_VERSION = 'reporting-v1';
+function env(name) { return typeof Netlify !== 'undefined' ? Netlify.env.get(name) : process.env[name]; }
+function reportStore() { return env('CONTEXT') === 'production' ? getStore(STORE_NAME) : getDeployStore(STORE_NAME); }
 
 function displayName(id) {
   return id === 'INDOPACOM' ? 'PACOM' : id;
@@ -26,7 +29,7 @@ function normalizeCocom(value = '') {
 }
 
 function ageState(ts) {
-  if (!ts) return { state:'MISSING', ageMinutes:null };
+  if (!Number.isFinite(Number(ts)) || Number(ts) <= 0) return { state:'MISSING', ageMinutes:null };
   const ageMs = Math.max(0, Date.now() - Number(ts));
   const ageMinutes = Math.floor(ageMs / 60000);
   if (ageMs < CURRENT_MS) return { state:'CURRENT', ageMinutes };
@@ -59,13 +62,14 @@ function usefulItems(items = []) {
 }
 
 async function fetchRSS(cocomId, siteUrl) {
-  const response = await fetch(`${siteUrl}/.netlify/functions/rss?cocom=${encodeURIComponent(cocomId)}`, {
+  const response = await fetch(`${siteUrl}/.netlify/functions/rss?cocom=${encodeURIComponent(cocomId)}&purpose=sitrep&v=${POLICY_VERSION}`, {
     headers: { 'User-Agent':'TOCMonkey-SITREPGenerator/2.0' },
     signal: AbortSignal.timeout(20000),
   });
   if (!response.ok) throw new Error(`RSS ${cocomId} HTTP ${response.status}`);
   const data = await response.json();
-  return usefulItems(Array.isArray(data) ? data : []);
+  const { filterReporting } = await import('../../enhancements/reporting-policy.mjs');
+  return usefulItems(filterReporting(data, cocomId, { purpose:'sitrep' }));
 }
 
 function sourceOnlyText(cocomId, items = [], generatedAt = new Date().toISOString()) {
@@ -74,7 +78,7 @@ function sourceOnlyText(cocomId, items = [], generatedAt = new Date().toISOStrin
   const bullets = list.length
     ? list.map(item => `• ${item.title}${item.source ? ` — ${item.source}` : ''}${item.url ? `\n  ${item.url}` : ''}`).join('\n')
     : '• No fresh source items are currently available.';
-  return `SITREP — ${label}\n\nSITUATION\nAI assessment is temporarily unavailable. TOC Monkey is showing current open-source reporting instead of presenting expired analysis as current.\n\nLATEST REPORTING\n${bullets}\n\nINDICATORS\nSource reporting remains live. No AI-derived trend assessment is being asserted in this fallback product.\n\nASSESSMENT\nAutomated assessment pending the next successful backend generation.\n\n// SOURCE-ONLY FALLBACK · ${generatedAt.slice(0,16).replace('T',' ')}Z`;
+  return `SITREP — ${label}\n\nSITUATION\nAI assessment is temporarily unavailable. TOC Monkey is showing current open-source reporting instead of presenting expired analysis as current.\n\nLATEST REPORTING\n${bullets}\n\nINDICATORS\nThis is a dated source snapshot. No AI-derived trend assessment is being asserted in this fallback product.\n\nASSESSMENT\nAutomated assessment pending the next successful backend generation.\n\n// SOURCE-ONLY FALLBACK · ${generatedAt.slice(0,16).replace('T',' ')}Z`;
 }
 
 function buildPrompt(cocomId, items) {
@@ -87,12 +91,12 @@ function buildPrompt(cocomId, items) {
 }
 
 async function readCached(cocomId) {
-  const store = getStore(STORE_NAME);
+  const store = reportStore();
   return await store.get(`sitrep-${cocomId}`, { type:'json' });
 }
 
 async function writeCached(cocomId, payload) {
-  const store = getStore(STORE_NAME);
+  const store = reportStore();
   await store.setJSON(`sitrep-${cocomId}`, payload);
   return payload;
 }
@@ -102,11 +106,11 @@ async function generateCocom(cocomId, { siteUrl, force = false, source = 'schedu
   if (!cocomId) throw new Error('Invalid COCOM');
   const existing = await readCached(cocomId).catch(() => null);
   const freshness = ageState(existing?.ts);
-  if (!force && freshness.state === 'CURRENT') {
+  if (!force && existing?.mode === 'AI' && existing?.policyVersion === POLICY_VERSION && Date.now() - existing.ts < 3 * 60 * 60 * 1000) {
     return { skipped:true, reason:'current', report:existing };
   }
 
-  const resolvedSiteUrl = String(siteUrl || process.env.URL || 'https://tocmonkey.com').replace(/\/$/, '');
+  const resolvedSiteUrl = String(siteUrl || env('URL') || 'https://tocmonkey.com').replace(/\/$/, '');
   let items = [];
   let rssError = null;
   try {
@@ -118,6 +122,7 @@ async function generateCocom(cocomId, { siteUrl, force = false, source = 'schedu
   const now = new Date();
   const base = {
     cocomId,
+    policyVersion:POLICY_VERSION,
     displayName:displayName(cocomId),
     generatedAt:now.toISOString(),
     ts:now.getTime(),
@@ -130,11 +135,12 @@ async function generateCocom(cocomId, { siteUrl, force = false, source = 'schedu
     try {
       const result = await generateText({
         prompt:buildPrompt(cocomId, items),
-        model:process.env.OPENAI_SITREP_MODEL || DEFAULT_MODEL,
-        maxOutputTokens:850,
+        model:env('OPENAI_SITREP_MODEL') || DEFAULT_MODEL,
+        maxOutputTokens:1800,
         reasoningEffort:'low',
         retries:2,
       });
+      if(!/SITUATION/.test(result.text || '') || !/ASSESSMENT/.test(result.text || '') || !/SOURCES/.test(result.text || '')) throw new Error('SITREP generation was incomplete');
       const report = {
         ...base,
         text:result.text,
@@ -147,13 +153,17 @@ async function generateCocom(cocomId, { siteUrl, force = false, source = 'schedu
       await writeCached(cocomId, report);
       return { skipped:false, report };
     } catch (error) {
+      // Preserve useful analysis if a refresh fails; never re-date it.
+      if(existing?.mode === 'AI' && existing?.policyVersion === POLICY_VERSION && ['CURRENT','AGING','DELAYED'].includes(freshness.state)) {
+        return { skipped:true, reason:'generation-failed-preserved', report:existing, degraded:true, error:String(error.message || error).slice(0,240) };
+      }
       const fallback = {
         ...base,
         text:sourceOnlyText(cocomId, items, now.toISOString()),
         status:'SOURCE_ONLY',
         mode:'SOURCE_ONLY',
         provider:'openai',
-        model:process.env.OPENAI_SITREP_MODEL || DEFAULT_MODEL,
+        model:env('OPENAI_SITREP_MODEL') || DEFAULT_MODEL,
         generationError:String(error.message || error).slice(0,240),
       };
       await writeCached(cocomId, fallback);
@@ -162,7 +172,7 @@ async function generateCocom(cocomId, { siteUrl, force = false, source = 'schedu
   }
 
   // If source collection is unavailable, do not overwrite a still-usable report.
-  if (existing?.text && ageState(existing.ts).state !== 'EXPIRED') {
+  if (existing?.text && existing?.policyVersion === POLICY_VERSION && ['CURRENT','AGING','DELAYED'].includes(ageState(existing.ts).state)) {
     return { skipped:true, reason:'rss-unavailable-preserved', report:existing, degraded:true, error:rssError };
   }
 
@@ -172,7 +182,7 @@ async function generateCocom(cocomId, { siteUrl, force = false, source = 'schedu
     status:'SOURCE_ONLY',
     mode:'SOURCE_ONLY',
     provider:'openai',
-    model:process.env.OPENAI_SITREP_MODEL || DEFAULT_MODEL,
+    model:env('OPENAI_SITREP_MODEL') || DEFAULT_MODEL,
     generationError:rssError || 'No source items available',
   };
   await writeCached(cocomId, fallback);
@@ -199,6 +209,7 @@ module.exports = {
   CURRENT_MS,
   AGING_MS,
   EXPIRED_MS,
+  POLICY_VERSION,
   normalizeCocom,
   displayName,
   ageState,

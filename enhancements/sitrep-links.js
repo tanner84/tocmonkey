@@ -37,7 +37,9 @@
       anchor.href = parts.url;
       anchor.target = '_blank';
       anchor.rel = 'noopener noreferrer';
-      anchor.textContent = parts.url;
+      anchor.textContent = 'Source ↗';
+      anchor.title = parts.url;
+      anchor.setAttribute('aria-label', 'Read source at ' + new URL(parts.url).hostname);
       fragment.appendChild(anchor);
 
       if (parts.trailing) fragment.appendChild(document.createTextNode(parts.trailing));
@@ -72,6 +74,11 @@
     const run = () => {
       queued = false;
       linkifySitrep(body);
+      const footer = document.getElementById('srpfoot');
+      if (footer) {
+        const sourceOnly = /SOURCE-ONLY|AI assessment is temporarily unavailable/i.test(body.textContent);
+        footer.textContent = (sourceOnly ? 'SOURCE REPORTING' : 'AI-GENERATED') + ' · OPEN SOURCE DATA ONLY · NOT OFFICIAL INTELLIGENCE · FOR EDUCATIONAL USE';
+      }
     };
     const queue = () => {
       if (queued) return;
@@ -81,7 +88,7 @@
 
     const observer = new MutationObserver(queue);
     observer.observe(body, { childList: true, subtree: true, characterData: true });
-    linkifySitrep(body);
+    run();
   }
 
   if (document.readyState === 'loading') {

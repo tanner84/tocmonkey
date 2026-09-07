@@ -1,4 +1,5 @@
-import { getStore } from "@netlify/blobs";
+import { filterReporting, POLICY_VERSION } from '../../enhancements/reporting-policy.mjs';
+import { getStore, getDeployStore } from "@netlify/blobs";
 
 // Public SITREP endpoint: read-only distribution layer.
 // Public traffic never triggers a paid AI request. Fresh reports are produced
@@ -19,7 +20,7 @@ function displayName(id) {
 }
 
 function freshness(ts) {
-  if (!ts) return { state:'MISSING', ageMinutes:null };
+  if (!Number.isFinite(Number(ts)) || Number(ts) <= 0) return { state:'MISSING', ageMinutes:null };
   const ageMs = Math.max(0, Date.now() - Number(ts));
   const ageMinutes = Math.floor(ageMs / 60000);
   if (ageMs < CURRENT_MS) return { state:'CURRENT', ageMinutes };
@@ -30,7 +31,7 @@ function freshness(ts) {
 
 function feedFallback(cocomId, feedItems=[]) {
   const seen = new Set();
-  const items = feedItems.map(item => ({
+  const items = filterReporting(feedItems, cocomId, { purpose:'sitrep' }).map(item => ({
     title:String(item?.title || item?.text || '').replace(/\s+/g,' ').trim().slice(0,220),
     source:String(item?.dname || item?.source || item?.src || '').replace(/\s+/g,' ').trim().slice(0,80),
     url:String(item?.url || item?.link || '').trim(),
@@ -73,17 +74,17 @@ export default async (req) => {
 
   let cached = null;
   try {
-    const store = getStore('sitrep-cache');
+    const store = Netlify.env.get('CONTEXT') === 'production' ? getStore('sitrep-cache') : getDeployStore('sitrep-cache');
     cached = await store.get(`sitrep-${cocomId}`, { type:'json' });
   } catch (_) {}
 
   const state = freshness(cached?.ts);
-  if (cached?.text && state.state !== 'EXPIRED') {
+  if (cached?.text && cached.policyVersion === POLICY_VERSION && ['CURRENT','AGING','DELAYED'].includes(state.state)) {
     return json({
-      text:annotatedText(cached, state),
+      text:cached.mode === 'SOURCE_ONLY' ? cached.text : annotatedText(cached, state),
       cached:true,
       stale:state.state !== 'CURRENT',
-      freshness:state.state,
+      freshness:cached.mode === 'SOURCE_ONLY' ? 'SOURCE_ONLY' : state.state,
       ageMinutes:state.ageMinutes,
       generatedAt:cached.generatedAt || (cached.ts ? new Date(cached.ts).toISOString() : null),
       mode:cached.mode || 'AI',
@@ -94,8 +95,15 @@ export default async (req) => {
   // Never expose provider/billing failures to visitors and never present a
   // >24h analysis as current. Use current page feed data as a deterministic
   // source-only fallback until the backend generator succeeds.
+  let feedItems = Array.isArray(body.feedItems) ? body.feedItems : [];
+  try {
+    const feedUrl = new URL('/.netlify/functions/rss', req.url);
+    feedUrl.search = new URLSearchParams({ cocom:cocomId, purpose:'sitrep', v:POLICY_VERSION });
+    const response = await fetch(feedUrl, { signal:AbortSignal.timeout(15000) });
+    if(response.ok) { const data = await response.json(); if(Array.isArray(data)) feedItems=data; }
+  } catch {}
   return json({
-    text:feedFallback(cocomId, Array.isArray(body.feedItems) ? body.feedItems : []),
+    text:feedFallback(cocomId, feedItems),
     cached:false,
     stale:true,
     freshness:'SOURCE_ONLY',

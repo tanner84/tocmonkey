@@ -96,6 +96,7 @@
   }
 
   function relevant(row, cocom) {
+    if(row.dataset.tmPolicy==='reporting-v1')return row.dataset.cocom===cocom;
     const headline = clean(row.querySelector('.sigloc')?.textContent || '');
     const summary = clean(row.querySelector('.sigsummary')?.textContent || '');
 

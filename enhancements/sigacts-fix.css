@@ -67,3 +67,6 @@
 #sigactslist .sigsummary script {
   display:none !important;
 }
+
+#sigactslist .sigloc { font-size:11px; line-height:1.45; }
+#sigactslist .sigsummary { font-size:10px; line-height:1.45; color:var(--mid); }

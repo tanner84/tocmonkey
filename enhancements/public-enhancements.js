@@ -267,7 +267,7 @@
         <div class="tm-k-breadcrumb"><button class="tm-k-back" type="button">← BACK TO ${esc(state.payload.command.displayName || publicCommandLabel(state.commandId))}</button><span>${esc(labelType(actor.type))}</span></div>
         <article class="tm-k-dossier">
           <h2>${esc(actor.name)}</h2>
-          <div class="tm-k-dossier-meta">${esc(actor.country || '—')} · ${esc(labelType(actor.type))}</div>
+          <div class="tm-k-dossier-meta">${esc(actor.country || '—')} · ${esc(labelType(actor.type))}${actor.lastReviewed?` · REVIEWED ${esc(actor.lastReviewed)}`:''}</div>
           <p class="tm-k-dossier-summary">${esc(actor.summary)}</p>
           <section><h4>CAPABILITIES</h4><div class="tm-k-tags">${(actor.capabilities||[]).map(x=>`<button class="tm-k-tag tm-k-search-tag" type="button" data-search="${esc(x)}">${esc(x)}</button>`).join('')}</div></section>
           <section><h4>SYSTEMS / EQUIPMENT</h4>${systems.length?`<div class="tm-k-systems">${systems.map(renderSystem).join('')}</div>`:'<div class="tm-k-muted">No system-level entries added yet.</div>'}</section>

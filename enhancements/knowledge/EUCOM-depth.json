@@ -1,0 +1,501 @@
+{
+  "id": "EUCOM",
+  "lastReviewed": "2026-09-07",
+  "actors": [
+    {
+      "id": "british-army",
+      "name": "British Army",
+      "type": "unit",
+      "country": "United Kingdom",
+      "summary": "The UK's land service. Explore its Global Response Division, armoured division and linked brigades below. These links describe the published formation structure, not a claim that all units are deployed or at the same readiness. Equipment entries distinguish an established tank from its replacement programme.",
+      "capabilities": [
+        "land operations",
+        "air manoeuvre",
+        "armoured warfare",
+        "artillery"
+      ],
+      "systems": [
+        {
+          "name": "Challenger 2",
+          "category": "main battle tank",
+          "url": "https://www.army.mod.uk/learn-and-explore/equipment/combat-vehicles/challenger-2/",
+          "note": ""
+        },
+        {
+          "name": "Challenger 3",
+          "category": "main battle tank — demonstration / trials",
+          "url": "https://www.army.mod.uk/learn-and-explore/equipment/combat-vehicles/challenger-3/",
+          "note": "The Army describes prototype trials before service entry; this listing does not imply an operational fleet."
+        },
+        {
+          "name": "Ajax",
+          "category": "armoured reconnaissance programme",
+          "url": "https://www.army.mod.uk/learn-and-explore/equipment/combat-vehicles/ajax/",
+          "note": "See the Army programme page for current delivery and fielding status."
+        }
+      ],
+      "relationships": [
+        {
+          "target": "uk-armed-forces",
+          "kind": "land service"
+        },
+        {
+          "target": "uk-1-division",
+          "kind": "formation"
+        },
+        {
+          "target": "uk-3-division",
+          "kind": "formation"
+        }
+      ],
+      "keywords": [
+        "British Army"
+      ],
+      "sources": [
+        {
+          "label": "British Army — formations",
+          "url": "https://www.army.mod.uk/learn-and-explore/about-the-army/formations-divisions-and-brigades/"
+        },
+        {
+          "label": "Challenger 3 — programme status",
+          "url": "https://www.army.mod.uk/learn-and-explore/equipment/combat-vehicles/challenger-3/"
+        }
+      ],
+      "priority": 1,
+      "lastReviewed": "2026-09-07",
+      "coverageTags": []
+    },
+    {
+      "id": "uk-1-division",
+      "name": "1st (United Kingdom) Division",
+      "type": "unit",
+      "country": "United Kingdom",
+      "summary": "Global Response Division, headquartered at Imphal Barracks in York. Its published structure includes seven brigades covering light forces, air assault, engineers, military police and sustainment. The Army describes a land-component role in NATO’s Allied Response Force.",
+      "capabilities": [
+        "global response",
+        "high-readiness forces",
+        "humanitarian assistance",
+        "multinational integration"
+      ],
+      "systems": [],
+      "relationships": [
+        {
+          "target": "british-army",
+          "kind": "service"
+        },
+        {
+          "target": "uk-16-air-assault",
+          "kind": "subordinate brigade"
+        }
+      ],
+      "keywords": [
+        "1st (United Kingdom) Division"
+      ],
+      "sources": [
+        {
+          "label": "1st (UK) Division — organisation and locations",
+          "url": "https://www.army.mod.uk/learn-and-explore/about-the-army/formations-divisions-and-brigades/headquarters-allied-rapid-reaction-corps/1st-united-kingdom-division/"
+        }
+      ],
+      "priority": 1,
+      "lastReviewed": "2026-09-07",
+      "coverageTags": [
+        "operational-formations",
+        "bases-locations",
+        "external-relations"
+      ]
+    },
+    {
+      "id": "uk-3-division",
+      "name": "3rd (United Kingdom) Division",
+      "type": "unit",
+      "country": "United Kingdom",
+      "summary": "Armoured division with a Euro-Atlantic focus and alignment to the Allied Rapid Reaction Corps and NATO. Headquarters: Picton Barracks, Salisbury. Its published formation links include deep reconnaissance and strike, armoured brigades and operational sustainment.",
+      "capabilities": [
+        "armoured warfare",
+        "joint operations",
+        "NATO integration"
+      ],
+      "systems": [],
+      "relationships": [
+        {
+          "target": "british-army",
+          "kind": "service"
+        },
+        {
+          "target": "uk-deep-recce-strike",
+          "kind": "linked brigade"
+        }
+      ],
+      "keywords": [
+        "3rd (United Kingdom) Division"
+      ],
+      "sources": [
+        {
+          "label": "3rd (UK) Division — organisation and locations",
+          "url": "https://www.army.mod.uk/learn-and-explore/about-the-army/formations-divisions-and-brigades/headquarters-allied-rapid-reaction-corps/3rd-united-kingdom-division/"
+        }
+      ],
+      "priority": 1,
+      "lastReviewed": "2026-09-07",
+      "coverageTags": [
+        "operational-formations",
+        "bases-locations",
+        "external-relations"
+      ]
+    },
+    {
+      "id": "uk-16-air-assault",
+      "name": "16 Air Assault Brigade Combat Team",
+      "type": "unit",
+      "country": "United Kingdom",
+      "summary": "Based at Colchester. Maintains and commands an Air Manoeuvre Task Force at very high readiness, combining infantry and aviation battlegroups for tasks from evacuation to combat. Its headquarters includes Army and Royal Air Force personnel.",
+      "capabilities": [
+        "air manoeuvre",
+        "airborne operations",
+        "non-combatant evacuation"
+      ],
+      "systems": [],
+      "relationships": [
+        {
+          "target": "uk-1-division",
+          "kind": "parent division"
+        },
+        {
+          "target": "uk-7-para-rha",
+          "kind": "artillery support"
+        }
+      ],
+      "keywords": [
+        "16 Air Assault Brigade Combat Team"
+      ],
+      "sources": [
+        {
+          "label": "16 Air Assault Brigade — role",
+          "url": "https://www.army.mod.uk/learn-and-explore/about-the-army/formations-divisions-and-brigades/headquarters-allied-rapid-reaction-corps/1st-united-kingdom-division/16-air-assault-brigade/"
+        },
+        {
+          "label": "1st Division — published brigade structure",
+          "url": "https://www.army.mod.uk/learn-and-explore/about-the-army/formations-divisions-and-brigades/headquarters-allied-rapid-reaction-corps/1st-united-kingdom-division/"
+        }
+      ],
+      "priority": 1,
+      "lastReviewed": "2026-09-07",
+      "coverageTags": [
+        "operational-formations",
+        "bases-locations"
+      ]
+    },
+    {
+      "id": "uk-7-para-rha",
+      "name": "7th Parachute Regiment Royal Horse Artillery",
+      "type": "unit",
+      "country": "United Kingdom",
+      "summary": "Provides artillery, joint effects and targeting support to 16 Air Assault Brigade Combat Team. Its published skills include Light Gun operation, fire support teams, communications and logistics.",
+      "capabilities": [
+        "artillery",
+        "joint effects",
+        "targeting",
+        "fire support teams"
+      ],
+      "systems": [
+        {
+          "name": "L118 Light Gun",
+          "category": "towed artillery",
+          "url": "https://www.army.mod.uk/learn-and-explore/about-the-army/corps-regiments-and-units/royal-artillery/7th-parachute-regiment-royal-horse-artillery/",
+          "note": ""
+        }
+      ],
+      "relationships": [
+        {
+          "target": "uk-16-air-assault",
+          "kind": "supports"
+        }
+      ],
+      "keywords": [
+        "7th Parachute Regiment Royal Horse Artillery"
+      ],
+      "sources": [
+        {
+          "label": "7 PARA RHA — role and equipment",
+          "url": "https://www.army.mod.uk/learn-and-explore/about-the-army/corps-regiments-and-units/royal-artillery/7th-parachute-regiment-royal-horse-artillery/"
+        }
+      ],
+      "priority": 1,
+      "lastReviewed": "2026-09-07",
+      "coverageTags": []
+    },
+    {
+      "id": "uk-deep-recce-strike",
+      "name": "3 Deep Reconnaissance Strike Brigade Combat Team",
+      "type": "unit",
+      "country": "United Kingdom",
+      "summary": "The brigade’s official page lists cavalry and artillery units, including the Household Cavalry Regiment, Royal Lancers, 1st and 3rd Regiment Royal Horse Artillery, and 5, 19, 26, 100, 101 and 104 Regiment Royal Artillery. The divisional locations list retains an older “1st” designation; this entry follows the dedicated brigade page’s title.",
+      "capabilities": [
+        "reconnaissance",
+        "artillery",
+        "deep strike"
+      ],
+      "systems": [],
+      "relationships": [
+        {
+          "target": "uk-3-division",
+          "kind": "parent division"
+        }
+      ],
+      "keywords": [
+        "3 Deep Reconnaissance Strike Brigade Combat Team"
+      ],
+      "sources": [
+        {
+          "label": "Dedicated brigade page — published unit list",
+          "url": "https://www.army.mod.uk/learn-and-explore/about-the-army/formations-divisions-and-brigades/headquarters-allied-rapid-reaction-corps/3rd-united-kingdom-division/3-deep-reconnaissance-strike-brigade-combat-team/"
+        },
+        {
+          "label": "3rd Division — formation links",
+          "url": "https://www.army.mod.uk/learn-and-explore/about-the-army/formations-divisions-and-brigades/headquarters-allied-rapid-reaction-corps/3rd-united-kingdom-division/"
+        }
+      ],
+      "priority": 1,
+      "lastReviewed": "2026-09-07",
+      "coverageTags": []
+    },
+    {
+      "id": "us-v-corps",
+      "name": "U.S. Army V Corps",
+      "type": "unit",
+      "country": "United States",
+      "summary": "Corps headquarters whose published subordinate-unit roster includes 2d Cavalry Regiment, 12th Combat Aviation Brigade and 41st Field Artillery Brigade. Its website separately lists regionally aligned forces; alignment should not be read as permanent assignment or a real-time deployment roster.",
+      "capabilities": [
+        "corps command",
+        "allied integration",
+        "land operations"
+      ],
+      "systems": [],
+      "relationships": [
+        {
+          "target": "usareur-af",
+          "kind": "Army component reference"
+        },
+        {
+          "target": "us-2-cavalry",
+          "kind": "subordinate unit"
+        },
+        {
+          "target": "us-12-cab",
+          "kind": "subordinate unit"
+        },
+        {
+          "target": "us-41-fab",
+          "kind": "subordinate unit"
+        }
+      ],
+      "keywords": [
+        "U.S. Army V Corps"
+      ],
+      "sources": [
+        {
+          "label": "V Corps — subordinate and aligned forces",
+          "url": "https://www.vcorps.army.mil/"
+        }
+      ],
+      "priority": 1,
+      "lastReviewed": "2026-09-07",
+      "coverageTags": []
+    },
+    {
+      "id": "us-2-cavalry",
+      "name": "2d Cavalry Regiment",
+      "type": "unit",
+      "country": "United States",
+      "summary": "Provides V Corps with a mobile force for rapid deployment and NATO assurance and deterrence in Europe. The regiment’s mission page describes infantry squads, combat vehicles and Javelin employment, alongside multinational training.",
+      "capabilities": [
+        "mounted manoeuvre",
+        "rapid deployment",
+        "allied training"
+      ],
+      "systems": [
+        {
+          "name": "Javelin",
+          "category": "anti-tank guided missile",
+          "url": "https://www.2cr.army.mil/",
+          "note": ""
+        }
+      ],
+      "relationships": [
+        {
+          "target": "us-v-corps",
+          "kind": "parent corps"
+        }
+      ],
+      "keywords": [
+        "2d Cavalry Regiment"
+      ],
+      "sources": [
+        {
+          "label": "2d Cavalry Regiment — mission",
+          "url": "https://www.2cr.army.mil/"
+        },
+        {
+          "label": "V Corps — subordinate units",
+          "url": "https://www.vcorps.army.mil/"
+        }
+      ],
+      "priority": 1,
+      "lastReviewed": "2026-09-07",
+      "coverageTags": []
+    },
+    {
+      "id": "us-12-cab",
+      "name": "12th Combat Aviation Brigade",
+      "type": "unit",
+      "country": "United States",
+      "summary": "Provides V Corps with combat aviation able to project power across the European and African areas of responsibility. Its published mission emphasizes support to designated plans, allies and partners, deterrence and combat against peer adversaries.",
+      "capabilities": [
+        "combat aviation",
+        "force projection",
+        "allied support"
+      ],
+      "systems": [],
+      "relationships": [
+        {
+          "target": "us-v-corps",
+          "kind": "parent corps"
+        }
+      ],
+      "keywords": [
+        "12th Combat Aviation Brigade"
+      ],
+      "sources": [
+        {
+          "label": "12th CAB — mission",
+          "url": "https://www.12cab.army.mil/"
+        },
+        {
+          "label": "V Corps — subordinate units",
+          "url": "https://www.vcorps.army.mil/"
+        }
+      ],
+      "priority": 1,
+      "lastReviewed": "2026-09-07",
+      "coverageTags": []
+    },
+    {
+      "id": "us-41-fab",
+      "name": "41st Field Artillery Brigade",
+      "type": "unit",
+      "country": "United States",
+      "summary": "Europe-based fires brigade. Its official unit directory lists 1st Battalion, 6th Field Artillery; 1st Battalion, 77th Field Artillery; and 589th Brigade Support Battalion. Published August 2026 reporting describes allied training alongside its MLRS crews.",
+      "capabilities": [
+        "rocket artillery",
+        "theater fires",
+        "allied artillery integration"
+      ],
+      "systems": [
+        {
+          "name": "MLRS",
+          "category": "multiple-launch rocket artillery",
+          "url": "https://www.41fab.army.mil/News/",
+          "note": "The brigade describes MLRS crew certification; allied HIMARS training does not by itself establish an organic HIMARS inventory."
+        }
+      ],
+      "relationships": [
+        {
+          "target": "us-v-corps",
+          "kind": "parent corps"
+        },
+        {
+          "target": "us-1-6-fa",
+          "kind": "subordinate battalion"
+        },
+        {
+          "target": "us-1-77-fa",
+          "kind": "subordinate battalion"
+        }
+      ],
+      "keywords": [
+        "41st Field Artillery Brigade"
+      ],
+      "sources": [
+        {
+          "label": "41st FAB — unit directory",
+          "url": "https://www.41fab.army.mil/"
+        },
+        {
+          "label": "41st FAB — current training reporting",
+          "url": "https://www.41fab.army.mil/News/"
+        },
+        {
+          "label": "V Corps — subordinate units",
+          "url": "https://www.vcorps.army.mil/"
+        }
+      ],
+      "priority": 1,
+      "lastReviewed": "2026-09-07",
+      "coverageTags": []
+    },
+    {
+      "id": "us-1-6-fa",
+      "name": "1st Battalion, 6th Field Artillery Regiment",
+      "type": "unit",
+      "country": "United States",
+      "summary": "Field artillery battalion listed in 41st Field Artillery Brigade’s unit directory. The battalion page provides links to its headquarters, batteries and support company; use those pages for the published unit structure.",
+      "capabilities": [
+        "field artillery"
+      ],
+      "systems": [],
+      "relationships": [
+        {
+          "target": "us-41-fab",
+          "kind": "parent brigade"
+        }
+      ],
+      "keywords": [
+        "1st Battalion, 6th Field Artillery Regiment"
+      ],
+      "sources": [
+        {
+          "label": "1-6 FA — official unit directory",
+          "url": "https://www.41fab.army.mil/Units/1-6-Field-Artillery/"
+        }
+      ],
+      "priority": 1,
+      "lastReviewed": "2026-09-07",
+      "coverageTags": []
+    },
+    {
+      "id": "us-1-77-fa",
+      "name": "1st Battalion, 77th Field Artillery Regiment",
+      "type": "unit",
+      "country": "United States",
+      "summary": "Field artillery battalion under 41st Field Artillery Brigade. The brigade’s August 2026 reporting documents Lithuanian HIMARS personnel training alongside its MLRS crews through certification tasks.",
+      "capabilities": [
+        "rocket artillery",
+        "allied training"
+      ],
+      "systems": [],
+      "relationships": [
+        {
+          "target": "us-41-fab",
+          "kind": "parent brigade"
+        }
+      ],
+      "keywords": [
+        "1st Battalion, 77th Field Artillery Regiment"
+      ],
+      "sources": [
+        {
+          "label": "41st FAB — training reporting",
+          "url": "https://www.41fab.army.mil/News/"
+        },
+        {
+          "label": "1-77 FA — unit directory",
+          "url": "https://www.41fab.army.mil/Units/1-77-Field-Artillery/HHB-1-77-Field-Artillery-Regiment/"
+        }
+      ],
+      "priority": 1,
+      "lastReviewed": "2026-09-07",
+      "coverageTags": []
+    }
+  ]
+}
