@@ -1,0 +1,65 @@
+/* SIGACTS integrity guard.
+   Keep every feed item as one full-width row even if RSS markup or a later
+   enhancement introduces floats/columns. */
+#sigactslist,
+#sigactslist.tm-sigact-list {
+  display:block !important;
+  width:100% !important;
+  max-width:100% !important;
+  min-width:0 !important;
+  overflow-x:hidden !important;
+  columns:auto !important;
+  column-count:1 !important;
+  column-width:auto !important;
+}
+
+#sigactslist > .sigact,
+#sigactslist > .tm-sigact-row {
+  display:flex !important;
+  width:100% !important;
+  max-width:100% !important;
+  min-width:0 !important;
+  float:none !important;
+  clear:both !important;
+  position:relative !important;
+  break-inside:avoid !important;
+  box-sizing:border-box !important;
+}
+
+#sigactslist > .sigact[data-tm-aor-match="false"],
+#sigactslist > .tm-sigact-row[data-tm-aor-match="false"] {
+  display:none !important;
+}
+
+#sigactslist .sigbody {
+  flex:1 1 auto !important;
+  width:auto !important;
+  max-width:100% !important;
+  min-width:0 !important;
+  float:none !important;
+}
+
+#sigactslist .sigloc,
+#sigactslist .sigsummary {
+  display:block !important;
+  width:100% !important;
+  max-width:100% !important;
+  min-width:0 !important;
+  float:none !important;
+  position:static !important;
+  white-space:normal !important;
+  overflow-wrap:anywhere !important;
+  word-break:normal !important;
+}
+
+/* RSS descriptions are text surfaces only. Embedded feed markup must never
+   become active layout/media inside the operational feed. */
+#sigactslist .sigsummary img,
+#sigactslist .sigsummary video,
+#sigactslist .sigsummary iframe,
+#sigactslist .sigsummary object,
+#sigactslist .sigsummary embed,
+#sigactslist .sigsummary style,
+#sigactslist .sigsummary script {
+  display:none !important;
+}
