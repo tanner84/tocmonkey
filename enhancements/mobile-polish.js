@@ -1,5 +1,5 @@
 (() => {
-  const MOBILE_QUERY = '(max-width: 820px)';
+  const MOBILE_QUERY = '(max-width: 820px), (orientation: landscape) and (max-height: 500px) and (pointer: coarse)';
   const mq = window.matchMedia(MOBILE_QUERY);
   let scheduled = false;
 
@@ -95,6 +95,8 @@
   }
 
   mq.addEventListener?.('change', schedule);
+  window.addEventListener('orientationchange', schedule, { passive:true });
+  window.visualViewport?.addEventListener?.('resize', schedule, { passive:true });
   const observer = new MutationObserver(schedule);
 
   function boot() {

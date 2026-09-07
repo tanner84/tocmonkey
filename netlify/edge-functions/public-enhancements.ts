@@ -28,6 +28,9 @@ export default async (_request: Request, context: any) => {
   if (!html.includes('/enhancements/mobile-polish.css')) {
     html = html.replace('</head>', '  <link rel="stylesheet" href="/enhancements/mobile-polish.css">\n</head>');
   }
+  if (!html.includes('/enhancements/mobile-landscape.css')) {
+    html = html.replace('</head>', '  <link rel="stylesheet" href="/enhancements/mobile-landscape.css">\n</head>');
+  }
   if (!html.includes('/enhancements/task-org-parity.css')) {
     html = html.replace('</head>', '  <link rel="stylesheet" href="/enhancements/task-org-parity.css">\n</head>');
   }
