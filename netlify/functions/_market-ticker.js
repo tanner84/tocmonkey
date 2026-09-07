@@ -24,16 +24,38 @@ const INSTRUMENTS = [
 ];
 
 const META = Object.fromEntries(INSTRUMENTS.map(item => [item.key, item]));
+const REQUIRED_MARKET_KEYS = ['NASDAQ','SP500','DOW','FTSE100','NIKKEI225'];
+const WEB_DESCRIPTIONS = {
+  GOLD: 'gold spot or nearest widely reported benchmark in USD per troy ounce',
+  USD_RUB: 'Russian rubles per 1 U.S. dollar',
+  USD_UAH: 'Ukrainian hryvnia per 1 U.S. dollar',
+  URANIUM: 'uranium spot price in USD per pound',
+  COPPER: 'copper price in USD per pound',
+  ITA: 'iShares U.S. Aerospace & Defense ETF share price in USD',
+  NASDAQ: 'Nasdaq Composite index level',
+  SP500: 'S&P 500 index level',
+  DOW: 'Dow Jones Industrial Average index level',
+  FTSE100: 'FTSE 100 index level',
+  NIKKEI225: 'Nikkei 225 index level',
+};
+const WEB_BATCHES = [
+  { name:'indices', keys:['NASDAQ','SP500','DOW','FTSE100','NIKKEI225'] },
+  { name:'macro', keys:['GOLD','USD_RUB','USD_UAH','URANIUM','COPPER','ITA'] },
+];
 
 function env(name) {
-  try { return globalThis.Netlify?.env?.get(name) || ''; } catch (_) { return ''; }
+  try {
+    return globalThis.Netlify?.env?.get(name) || process.env[name] || '';
+  } catch (_) {
+    return process.env[name] || '';
+  }
 }
 
 function deployContext() {
   try {
     return globalThis.Netlify?.context?.deploy?.context || env('CONTEXT') || '';
   } catch (_) {
-    return '';
+    return env('CONTEXT') || '';
   }
 }
 
@@ -143,28 +165,56 @@ async function fetchEiaQuotes() {
   return { quotes, errors };
 }
 
-async function researchWebQuotes() {
-  const prompt = `Use web search to verify the most recent available market value and same-session/day absolute change for the instruments below. This is for a public informational dashboard, not trading execution. Prefer current or last official close values from reputable market/exchange/financial reporting sources. Do not estimate, interpolate, or reuse example numbers. If you cannot verify both a price/level and its absolute daily change, omit that key.\n\nReturn ONLY raw JSON. Keys and required units:\nGOLD = gold spot or nearest widely reported benchmark in USD per troy ounce\nUSD_RUB = Russian rubles per 1 U.S. dollar\nUSD_UAH = Ukrainian hryvnia per 1 U.S. dollar\nURANIUM = uranium spot price in USD per pound\nCOPPER = copper price in USD per pound\nITA = iShares U.S. Aerospace & Defense ETF share price in USD\nNASDAQ = Nasdaq Composite index level\nSP500 = S&P 500 index level\nDOW = Dow Jones Industrial Average index level\nFTSE100 = FTSE 100 index level\nNIKKEI225 = Nikkei 225 index level\n\nFor every returned key use exactly this object shape:\n{"price":number,"change":number,"changePct":number|null,"asOf":"short date/time or market-state note","source":"source name","sourceUrl":"https://..."}\n\nImportant: change MUST be the absolute price/point change, not the percent change. A negative day must have a negative change. Use the most recent available session for each market even if that market is closed.`;
+async function researchWebQuoteBatch(batch) {
+  const requested = batch.keys.map(key => `${key} = ${WEB_DESCRIPTIONS[key]}`).join('\n');
+  const prompt = `Use web search to verify the most recent available market value and same-session/day absolute change for the instruments below. This is for a public informational dashboard, not trading execution. Prefer current or last official close values from reputable market, exchange, government, issuer or major financial-reporting sources. Do not estimate, interpolate, substitute a proxy for an index, or reuse example numbers. If you cannot verify both a price/level and its absolute daily change, omit that key.\n\nReturn ONLY raw JSON with only the requested keys.\n${requested}\n\nFor every returned key use exactly this object shape:\n{"price":number,"change":number,"changePct":number|null,"asOf":"short date/time or market-state note","source":"source name","sourceUrl":"https://..."}\n\nImportant: change MUST be the absolute price/point change, not the percent change. A negative day must have a negative change. Use the most recent available session for each market even if that market is closed.`;
 
   const result = await generateText({
     prompt,
     model: env('OPENAI_RESEARCH_MODEL') || 'gpt-5.6-terra',
-    maxOutputTokens: 1500,
+    maxOutputTokens: 900,
     reasoningEffort: 'low',
-    timeoutMs: 22000,
-    retries: 0,
+    timeoutMs: 45000,
+    retries: 1,
     tools: [{ type:'web_search' }],
   });
 
   const parsed = extractJson(result.text);
   const quotes = {};
   const rejected = [];
-  for (const meta of INSTRUMENTS.filter(item => item.sourceType === 'web')) {
-    const quote = normalizeQuote(meta.key, parsed?.[meta.key], { provider:'openai-web' });
-    if (quote) quotes[meta.key] = quote;
-    else rejected.push(meta.key);
+  for (const key of batch.keys) {
+    const quote = normalizeQuote(key, parsed?.[key], { provider:'openai-web' });
+    if (quote) quotes[key] = quote;
+    else rejected.push(key);
   }
   return { quotes, rejected, model:result.model || null };
+}
+
+async function researchWebQuotes() {
+  const settled = await Promise.allSettled(WEB_BATCHES.map(researchWebQuoteBatch));
+  const quotes = {};
+  const rejected = [];
+  const errors = [];
+  const models = new Set();
+
+  settled.forEach((result, index) => {
+    const batch = WEB_BATCHES[index];
+    if (result.status === 'fulfilled') {
+      Object.assign(quotes, result.value.quotes || {});
+      rejected.push(...(result.value.rejected || []));
+      if (result.value.model) models.add(result.value.model);
+      return;
+    }
+    rejected.push(...batch.keys);
+    errors.push(`${batch.name}: ${result.reason?.message || 'web research failed'}`);
+  });
+
+  return {
+    quotes,
+    rejected:[...new Set(rejected)],
+    errors,
+    model:models.size ? [...models].join(', ') : null,
+  };
 }
 
 function previousByKey(cache) {
@@ -188,13 +238,28 @@ function staleCopy(item, nowIso) {
   };
 }
 
+function coverageHealth(items = []) {
+  const present = new Set(items.map(item => item?.key).filter(key => META[key]));
+  const missingRequired = REQUIRED_MARKET_KEYS.filter(key => !present.has(key));
+  return {
+    degraded: missingRequired.length > 0,
+    missingRequired,
+  };
+}
+
+function cacheIsDegraded(cache) {
+  if (!cache?.items?.length) return true;
+  const health = coverageHealth(cache.items);
+  return health.degraded;
+}
+
 async function refreshMarketData({ force = false } = {}) {
   const now = Date.now();
   const nowIso = new Date(now).toISOString();
   const previous = await readCache();
   const previousAge = previous?.updatedAt ? now - Date.parse(previous.updatedAt) : Infinity;
 
-  if (!force && previous && Number.isFinite(previousAge) && previousAge >= 0 && previousAge < MIN_REFRESH_MS) {
+  if (!force && previous && !cacheIsDegraded(previous) && Number.isFinite(previousAge) && previousAge >= 0 && previousAge < MIN_REFRESH_MS) {
     return { ...previous, skipped:true, skipReason:'fresh-cache' };
   }
 
@@ -217,6 +282,7 @@ async function refreshMarketData({ force = false } = {}) {
   if (webResult.status === 'fulfilled') {
     Object.assign(fresh, webResult.value.quotes);
     model = webResult.value.model || null;
+    errors.push(...(webResult.value.errors || []));
     if (webResult.value.rejected?.length) errors.push(`Web unverified: ${webResult.value.rejected.join(', ')}`);
   } else {
     errors.push(`Web research: ${webResult.reason?.message || 'refresh failed'}`);
@@ -239,6 +305,7 @@ async function refreshMarketData({ force = false } = {}) {
 
   if (!items.length) throw new Error(`Market refresh produced no verified data${errors.length ? `: ${errors.join(' | ')}` : ''}`);
 
+  const health = coverageHealth(items);
   const payload = {
     updatedAt: nowIso,
     model,
@@ -248,6 +315,8 @@ async function refreshMarketData({ force = false } = {}) {
       fresh: freshCount,
       lastVerified: staleCount,
       unavailable: INSTRUMENTS.length - items.length,
+      degraded: health.degraded,
+      missingRequired: health.missingRequired,
     },
     errors: errors.slice(0, 20),
   };
@@ -267,8 +336,6 @@ async function getPublicTicker() {
     if (items.length) return { items, updatedAt:cache.updatedAt || null, coverage:cache.coverage || null, stale:globallyStale };
   }
 
-  // One-time bootstrap if the Blob cache has never been populated. After this succeeds,
-  // ordinary visitors only read the shared cache and never trigger market research.
   try {
     const warmed = await refreshMarketData();
     if (warmed?.items?.length) return { items:warmed.items, updatedAt:warmed.updatedAt || null, coverage:warmed.coverage || null, stale:false };
@@ -276,12 +343,20 @@ async function getPublicTicker() {
     console.warn('Market cache bootstrap failed:', error.message);
   }
 
-  // Last-resort bootstrap is official EIA data only. No invented values.
   const eia = await fetchEiaQuotes();
+  const items = Object.values(eia.quotes);
+  const health = coverageHealth(items);
   return {
-    items: Object.values(eia.quotes),
+    items,
     updatedAt: new Date().toISOString(),
-    coverage: { total:INSTRUMENTS.length, fresh:Object.keys(eia.quotes).length, lastVerified:0, unavailable:INSTRUMENTS.length - Object.keys(eia.quotes).length },
+    coverage: {
+      total:INSTRUMENTS.length,
+      fresh:items.length,
+      lastVerified:0,
+      unavailable:INSTRUMENTS.length - items.length,
+      degraded:health.degraded,
+      missingRequired:health.missingRequired,
+    },
     stale:false,
   };
 }
